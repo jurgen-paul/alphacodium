@@ -1,0 +1,11 @@
+.idea/
+venv/
+*/.ipynb_checkpoints/
+.venv/
+pr_agent/settings/.secrets.toml
+__pycache__
+dist/
+*.egg-info/
+build/
+**/.secrets.toml
+.DS_Store

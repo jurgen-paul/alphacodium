@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pr_agent"
+version = "0.0.1"
+
+authors = [
+  {name = "Itamar Friedman", email = "itamar.f@codium.ai"},
+]
+maintainers = [
+  {name = "Ori Kotek", email = "ori.k@codium.ai"},
+  {name = "Tal Ridnik", email = "tal.r@codium.ai"},
+  {name = "Hussam Lawen", email = "hussam.l@codium.ai"},
+  {name = "Sagi Medina", email = "sagi.m@codium.ai"}
+]
+description = "CodiumAI PR-Agent is an open-source tool to automatically analyze a pull request and provide several types of feedback"
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["ai", "tool", "developer", "review", "agent"]
+license = {file = "LICENSE", name = "Apache 2.0 License"}
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Operating System :: Independent",
+  "Programming Language :: Python :: 3",
+]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+"Homepage" = "https://github.com/Codium-ai/pr-agent"
+
+[tool.setuptools]
+include-package-data = false
+license-files = ["LICENSE"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pr_agent"]
+
+[project.scripts]
+pr-agent = "pr_agent.cli:run"
+
+
+[tool.ruff]
+
+line-length = 120
+
+select = [
+  "E",  # Pyflakes
+  "F",  # Pyflakes
+  "B",  # flake8-bugbear
+  "I001",  # isort basic checks
+  "I002",  # isort missing-required-import
+  ]
+
+# First commit - only fixing isort
+fixable = [
+  "I001",  # isort basic checks
+]
+
+unfixable = [
+  "B",  # Avoid trying to fix flake8-bugbear (`B`) violations.
+  ]
+
+exclude = [
+  "api/code_completions",
+]
+
+ignore = [
+  "E999", "B008"
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402"]  # Ignore `E402` (import violations) in all `__init__.py` files, and in `path/to/file.py`.
+# TODO: should decide if maybe not to ignore these.
