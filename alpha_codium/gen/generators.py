@@ -19,7 +19,6 @@ class SimplePrompt:
             system=self.system_prompt,
             user=user_prompt
         )
-
         return response
 
     async def run(self, user_prompt):

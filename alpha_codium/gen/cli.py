@@ -14,13 +14,19 @@ def gen():
     pass
 
 
-@gen.command("test")
+@gen.command("ask")
 @click.option(
     "--prompt",
     default="text",
     show_default=True,
     required=True,
 )
-def test_generation(prompt):
+def run_generation(prompt):
+    return run_internal(prompt)
+
+def run_internal(prompt):
     p = SimplePrompt()
     asyncio.run(p.run(prompt))
+
+if __name__ == '__main__':
+    run_internal(prompt="what is the code_contests dataset?")
