@@ -188,6 +188,12 @@ class CodeContestsEval(evaluate.Metric):
                 candidates = prediction['solution_candidates']
                 tests_inputs = reference['tests_inputs']
                 tests_outputs = reference['tests_outputs']
+                if not tests_inputs :
+                    print(f"ERROR: {task_name} - no inputs")
+                    continue
+                if not tests_outputs:
+                    print(f"ERROR: {task_name} - no outputs")
+                    continue
                 print(f"submitting task {task_name} with {len(candidates)}")
                 print(f"test inputs: {tests_inputs}")
                 print(f"test outputs: {tests_outputs}")

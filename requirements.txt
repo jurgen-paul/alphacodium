@@ -28,3 +28,4 @@ notebook
 black
 evaluate
 click
+code_contests_tester==0.1.3
