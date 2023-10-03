@@ -24,5 +24,6 @@ pinecone-datasets @ git+https://github.com/mrT23/pinecone-datasets.git@main
 ##
 duckdb
 datasets
-evaluation
 notebook
+black
+evaluate

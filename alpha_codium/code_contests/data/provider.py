@@ -1,57 +1,48 @@
 import os.path
+from typing import Iterable
 
 import duckdb
 import pandas as pd
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk, Dataset
 import numpy as np
 import json
+from datasets.features.features import Value, Sequence
+import pyarrow as pa
+import os
 
+os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
-problem_translations = {
-    "source": {0: "UNKNOWN_SOURCE",
-                1: "CODECHEF",
-                2: "CODEFORCES",
-                3: "HACKEREARTH",
-                4: "CODEJAM",
-                5: "ATCODER",
-                6: "AIZU"},
+problem_translations = ("source", "difficulty")
 
-    "difficulty": {0: "UNKNOWN_DIFFICULTY",
-                   1: "EASY",
-                   2: "MEDIUM",
-                   3: "HARD",
-                   4: "HARDER",
-                   5: "HARDEST",
-                   6: "EXTERNAL",
-                   **{i: chr(64 + i - 6) for i in range(7, 29)}
-                   },
+solution_translations = ("solutions", "incorrect_solutions")
 
-}
-solution_translations = {
-    "language": {0: "UNKNOWN_LANGUAGE",
-                1: "PYTHON2",
-                2: "CPP",
-                3: "PYTHON3",
-                4: "JAVA"},
-}
 
 class CodeContestDataProvider:
 
-    def __init__(self, dataset_location="deepmind/code_contests", connection=None):
+    def __init__(self, dataset_location="deepmind/code_contests", from_disk=False, connection=None):
         self.dataset_location = dataset_location
+        self.from_disk = from_disk
         self.dataset_name = self.dataset_location.split(os.path.sep)[-1]
         self.dataset = self.get_dataset()
         self.connection = connection or duckdb.connect()
         self.connect()
 
     def get_dataset(self):
-        return load_dataset(self.dataset_location)
+        if self.from_disk:
+            f = load_from_disk
+        else:
+            f = load_dataset
+
+        return f(self.dataset_location)
 
     def connect(self):
-        for split in self.dataset.keys():
-            split_ds = self.dataset[split]
-            table = split_ds.data.table
-            self.connection.register(f"{split_ds.info.dataset_name}_{split}", table)
+        if hasattr(self.dataset, 'keys'):
+            for split in self.dataset.keys():
+                split_ds = self.dataset[split]
+                table = split_ds.data.table
+                self.connection.register(f"{split_ds.info.dataset_name}_{split}", table)
+        else:
+            self.connection.register(f"{self.dataset.info.dataset_name}", self.dataset.data.table)
 
     def get_splits(self):
         return self.dataset.keys()
@@ -66,32 +57,117 @@ class CodeContestDataProvider:
     def query(self, query_string) -> pd.DataFrame:
         return self.connection.query(query_string).df()
 
-    def translate_columns(self):
-        def transform_language(example):
-            for column_name in problem_translations.keys():
-                current_val = example[column_name]
-                example[f"{column_name}_"] = problem_translations[column_name].get(current_val, 'unknown')
+    def translate_references(self, ds):
+        for col in problem_translations:
+            translated_source = ds.features[col].int2str(ds[col])
+            ds = ds.remove_columns([col])
+            ds = ds.add_column(col, translated_source)
 
-            for sol in ['solutions', 'incorrect_solutions']:
-                solutions = example[sol]
-                for column_name in solution_translations.keys():
-                    current_val = solutions[column_name]
-                    example[sol][f"{column_name}_"] = [solution_translations[column_name].get(v, 'unknown') for v in current_val]
+        def translate_sequence_references(example, ds):
+            for col in solution_translations:
+                translator = ds.features[col].feature['language']
+                arr = example[col]['language']
+                translated_solution = [translator.int2str(item) for item in arr]
+                example[col]['language'] = translated_solution
 
             return example
 
-        for split in ['valid']:
-            self.dataset[split] = self.dataset[split].map(transform_language)
+        new_features = ds.features.copy()
+        for col in solution_translations:
+            new_features[col] = Sequence(feature={
+                'language': Value('string'),
+                'solution': Value('string')
+            })
 
+        ds = ds.map(lambda example: translate_sequence_references(example, ds), features=new_features)
+        return ds
+
+    def filter_solution_by_languages(self, ds, languages: Iterable[str], keep=True):
+        def filter_solutions_by_languages(example):
+            for sol_col in solution_translations:
+                langs = np.array(example[sol_col]['language'])
+                sols = np.array(example[sol_col]['solution'])
+                indices = np.isin(langs, languages)
+                if not keep:
+                    indices = ~indices
+                filtered_data = {
+                    'language': list(langs[indices]),
+                    'solution': list(sols[indices]),
+                }
+                example[sol_col] = filtered_data
+            return example
+
+        ds = ds.map(filter_solutions_by_languages)
+        return ds
+
+
+def get_evaluation_candidates(dataset, test_type):
+    records = []
+
+    for entry in dataset:
+        name = entry['name']
+        solution_list = entry['solutions']['solution']
+        test_input_list = entry[f'{test_type}_tests']['input']
+        test_output_list = entry[f'{test_type}_tests']['output']
+
+        record = {
+            "name": name,
+            "solutions": solution_list,
+            "test_inputs": test_input_list,
+            "test_outputs": test_output_list
+        }
+
+        records.append(record)
+    return records
 
 if __name__ == '__main__':
+    """    #ds = CodeContestDataProvider("/Users/assaf/projects/codium/data", from_disk=True).get_dataset()
     cc = CodeContestDataProvider()
     result = cc.query("select count(*) from code_contests_valid")
     print(result)
     train_sample = cc.sample("train")
-    print(train_sample.to_pandas())
-    cc.translate_columns()
-    sample_problem = cc.dataset['valid'][0]
-    pretty = json.dumps(sample_problem, indent=4)
-    print(pretty)
+    translated = cc.translate_references(train_sample)
+    df = translated.to_pandas()
+    example = translated[0]
+    # example['solutions'] = None
+    # example['incorrect_solutions'] = None
+    print(json.dumps(example['solutions']['language'], indent=4))
+    ds = cc.filter_solution_by_languages(ds=translated, languages=['PYTHON3'])
+    ds.save_to_disk("/Users/assaf/projects/codium/data")
+    #print(json.dumps(ds[0]['solutions']['solution'][0], indent=4))"""
+
+    """cc = CodeContestDataProvider()
+    train_sample = cc.sample("train")
+    translated = cc.translate_references(train_sample)
+    ds = cc.filter_solution_by_languages(ds=translated, languages=['PYTHON3'])"""
+    ds = CodeContestDataProvider("/home/ec2-user/data/sample", from_disk=True).get_dataset()
+    records = get_evaluation_candidates(ds, "public")
+    from evaluate import load as load_metric
+    metric = load_metric('../evaluation/code_contests_eval.py', module_type="metric")
+    fl = ds.flatten()
+    fl = fl.rename_column("public_tests.input", "public_tests_inputs")
+    fl = fl.rename_column("public_tests.output", "public_tests_outputs")
+    fl = fl.rename_column("solutions.solution", "solution_candidates")
+    fl = fl.select_columns(['name','solution_candidates','public_tests_inputs','public_tests_outputs'])
+
+    arrow_table = ds.data
+
+    # Create new columns for the restructured data
+    predictions_column = pa.array(
+        [{'task_name': tn, 'solution_candidates': pl} for tn, pl in zip(fl['name'], fl['solution_candidates'])])
+    references_column = pa.array([{'tests_inputs': r1, 'tests_outputs': r2} for r1, r2 in
+                                  zip(fl['public_tests_inputs'], fl['public_tests_outputs'])])
+
+    # Combine the new columns with the Arrow table
+    new_arrow_table = pa.Table.from_arrays([predictions_column, references_column], names=['predictions', 'references'])
+    df = new_arrow_table.to_pandas().head(10)
+
+    # Convert the Arrow table back to a HuggingFace dataset
+    restructured_dataset = Dataset.from_pandas(df)
+
+    #print(json.dumps(fl[0], indent=4))
+    pass_at_k, _ = metric.compute(predictions=restructured_dataset['predictions'], references=restructured_dataset['references'])
+
+    print(pass_at_k)
+
 
