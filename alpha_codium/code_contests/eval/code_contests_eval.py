@@ -20,44 +20,19 @@ import itertools
 import os
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable
+from typing import Callable, List
 
 import datasets
 import numpy as np
 
 import evaluate
-from code_contests_tester import ProgramStatus, Py3TesterSandboxer, TestOptions
 
 _CITATION = """\
-@misc{chen2021evaluating,
-      title={Evaluating Large Language Models Trained on Code},
-      author={Mark Chen and Jerry Tworek and Heewoo Jun and Qiming Yuan \
-and Henrique Ponde de Oliveira Pinto and Jared Kaplan and Harri Edwards \
-and Yuri Burda and Nicholas Joseph and Greg Brockman and Alex Ray \
-and Raul Puri and Gretchen Krueger and Michael Petrov and Heidy Khlaaf \
-and Girish Sastry and Pamela Mishkin and Brooke Chan and Scott Gray \
-and Nick Ryder and Mikhail Pavlov and Alethea Power and Lukasz Kaiser \
-and Mohammad Bavarian and Clemens Winter and Philippe Tillet \
-and Felipe Petroski Such and Dave Cummings and Matthias Plappert \
-and Fotios Chantzis and Elizabeth Barnes and Ariel Herbert-Voss \
-and William Hebgen Guss and Alex Nichol and Alex Paino and Nikolas Tezak \
-and Jie Tang and Igor Babuschkin and Suchir Balaji and Shantanu Jain \
-and William Saunders and Christopher Hesse and Andrew N. Carr \
-and Jan Leike and Josh Achiam and Vedant Misra and Evan Morikawa \
-and Alec Radford and Matthew Knight and Miles Brundage and Mira Murati \
-and Katie Mayer and Peter Welinder and Bob McGrew and Dario Amodei \
-and Sam McCandlish and Ilya Sutskever and Wojciech Zaremba},
-      year={2021},
-      eprint={2107.03374},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG}
-}
+
 """
 
 _DESCRIPTION = """\
-This metric implements the evaluation harness for the HumanEval problem solving dataset
-described in the paper "Evaluating Large Language Models Trained on Code"
-(https://arxiv.org/abs/2107.03374).
+This metric implements the evaluation harness for Deepmind's code_contests dataset.
 """
 
 _KWARGS_DESCRIPTION = """
@@ -127,62 +102,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE."""
 
-import os
-
-if os.environ.get("REMOTE"):
-    base_path = '/home/ec2-user/.pyenv/versions/3.10.13'
-else:
-    base_path = '/Users/assaf/.pyenv/versions/3.10.11'
-# os.path.join(base_path, "lib/python3.10")
-print(f"using interpreter in {base_path}")
-
-# tester = Py3TesterSandboxer("/home/ec2-user/.pyenv/versions/3.10.13/bin/python3.10",
-#                             ["/home/ec2-user/.pyenv/versions/3.10.13/lib"])
-
-tester = Py3TesterSandboxer("/usr/bin/python3.11",
-                             ["/usr/lib/python3.11"])
-
-options = TestOptions()
-options.num_threads = 4
-options.stop_on_first_failure = True
+os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
 
 class TestsRunner:
-    def __init__(self, tester: Py3TesterSandboxer, test_options: TestOptions, compare_func: Callable):
-        self.tester = tester
-        self.test_options = test_options
-        self.compare_func = compare_func
+    def __init__(self, path_to_python_bin: str, path_to_python_lib: List[str], num_threads: int, stop_on_first_failure: bool):
+        from code_contests_tester import ProgramStatus, Py3TesterSandboxer, TestOptions
+        options = TestOptions()
+        options.num_threads = num_threads
+        options.stop_on_first_failure = stop_on_first_failure
 
-    def run_test(self, test_id, candidate_id, candidate, test_inputs, options, tests_outputs, compare_func):
-        result = tester.test(candidate, test_inputs, options, tests_outputs, compare_func)
+        def compare_func(a, b):
+            return a == b
+
+        self.tester = Py3TesterSandboxer(path_to_python_bin,
+                                         path_to_python_lib)
+        self.options = options
+        self.compare_func = compare_func
+        self.test_interpreter()
+
+    def test_interpreter(self):
+        result = self.tester.test("x=input()\nprint(x)", ["hello"], self.options, ["hello\n"], self.compare_func)
+        print(f"compilation results:{result.compilation_result.program_status}")
+        print(result.compilation_result.sandbox_result)
+        print(result.compilation_result.stderr)
+
+        for i, test_res in enumerate(result.test_results):
+            print(f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}")
+            print("=====================================================================")
+            print(test_res.stdout)
+            print("=====================================================================")
+
+    def run_test(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
+        result = self.tester.test(candidate, test_inputs, self.options, tests_outputs, self.compare_func)
         return test_id, candidate_id, result
 
-
-def compare_func(a, b):
-    return a == b
-
-
-program = """
-x = input()
-print(x)
-
-"""
-
-
-def test_interpreter():
-    result = tester.test(program, ["hello"], options, ["hello\n"], compare_func)
-    print(f"compilation results:{result.compilation_result.program_status}")
-    print(result.compilation_result.sandbox_result)
-    print(result.compilation_result.stderr)
-
-    for i, test_res in enumerate(result.test_results):
-        print(f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}")
-        print("=====================================================================")
-        print(test_res.stdout)
-        print("=====================================================================")
-
-
-test_interpreter()
 
 
 @evaluate.utils.file_utils.add_start_docstrings(_DESCRIPTION, _KWARGS_DESCRIPTION)
@@ -206,22 +160,22 @@ class CodeContestsEval(evaluate.Metric):
                     }
                 }
             ),
-            homepage="https://github.com/openai/human-eval",
-            codebase_urls=["https://github.com/openai/human-eval"],
-            reference_urls=["https://github.com/openai/human-eval"],
+            homepage="",
+            codebase_urls=[""],
+            reference_urls=[""],
             license=_LICENSE,
         )
 
     def _compute(self, predictions, references, k=[1, 10, 100], num_workers=4, timeout=3.0):
-        """Returns the scores"""
-
         if os.getenv("HF_ALLOW_CODE_EVAL", 0) != "1":
             raise ValueError(_WARNING)
 
         if os.name == "nt":
             raise NotImplementedError("This metric is currently not supported on Windows.")
 
-        runner = TestsRunner(tester, options, compare_func)
+        runner = TestsRunner(path_to_python_bin="/usr/bin/python3.11",
+                             path_to_python_lib=["/usr/lib64", "/usr/lib64/python3.11"], num_threads=4,
+                             stop_on_first_failure=True)
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = []
@@ -232,12 +186,14 @@ class CodeContestsEval(evaluate.Metric):
             for prediction, reference in zip(predictions, references):
                 task_name = prediction['task_name']
                 candidates = prediction['solution_candidates']
-                test_inputs = reference['tests_inputs']
+                tests_inputs = reference['tests_inputs']
                 tests_outputs = reference['tests_outputs']
                 print(f"submitting task {task_name} with {len(candidates)}")
+                print(f"test inputs: {tests_inputs}")
+                print(f"test outputs: {tests_outputs}")
                 for candidate_id, candidate in enumerate(candidates):
                     print(f"\tsubmitting candidate {candidate_id}")
-                    args = (task_name, candidate_id,candidate, test_inputs, options, tests_outputs, compare_func)
+                    args = (task_name, candidate_id, candidate, tests_inputs, tests_outputs)
                     future = executor.submit(runner.run_test, *args)
                     futures.append(future)
                     completion_id[task_name] += 1
@@ -248,14 +204,23 @@ class CodeContestsEval(evaluate.Metric):
                 results[task_id].append((candidate_id, test_result))
 
         total, correct = [], []
-        for result in results.values():
-            result.sort()
-            passed = [all(test_result.passed for test_result in r[1].test_results) for r in result]
-            total.append(len(passed))
-            correct.append(sum(passed))
+        for task_id, all_candidates_test_results in results.items():
+            print(task_id)
+            print("======================================")
+            candidate_final_results = []
+            all_candidates_test_results.sort()
+            for candidate_id, test_results in all_candidates_test_results:
+                _results = [test_result.passed for test_result in test_results.test_results]
+                print (f"{candidate_id} test results: {_results}")
+                candidate_pass_fail = all(_results)
+                print(f"{candidate_id} final pass/fail: {candidate_pass_fail}")
+                candidate_final_results.append(candidate_pass_fail)
+            total.append(len(candidate_final_results))
+            correct.append(sum(candidate_final_results))
+            print(f"{task_id} candidates: {candidate_final_results}")
+            print("======================================")
         total = np.array(total)
         correct = np.array(correct)
-
         ks = k
         pass_at_k = {f"pass@{k}": estimate_pass_at_k(total, correct, k).mean() for k in ks if (total >= k).all()}
 

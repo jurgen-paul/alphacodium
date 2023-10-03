@@ -27,3 +27,4 @@ datasets
 notebook
 black
 evaluate
+click

@@ -12,3 +12,7 @@ max_description_tokens = 500
 max_commits_tokens = 500
 secret_provider="google_cloud_storage"
 cli_mode=false
+
+
+[etl]
+private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
