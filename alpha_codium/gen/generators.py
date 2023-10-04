@@ -1,0 +1,33 @@
+import functools
+
+import asyncio
+
+from alpha_codium.llm.ai_handler import AiHandler
+from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+
+
+class SimplePrompt:
+    def __init__(self, system_prompt="", temperature=0.2):
+        self.system_prompt = system_prompt
+        self.temperature = temperature
+        self.ai_handler = AiHandler()
+
+    async def _run(self, model, user_prompt):
+        response, finish_reason = await self.ai_handler.chat_completion(
+            model=model,
+            temperature=self.temperature,
+            system=self.system_prompt,
+            user=user_prompt
+        )
+        return response
+
+    async def run(self, user_prompt):
+        f = functools.partial(self._run, user_prompt=user_prompt)
+        response = await retry_with_fallback_models(f)
+        return response
+
+
+if __name__ == '__main__':
+    p = SimplePrompt()
+    asyncio.run(p.run("what is the capital city of Israel"))
+
