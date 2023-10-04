@@ -1,6 +1,5 @@
-import functools
-
 import asyncio
+import functools
 
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
@@ -17,7 +16,7 @@ class SimplePrompt:
             model=model,
             temperature=self.temperature,
             system=self.system_prompt,
-            user=user_prompt
+            user=user_prompt,
         )
         return response
 
@@ -27,7 +26,6 @@ class SimplePrompt:
         return response
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = SimplePrompt()
     asyncio.run(p.run("what is the capital city of Israel"))
-

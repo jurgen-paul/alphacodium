@@ -20,12 +20,11 @@ import itertools
 import os
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Callable, List
+from typing import List
 
 import datasets
-import numpy as np
-
 import evaluate
+import numpy as np
 
 _CITATION = """\
 
@@ -106,8 +105,15 @@ os.environ["HF_ALLOW_CODE_EVAL"] = "1"
 
 
 class TestsRunner:
-    def __init__(self, path_to_python_bin: str, path_to_python_lib: List[str], num_threads: int, stop_on_first_failure: bool):
-        from code_contests_tester import ProgramStatus, Py3TesterSandboxer, TestOptions
+    def __init__(
+        self,
+        path_to_python_bin: str,
+        path_to_python_lib: List[str],
+        num_threads: int,
+        stop_on_first_failure: bool,
+    ):
+        from code_contests_tester import Py3TesterSandboxer, TestOptions
+
         options = TestOptions()
         options.num_threads = num_threads
         options.stop_on_first_failure = stop_on_first_failure
@@ -115,28 +121,40 @@ class TestsRunner:
         def compare_func(a, b):
             return a == b
 
-        self.tester = Py3TesterSandboxer(path_to_python_bin,
-                                         path_to_python_lib)
+        self.tester = Py3TesterSandboxer(path_to_python_bin, path_to_python_lib)
         self.options = options
         self.compare_func = compare_func
         self.test_interpreter()
 
     def test_interpreter(self):
-        result = self.tester.test("x=input()\nprint(x)", ["hello"], self.options, ["hello\n"], self.compare_func)
+        result = self.tester.test(
+            "x=input()\nprint(x)",
+            ["hello"],
+            self.options,
+            ["hello\n"],
+            self.compare_func,
+        )
         print(f"compilation results:{result.compilation_result.program_status}")
         print(result.compilation_result.sandbox_result)
         print(result.compilation_result.stderr)
 
         for i, test_res in enumerate(result.test_results):
-            print(f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}")
-            print("=====================================================================")
+            print(
+                f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}"
+            )
+            print(
+                "====================================================================="
+            )
             print(test_res.stdout)
-            print("=====================================================================")
+            print(
+                "====================================================================="
+            )
 
     def run_test(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
-        result = self.tester.test(candidate, test_inputs, self.options, tests_outputs, self.compare_func)
+        result = self.tester.test(
+            candidate, test_inputs, self.options, tests_outputs, self.compare_func
+        )
         return test_id, candidate_id, result
-
 
 
 @evaluate.utils.file_utils.add_start_docstrings(_DESCRIPTION, _KWARGS_DESCRIPTION)
@@ -152,12 +170,14 @@ class CodeContestsEval(evaluate.Metric):
                 {
                     "predictions": {
                         "task_name": datasets.Value("string"),
-                        "solution_candidates": datasets.Sequence(datasets.Value("string"))
+                        "solution_candidates": datasets.Sequence(
+                            datasets.Value("string")
+                        ),
                     },
                     "references": {
                         "tests_inputs": datasets.Sequence(datasets.Value("string")),
-                        "tests_outputs": datasets.Sequence(datasets.Value("string"))
-                    }
+                        "tests_outputs": datasets.Sequence(datasets.Value("string")),
+                    },
                 }
             ),
             homepage="",
@@ -166,16 +186,28 @@ class CodeContestsEval(evaluate.Metric):
             license=_LICENSE,
         )
 
-    def _compute(self, predictions, references, k=[1, 10, 100], num_workers=4, timeout=3.0):
+    def _compute(
+        self,
+        predictions,
+        references,
+        k=[1, 10, 100],  # noqa: B006
+        num_workers=4,
+        timeout=3.0,
+    ):
         if os.getenv("HF_ALLOW_CODE_EVAL", 0) != "1":
             raise ValueError(_WARNING)
 
         if os.name == "nt":
-            raise NotImplementedError("This metric is currently not supported on Windows.")
+            raise NotImplementedError(
+                "This metric is currently not supported on Windows."
+            )
 
-        runner = TestsRunner(path_to_python_bin="/usr/bin/python3.11",
-                             path_to_python_lib=["/usr/lib64", "/usr/lib64/python3.11"], num_threads=4,
-                             stop_on_first_failure=True)
+        runner = TestsRunner(
+            path_to_python_bin="/usr/bin/python3.11",
+            path_to_python_lib=["/usr/lib64", "/usr/lib64/python3.11"],
+            num_threads=4,
+            stop_on_first_failure=True,
+        )
 
         with ThreadPoolExecutor(max_workers=num_workers) as executor:
             futures = []
@@ -184,11 +216,11 @@ class CodeContestsEval(evaluate.Metric):
             results = defaultdict(list)
 
             for prediction, reference in zip(predictions, references):
-                task_name = prediction['task_name']
-                candidates = prediction['solution_candidates']
-                tests_inputs = reference['tests_inputs']
-                tests_outputs = reference['tests_outputs']
-                if not tests_inputs :
+                task_name = prediction["task_name"]
+                candidates = prediction["solution_candidates"]
+                tests_inputs = reference["tests_inputs"]
+                tests_outputs = reference["tests_outputs"]
+                if not tests_inputs:
                     print(f"ERROR: {task_name} - no inputs")
                     continue
                 if not tests_outputs:
@@ -199,7 +231,13 @@ class CodeContestsEval(evaluate.Metric):
                 print(f"test outputs: {tests_outputs}")
                 for candidate_id, candidate in enumerate(candidates):
                     print(f"\tsubmitting candidate {candidate_id}")
-                    args = (task_name, candidate_id, candidate, tests_inputs, tests_outputs)
+                    args = (
+                        task_name,
+                        candidate_id,
+                        candidate,
+                        tests_inputs,
+                        tests_outputs,
+                    )
                     future = executor.submit(runner.run_test, *args)
                     futures.append(future)
                     completion_id[task_name] += 1
@@ -216,8 +254,10 @@ class CodeContestsEval(evaluate.Metric):
             candidate_final_results = []
             all_candidates_test_results.sort()
             for candidate_id, test_results in all_candidates_test_results:
-                _results = [test_result.passed for test_result in test_results.test_results]
-                print (f"{candidate_id} test results: {_results}")
+                _results = [
+                    test_result.passed for test_result in test_results.test_results
+                ]
+                print(f"{candidate_id} test results: {_results}")
                 candidate_pass_fail = all(_results)
                 print(f"{candidate_id} final pass/fail: {candidate_pass_fail}")
                 candidate_final_results.append(candidate_pass_fail)
@@ -228,7 +268,11 @@ class CodeContestsEval(evaluate.Metric):
         total = np.array(total)
         correct = np.array(correct)
         ks = k
-        pass_at_k = {f"pass@{k}": estimate_pass_at_k(total, correct, k).mean() for k in ks if (total >= k).all()}
+        pass_at_k = {
+            f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
+            for k in ks
+            if (total >= k).all()
+        }
 
         return pass_at_k, results
 
@@ -248,4 +292,6 @@ def estimate_pass_at_k(num_samples, num_correct, k):
         assert len(num_samples) == len(num_correct)
         num_samples_it = iter(num_samples)
 
-    return np.array([estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)])
+    return np.array(
+        [estimator(int(n), int(c), k) for n, c in zip(num_samples_it, num_correct)]
+    )

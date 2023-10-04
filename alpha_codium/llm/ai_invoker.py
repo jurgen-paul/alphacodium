@@ -1,9 +1,9 @@
-import functools
+import logging
+import traceback
 from typing import Callable, List
 
 from alpha_codium.config_loader import get_settings
-import logging
-import traceback
+
 
 async def retry_with_fallback_models(f: Callable):
     all_models = _get_all_models()
@@ -13,7 +13,7 @@ async def retry_with_fallback_models(f: Callable):
         try:
             get_settings().set("openai.deployment_id", deployment_id)
             return await f(model)
-        except Exception as e:
+        except Exception:
             logging.warning(
                 f"Failed to generate prediction with {model}"
                 f"{(' from deployment ' + deployment_id) if deployment_id else ''}: "
@@ -40,8 +40,10 @@ def _get_all_deployments(all_models: List[str]) -> List[str]:
     if fallback_deployments:
         all_deployments = [deployment_id] + fallback_deployments
         if len(all_deployments) < len(all_models):
-            raise ValueError(f"The number of deployments ({len(all_deployments)}) "
-                             f"is less than the number of models ({len(all_models)})")
+            raise ValueError(
+                f"The number of deployments ({len(all_deployments)}) "
+                f"is less than the number of models ({len(all_models)})"
+            )
     else:
         all_deployments = [deployment_id] * len(all_models)
     return all_deployments

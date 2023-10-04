@@ -3,12 +3,17 @@ import os
 
 import litellm
 import openai
+from aiolimiter import AsyncLimiter
 from litellm import acompletion
 from openai.error import APIError, RateLimitError, Timeout, TryAgain
 from retry import retry
+
 from alpha_codium.config_loader import get_settings
 
 OPENAI_RETRIES = 5
+
+
+limiter = AsyncLimiter(30, 5)
 
 
 class AiHandler:
@@ -64,9 +69,16 @@ class AiHandler:
         """
         return get_settings().get("OPENAI.DEPLOYMENT_ID", None)
 
-    @retry(exceptions=(APIError, Timeout, TryAgain, AttributeError, RateLimitError),
-           tries=OPENAI_RETRIES, delay=2, backoff=2, jitter=(1, 3))
-    async def chat_completion(self, model: str, system: str, user: str, temperature: float = 0.2):
+    @retry(
+        exceptions=(APIError, Timeout, TryAgain, AttributeError, RateLimitError),
+        tries=OPENAI_RETRIES,
+        delay=2,
+        backoff=2,
+        jitter=(1, 3),
+    )
+    async def chat_completion(
+        self, model: str, system: str, user: str, temperature: float = 0.2
+    ):
         """
         Performs a chat completion using the OpenAI ChatCompletion API.
         Retries in case of API errors or timeouts.
@@ -93,29 +105,30 @@ class AiHandler:
                     f"Generating completion with {model}"
                     f"{(' from deployment ' + deployment_id) if deployment_id else ''}"
                 )
+            # async with limiter:
             response = await acompletion(
                 model=model,
                 deployment_id=deployment_id,
                 messages=[
                     {"role": "system", "content": system},
-                    {"role": "user", "content": user}
+                    {"role": "user", "content": user},
                 ],
                 temperature=temperature,
                 azure=self.azure,
-                force_timeout=get_settings().config.ai_timeout
+                force_timeout=get_settings().config.ai_timeout,
             )
         except (APIError, Timeout, TryAgain) as e:
             logging.error("Error during OpenAI inference: ", e)
             raise
-        except (RateLimitError) as e:
+        except RateLimitError as e:
             logging.error("Rate limit error during OpenAI inference: ", e)
             raise
-        except (Exception) as e:
+        except Exception as e:
             logging.error("Unknown error during OpenAI inference: ", e)
             raise TryAgain from e
         if response is None or len(response["choices"]) == 0:
             raise TryAgain
-        resp = response["choices"][0]['message']['content']
+        resp = response["choices"][0]["message"]["content"]
         finish_reason = response["choices"][0]["finish_reason"]
         print(resp, finish_reason)
         return resp, finish_reason

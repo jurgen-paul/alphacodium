@@ -3,21 +3,18 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pr_agent"
+name = "alpha_codium"
 version = "0.0.1"
 
 authors = [
-  {name = "Itamar Friedman", email = "itamar.f@codium.ai"},
+  {name = "Assaf Pinhasi", email = "assaf.pinhasi@gmail.com"},
 ]
 maintainers = [
-  {name = "Ori Kotek", email = "ori.k@codium.ai"},
   {name = "Tal Ridnik", email = "tal.r@codium.ai"},
-  {name = "Hussam Lawen", email = "hussam.l@codium.ai"},
-  {name = "Sagi Medina", email = "sagi.m@codium.ai"}
 ]
-description = "CodiumAI PR-Agent is an open-source tool to automatically analyze a pull request and provide several types of feedback"
+description = "AlphaCodium is a tool for developing and testing code generation flows that can solve competitive coding challenges"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = "~=3.9.0"
 keywords = ["ai", "tool", "developer", "review", "agent"]
 license = {file = "LICENSE", name = "Apache 2.0 License"}
 classifiers = [
@@ -32,7 +29,7 @@ dynamic = ["dependencies"]
 dependencies = {file = ["requirements.txt"]}
 
 [project.urls]
-"Homepage" = "https://github.com/Codium-ai/pr-agent"
+"Homepage" = "https://github.com/Codium-ai/alphaCodium"
 
 [tool.setuptools]
 include-package-data = false
@@ -40,10 +37,10 @@ license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["pr_agent"]
+include = ["alpha_codium"]
 
 [project.scripts]
-pr-agent = "pr_agent.cli:run"
+gencode = "alpha_codium.cli:cli"
 
 
 [tool.ruff]

@@ -31,7 +31,7 @@ This tool was wrapped in a [python package](https://pypi.org/project/code-contes
 The project includes a cli tool for running common development tasks.
 It's not clear yet if this API will be useful going forward, but it will likely help new team members onboard to the project.
 
-```python -m alpha_codium.cli```
+```gencode ```
 
 The tool has three sub-commands:
 
@@ -47,28 +47,40 @@ Commands:
 ```
 
 ### data etl
-Base command: `python -m alpha_codium.cli data etl --output_dataset_name 101_test`
+Base command: `gencode data etl --output_dataset_name 101_test`
 
 This command downloads the hugging face dataset and applies common transformations (filtering only Python3 solutions, sampling data, and translating references).
 It then stores the derived dataset called `assaf_test` (locally)
 
 ### eval
-Example command: `python -m alpha_codium.cli eval pass_at_k --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
+Example command: `gencode eval pass_at_k --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
 
-This command takes a dataset called `101_test` (stored locally) and evaluates the `train` split of the dataset against all `private_tests` that accompany the problems.
+This command takes a dataset name (can be a dataset stored locally) and evaluates the  one of it's split of the dataset against specified test types that accompany the problems.
 The result is a `pass@k` metric
 
 
 ### gen
 
-For now the cli is more or less useless, it sends a prompt (with retry etc.) and prints the results.
+This is the part that generates predictions.
+
+`ask` - is just a simple prompt for testing
+
+`solve_and_test_problem` - you can specify dataset name, split and even problem name. The code will generate a solution to the problem and run the tests against it
+
+`solve_and_evaluate_set` - specify a dataset, split, sample etc. and the code will generate solutions for all the problems in the dataset, and calulate `pass@k`
 
 ## installation
+
+general - `pip install -e .`
+
+development - `pip install -r requirements-dev.txt`
+
+**Note*:
 
 Due to the dependency on C++, there are a few quirks:
 
 1. Support only Python 3.9
-2. Run only on a linux box (docker currently not be an option due to sandbox security issues). **Tested on AWS Linux 2023 only**
+2. Run only on a linux box  (**Tested on AWS Linux 2023 only**)
 3. You need to also have a Python3.11 installed (but **not** for your virtual environment) - this is the interpreter used to run your Python tests.
 4. Make sure it's `bin` is in `/usr/bin/python3.11` and it's lib is in `/usr/lib64/` and `/usr/lib64/python3.11`
 

@@ -2,16 +2,20 @@ from os.path import abspath, dirname, join
 
 from dynaconf import Dynaconf
 
-PR_AGENT_TOML_KEY = 'pr-agent'
+PR_AGENT_TOML_KEY = "pr-agent"
 
 current_dir = dirname(abspath(__file__))
 global_settings = Dynaconf(
     envvar_prefix=False,
     merge_enabled=True,
-    settings_files=[join(current_dir, f) for f in [
-        "settings/.secrets.toml",
-        "settings/configuration.toml"
-    ]]
+    settings_files=[
+        join(current_dir, f)
+        for f in [
+            "settings/.secrets.toml",
+            "settings/configuration.toml",
+            "settings/code_contests_prompts.toml",
+        ]
+    ],
 )
 
 

@@ -4,11 +4,17 @@ from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.config_loader import get_settings
 
 
-def etl(source=CodeContestDataProvider.hf_dataset_name, output_dataset_name=None, train_sample=0.1, translate_references=True, filter_languages=['PYTHON3']):
+def etl(
+    source=CodeContestDataProvider.hf_dataset_name,
+    output_dataset_name=None,
+    train_sample=0.1,
+    translate_references=True,
+    filter_languages=["PYTHON3"],  # noqa: B006
+):
     cc = CodeContestDataProvider(source)
     ds = cc.dataset
     if train_sample < 1:
-        ds['train'] = CodeContestDataProvider.sample(ds['train'], fraction=train_sample)
+        ds["train"] = CodeContestDataProvider.sample(ds["train"], fraction=train_sample)
 
     if translate_references:
         ds = cc.translate_references(ds)
@@ -24,5 +30,5 @@ def etl(source=CodeContestDataProvider.hf_dataset_name, output_dataset_name=None
     return ds
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     etl(output_dataset_name="train_sample_python_only")
