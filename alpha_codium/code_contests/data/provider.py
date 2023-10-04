@@ -23,7 +23,7 @@ class CodeContestDataProvider:
         self.dataset_location, self.dataset_name, self.load_from_disk = self.parse_location(dataset_location)
         self.dataset = self.load_dataset()
         self.connection = connection or duckdb.connect()
-        self.connect()
+        self.connect(self.dataset)
 
     def parse_location(self, dataset_location):
         result_location = dataset_location
@@ -34,6 +34,19 @@ class CodeContestDataProvider:
                 result_location = os.path.join(self.private_datasets_root, result_location)
         return result_location, dataset_name, load_from_disk
 
+
+    def show(self, ds, paths_to_python, paths_to_free_text):
+        result = ds.flatte()
+        def format_example(example):
+            for code_col in paths_to_python:
+                import black
+                example[code_col] = black.format_str(example[code_col])
+            for col in paths_to_free_text:
+                example[col] = example[col].replace('\\n', '\n')
+
+        pretty = result.map(format_example)
+        return pretty
+
     def load_dataset(self):
         if self.load_from_disk:
             f = load_from_disk
@@ -42,14 +55,14 @@ class CodeContestDataProvider:
 
         return f(self.dataset_location)
 
-    def connect(self):
-        if hasattr(self.dataset, 'keys'):
+    def connect(self, ds):
+        if hasattr(ds, 'keys'):
             for split in self.dataset.keys():
                 split_ds = self.dataset[split]
                 table = split_ds.data.table
                 self.connection.register(f"{split_ds.info.dataset_name}_{split}", table)
         else:
-            self.connection.register(f"{self.dataset.info.dataset_name}", self.dataset.data.table)
+            self.connection.register(f"{ds.info.dataset_name}", ds.data.table)
 
     def get_splits(self):
         return self.dataset.keys()
