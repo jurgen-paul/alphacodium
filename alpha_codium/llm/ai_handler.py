@@ -13,9 +13,6 @@ from alpha_codium.config_loader import get_settings
 OPENAI_RETRIES = 5
 
 
-limiter = AsyncLimiter(30, 5)
-
-
 class AiHandler:
     """
     This class handles interactions with the OpenAI API for chat completions.
@@ -28,6 +25,7 @@ class AiHandler:
         Initializes the OpenAI API key and other settings from a configuration file.
         Raises a ValueError if the OpenAI key is missing.
         """
+        self.limiter = AsyncLimiter(get_settings().config.requests_per_minute)
         try:
             openai.api_key = get_settings().openai.key
             litellm.openai_key = get_settings().openai.key
@@ -105,18 +103,20 @@ class AiHandler:
                     f"Generating completion with {model}"
                     f"{(' from deployment ' + deployment_id) if deployment_id else ''}"
                 )
-            # async with limiter:
-            response = await acompletion(
-                model=model,
-                deployment_id=deployment_id,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                temperature=temperature,
-                azure=self.azure,
-                force_timeout=get_settings().config.ai_timeout,
-            )
+
+            async with self.limiter:
+
+                response = await acompletion(
+                    model=model,
+                    deployment_id=deployment_id,
+                    messages=[
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                    temperature=temperature,
+                    azure=self.azure,
+                    force_timeout=get_settings().config.ai_timeout,
+                )
         except (APIError, Timeout, TryAgain) as e:
             logging.error("Error during OpenAI inference: ", e)
             raise

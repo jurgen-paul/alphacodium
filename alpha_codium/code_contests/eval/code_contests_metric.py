@@ -15,16 +15,21 @@
 This is an evaluation harness for the code_contests problem solving dataset
 described in the paper "Evaluating Large Language Models Trained on Code"
 (https://arxiv.org/abs/2107.03374)."""
-
 import itertools
 import os
 from collections import Counter, defaultdict
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List
+from concurrent.futures import as_completed
 
 import datasets
 import evaluate
 import numpy as np
+import tqdm
+
+from alpha_codium.code_contests.eval.code_test_runners import PythonTestsRunner
+
+local_runner = 'local'
+code_contests_runner = 'code_contests'
+
 
 _CITATION = """\
 
@@ -101,65 +106,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE."""
 
+
 os.environ["HF_ALLOW_CODE_EVAL"] = "1"
-
-
-class TestsRunner:
-    def __init__(
-        self,
-        path_to_python_bin: str,
-        path_to_python_lib: List[str],
-        num_threads: int,
-        stop_on_first_failure: bool,
-    ):
-        from code_contests_tester import Py3TesterSandboxer, TestOptions
-
-        options = TestOptions()
-        options.num_threads = num_threads
-        options.stop_on_first_failure = stop_on_first_failure
-
-        def compare_func(a, b):
-            return a == b
-
-        self.tester = Py3TesterSandboxer(path_to_python_bin, path_to_python_lib)
-        self.options = options
-        self.compare_func = compare_func
-        self.test_interpreter()
-
-    def test_interpreter(self):
-        result = self.tester.test(
-            "x=input()\nprint(x)",
-            ["hello"],
-            self.options,
-            ["hello\n"],
-            self.compare_func,
-        )
-        print(f"compilation results:{result.compilation_result.program_status}")
-        print(result.compilation_result.sandbox_result)
-        print(result.compilation_result.stderr)
-
-        for i, test_res in enumerate(result.test_results):
-            print(
-                f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}"
-            )
-            print(
-                "====================================================================="
-            )
-            print(test_res.stdout)
-            print(
-                "====================================================================="
-            )
-
-    def run_test(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
-        result = self.tester.test(
-            candidate, test_inputs, self.options, tests_outputs, self.compare_func
-        )
-        return test_id, candidate_id, result
-
 
 @evaluate.utils.file_utils.add_start_docstrings(_DESCRIPTION, _KWARGS_DESCRIPTION)
 class CodeContestsEval(evaluate.Metric):
     def _info(self):
+        if self.config_name not in [
+            local_runner, code_contests_runner
+        ]:
+            raise KeyError(
+                "You should supply a configuration name selected in "
+                f'[{code_contests_runner}, {local_runner}]'
+            )
         return evaluate.MetricInfo(
             # This is the description that will appear on the metrics page.
             description=_DESCRIPTION,
@@ -191,7 +150,7 @@ class CodeContestsEval(evaluate.Metric):
         predictions,
         references,
         k=[1, 10, 100],  # noqa: B006
-        num_workers=4,
+        num_workers=10,
         timeout=3.0,
     ):
         if os.getenv("HF_ALLOW_CODE_EVAL", 0) != "1":
@@ -202,14 +161,10 @@ class CodeContestsEval(evaluate.Metric):
                 "This metric is currently not supported on Windows."
             )
 
-        runner = TestsRunner(
-            path_to_python_bin="/usr/bin/python3.11",
-            path_to_python_lib=["/usr/lib64", "/usr/lib64/python3.11"],
-            num_threads=4,
-            stop_on_first_failure=True,
-        )
-
-        with ThreadPoolExecutor(max_workers=num_workers) as executor:
+        runner = PythonTestsRunner.factory(self.config_name)
+        executor_cls, kw = runner.create_executor()
+        kw['max_workers'] = num_workers
+        with executor_cls(**kw) as executor:
             futures = []
             completion_id = Counter()
             n_samples = 0
@@ -230,6 +185,7 @@ class CodeContestsEval(evaluate.Metric):
                 print(f"test inputs: {tests_inputs}")
                 print(f"test outputs: {tests_outputs}")
                 for candidate_id, candidate in enumerate(candidates):
+
                     print(f"\tsubmitting candidate {candidate_id}")
                     args = (
                         task_name,
@@ -238,14 +194,19 @@ class CodeContestsEval(evaluate.Metric):
                         tests_inputs,
                         tests_outputs,
                     )
-                    future = executor.submit(runner.run_test, *args)
+                    future = executor.submit(runner.run_tests, *args)
                     futures.append(future)
                     completion_id[task_name] += 1
                     n_samples += 1
 
+            pbar = tqdm.tqdm(total=len(futures), desc="Processing tasks", ncols=100)  # create a progress bar
             for future in as_completed(futures):
                 task_id, candidate_id, test_result = future.result()
+                print(task_id)
                 results[task_id].append((candidate_id, test_result))
+                pbar.update(1)  # update the progress bar by one step
+
+            pbar.close()
 
         total, correct = [], []
         for task_id, all_candidates_test_results in results.items():

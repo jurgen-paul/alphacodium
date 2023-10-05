@@ -4,8 +4,7 @@ import functools
 from jinja2 import Environment, StrictUndefined
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
-from alpha_codium.code_contests.eval.code_contests_eval import TestsRunner
-from alpha_codium.code_contests.eval.tester import test_solution
+from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 
 from alpha_codium.config_loader import get_settings
 from alpha_codium.llm.ai_handler import AiHandler
@@ -15,9 +14,8 @@ from alpha_codium.llm.token_handler import TokenHandler
 import re
 
 
-
 class CodeContestsCompetitor:
-    def __init__(self):
+    def __init__(self, test_flavor='local'):
         self.prompt = get_settings().code_contests_prompt
         self.ai_handler = AiHandler()
         self.token_handler = TokenHandler(
@@ -73,10 +71,9 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     solution = solver.solve_problem(problem)
     test_results = None
     if evaluation_test_type:
-        test_results = test_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
+        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
     return solution, test_results
 
 
 if __name__ == "__main__":
     solve_and_test("assaf_test", "train")
-
