@@ -31,6 +31,31 @@ class CodeContestDataProvider:
         self.connection = connection or duckdb.connect()
         self.connect(self.dataset)
 
+
+    @staticmethod
+    def find_problem(ds, problem_name, split_name=None, evaluation_test_type = None):
+        if split_name:
+            ds = ds[split_name]
+        example = None
+        if not problem_name:
+            for e in ds:
+                if evaluation_test_type:
+                    tests = e.get(evaluation_test_type)
+                    if tests and tests.get("input"):
+                        example = e
+                        break
+                else:
+                    example = e
+                    break
+        else:
+            problems = ds.filter(lambda example: example['name'] == problem_name)
+            if problems:
+                example = problems[0]
+            else:
+                raise ValueError(
+                    f"problem with name {problem_name} doesn't exist in dataset {ds.info.dataset_name} in split {split_name}")
+        return example
+
     @staticmethod
     def prepare_for_evaluation(
         predictions, source_of_truth, evaluation_test_type

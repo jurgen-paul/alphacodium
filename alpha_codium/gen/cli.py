@@ -2,7 +2,8 @@ import asyncio
 
 import click as click
 
-from alpha_codium.gen.coding_competitor import solve_and_test_problem
+from alpha_codium.gen.coding_competitor import solve_and_test
+
 from alpha_codium.gen.gen_loop import solve_and_evaluate_dataset
 from alpha_codium.gen.generators import SimplePrompt
 
@@ -25,12 +26,13 @@ def gen():
 def run_generation(prompt):
     return run_internal(prompt)
 
+
 def run_internal(prompt):
     p = SimplePrompt()
     asyncio.run(p.run(prompt))
 
 
-@gen.command("solve_and_test_problem")
+@gen.command("solve_problem")
 @click.option(
     "--dataset_name",
     show_default=True,
@@ -48,15 +50,16 @@ def run_internal(prompt):
     show_default=True,
     required=False
 )
-
 @click.option(
     "--evaluation_test_type",
     show_default=True,
-    default='private_tests',
+    type=click.Choice(['private_tests', 'public_tests', 'generated_tests'], case_sensitive=False),
+    help="Type of the test",
     required=False,
 )
-def generate_and_test(dataset_name, split_name, problem_name, evaluation_test_type):
-    return solve_and_test_problem(dataset_name, split_name, problem_name, evaluation_test_type)
+def solve_problem(dataset_name, split_name, problem_name, evaluation_test_type):
+    return solve_and_test(dataset_name=dataset_name, split_name=split_name,
+                          problem_name=problem_name, evaluation_test_type=evaluation_test_type)
 
 
 @gen.command("solve_and_evaluate_set")
@@ -74,6 +77,7 @@ def generate_and_test(dataset_name, split_name, problem_name, evaluation_test_ty
 @click.option(
     "--evaluation_test_type",
     show_default=True,
+    type=click.Choice(['private_tests', 'public_tests', 'generated_tests'], case_sensitive=False),
     default='private_tests',
     required=False,
 )
@@ -83,8 +87,15 @@ def generate_and_test(dataset_name, split_name, problem_name, evaluation_test_ty
     show_default=True,
     required=False
 )
-def generate_and_test_dataset(dataset_name, split_name, evaluation_test_type, sample_rate):
-    return solve_and_evaluate_dataset(dataset_name, split_name, evaluation_test_type, sample_rate)
+def solve_and_evaluate_set(dataset_name, split_name, evaluation_test_type, sample_rate):
+    predictions, eval_results = solve_and_evaluate_dataset(dataset_name=dataset_name, split_name=split_name,
+                                                           sample_rate=sample_rate,
+                                                           evaluation_test_type=evaluation_test_type)
+
+    if predictions:
+        print(f"generated {len(predictions)} predictions")
+    if eval_results:
+        print(eval_results)
 
 
 if __name__ == "__main__":

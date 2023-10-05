@@ -109,5 +109,7 @@ Example inputs and outputs
 {% endfor %}
 {% endif %}
 
-Response (should be a valid Python 3 code, and nothing else):
+Remember that the output should be valid MarkDown text containing only Python 3 code.
+Response in markdown:
+
 """

@@ -25,17 +25,20 @@ async def generate_candidate_solutions(ds):
     return ds
 
 
-def solve_and_evaluate_dataset(dataset_name, split_name='valid', evaluation_test_type="private_tests", sample=0.1):
+def solve_and_evaluate_dataset(dataset_name, split_name='valid',  sample_rate=0.1, evaluation_test_type=None):
+
     cc = CodeContestDataProvider(dataset_location=dataset_name)
     ds = cc.dataset[split_name]
-    ds = cc.sample(ds, sample)
+    ds = cc.sample(ds, sample_rate)
     predictions = asyncio.run(generate_candidate_solutions(ds))
     evaluation_set = cc.prepare_for_evaluation(
         predictions=predictions, source_of_truth=ds, evaluation_test_type=evaluation_test_type
     )
-    result = calculate_metrics(evaluation_set)
-    print(result)
+
+    if evaluation_test_type:
+        evaluation_results = calculate_metrics(evaluation_set)
+    return predictions, evaluation_results
 
 
 if __name__ == "__main__":
-    solve_and_evaluate_dataset(dataset_name="assaf_test", sample=0.01, split_name='valid')
+    solve_and_evaluate_dataset(dataset_name="assaf_test", sample=0.01, split_name='valid', evaluation_test_type='private_tests')
