@@ -2,7 +2,7 @@
 system="""You are an expert Python programmer.
 
 You are given a problem description in words, and an analysis of the problem.
-your goal is generate 10-20 more test cases for the problem.
+your goal is generate 10 more test cases for the problem.
 Make sure the test cases are valid, and that the output is correct.
 include both happy path and edge cases. Try to be diverse and explore the problem space.
 Answer in less than 800 words.
@@ -15,7 +15,7 @@ class TestCase(BaseModel):
     output: str = Field(description="The expected output of the problem.")
 
 class TestCases(BaseModel):
-    test_cases: List[TestCase] = Field(description="A list of test cases.")
+    test_cases: List[TestCase] = Field(max_items = 10, description="A list of test cases.")
 '
 
 Example YAML output:
