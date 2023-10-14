@@ -1,6 +1,7 @@
 import asyncio
 import functools
 
+import yaml
 from jinja2 import Environment, StrictUndefined
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
@@ -16,22 +17,26 @@ import re
 
 class CodeContestsCompetitor:
     def __init__(self, test_flavor='local'):
-        self.prompt = get_settings().code_contests_prompt_baseline
+        self.prompt = {}
+        for set in get_settings():
+            if 'code_contests_prompt' in set.lower():
+                self.prompt[set.lower()] = get_settings()[set]
         self.ai_handler = AiHandler()
-        self.token_handler = TokenHandler(
-            None, None, self.prompt.system, self.prompt.user
-        )
+        # self.prompt = get_settings().code_contests_prompt_baseline
+        # self.token_handler = TokenHandler(
+        #     None, None, self.prompt.system, self.prompt.user
+        # )
 
-    def render(self, problem_json):
+    def render(self, problem_json, prompt: str):
         environment = Environment(undefined=StrictUndefined)
         environment.globals["zip"] = zip
         environment.globals["enumerate"] = enumerate
-        sys_prompt = environment.from_string(self.prompt.system).render(problem_json)
-        usr_prompt = environment.from_string(self.prompt.user).render(problem_json)
+        sys_prompt = environment.from_string(self.prompt[prompt].system).render(problem_json)
+        usr_prompt = environment.from_string(self.prompt[prompt].user).render(problem_json)
         return sys_prompt, usr_prompt
 
-    async def _run(self, model, problem):
-        system_prompt, user_prompt = self.render(problem)
+    async def _run(self, model, problem, prompt = "code_contests_prompt_reflect"):
+        system_prompt, user_prompt = self.render(problem, prompt)
 
         response, finish_reason = await self.ai_handler.chat_completion(
             model=model, system=system_prompt, user=user_prompt
@@ -51,10 +56,23 @@ class CodeContestsCompetitor:
     async def run(self, problem):
         result = None
         problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
-        f = functools.partial(self._run, problem=problem)
-        response, _ = await retry_with_fallback_models(f)
-        if response:
-            result = self.postprocess_response(response)
+
+        # reflect
+        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
+        response_reflect, _ = await retry_with_fallback_models(f)
+        response_reflect = response_reflect.rstrip("` \n")
+        response_reflect_yaml = yaml.safe_load(response_reflect)
+        problem['response_reflect'] = response_reflect
+
+        # generate more test cases
+        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
+        response_more_cases, _ = await retry_with_fallback_models(f)
+        response_more_cases = response_more_cases.rstrip("` \n")
+        response_more_cases_yaml = yaml.safe_load(response_more_cases)
+
+
+        # if response:
+        #     result = self.postprocess_response(response)
         return result
 
     def solve_problem(self, example):

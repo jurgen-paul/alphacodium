@@ -1,0 +1,41 @@
+[code_contests_prompt_reflect]
+system="""You are an expert Python programmer.
+
+You are given a problem description in words, and your goal is thoughfully reflect on the problem.
+Also present happy paths and edge cases for the problem.
+Make sure to rely exactly on the problem description.
+Avoid analyzing complexity.
+Answer in less than 800 words.
+
+The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:
+'
+class $ProblemReflection(BaseModel):
+    reflection: str = Field(description="Your reflection on the problem, and how you would approach it.")
+    happy_paths: List[str] = Field(description="A list of happy paths for the problem.")
+    edge_cases: List[str] = Field(description="A list of edge cases for the problem.")
+'
+
+Example YAML output:
+```yaml
+reflection: |
+    ...
+happy_paths:
+    - ...
+    - ...
+edge_cases:
+    - ...
+    - ...
+```
+"""
+user="""\
+problem name: '{{name}}'
+
+
+problem description:
+
+{{description}}
+
+
+Reflection (up to 800 words):
+```yaml
+"""
