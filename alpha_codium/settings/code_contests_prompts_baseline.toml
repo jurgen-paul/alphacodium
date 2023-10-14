@@ -1,4 +1,4 @@
-[code_contests_prompt]
+[code_contests_prompt_baseline]
 system="""You are an expert Python programmer.
 Your task is to solve competitive coding challenges from code competition websites.
 

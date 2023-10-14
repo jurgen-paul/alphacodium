@@ -16,7 +16,7 @@ import re
 
 class CodeContestsCompetitor:
     def __init__(self, test_flavor='local'):
-        self.prompt = get_settings().code_contests_prompt
+        self.prompt = get_settings().code_contests_prompt_baseline
         self.ai_handler = AiHandler()
         self.token_handler = TokenHandler(
             None, None, self.prompt.system, self.prompt.user
