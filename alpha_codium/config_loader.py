@@ -13,7 +13,7 @@ global_settings = Dynaconf(
         for f in [
             "settings/.secrets.toml",
             "settings/configuration.toml",
-            "settings/code_contests_prompts.toml",
+            "settings/code_contests_prompts_baseline.toml",
         ]
     ],
 )
