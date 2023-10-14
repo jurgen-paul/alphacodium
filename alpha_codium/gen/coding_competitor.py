@@ -59,6 +59,7 @@ class CodeContestsCompetitor:
         problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
         use_baseline = False
         if use_baseline:
+            logging.info("Using baseline")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_baseline")
             response_baseline, _ = await retry_with_fallback_models(f)
             if response_baseline:
@@ -112,6 +113,8 @@ class CodeContestsCompetitor:
             result = response_solve
 
 
+        # remove the if __name__ == '__main__' part. python eval fails to generate output with it
+        result = remove_if_main(result)
         return result
 
     def solve_problem(self, example):
@@ -131,6 +134,18 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
     return solution, test_results
 
+def remove_if_main(result: str):
+    if 'if __name__ ==' in result:
+        result_lines = result.split('\n')
+        start_dedent = False
+        for i, line in enumerate(result_lines):
+            if 'if __name__ ==' in line:
+                start_dedent = True
+                result_lines[i] = ''
+            if start_dedent:
+                result_lines[i] = result_lines[i][4:]
+        result = '\n'.join(result_lines)
+    return result
 
 if __name__ == "__main__":
     solve_and_test("assaf_test", "train")

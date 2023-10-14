@@ -15,7 +15,7 @@ class TestCase(BaseModel):
     input: str = Field("The input to the problem")
     output: str = Field("The expected output of the problem")
 
-class $ProblemReflection(BaseModel):
+class ProblemReflection(BaseModel):
     self_description: str = Field(description="Describe the problem in your own words. Don't descrbie a solution")
     happy_paths: List[TestCase] = Field(min_items=2, max_items_8, description="A list of intresting and diverse inputs for the problem, representing happy paths.")
     edge_cases: List[TestCase] = Field(min_items=2, max_items_8, description="A list of intresting and diverse inputs for the problem, representing edge cases.")

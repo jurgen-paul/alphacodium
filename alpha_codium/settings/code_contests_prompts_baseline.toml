@@ -110,6 +110,6 @@ Example inputs and outputs
 {% endif %}
 
 Remember that the output should be valid MarkDown text containing only Python 3 code.
-Response in markdown:
-
+Response:
+```python
 """

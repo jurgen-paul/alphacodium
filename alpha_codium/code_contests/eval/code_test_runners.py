@@ -1,7 +1,7 @@
 import abc
 from abc import abstractmethod
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from typing import List
+from typing import List, Optional
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.local_exec import (
@@ -39,7 +39,7 @@ class PythonTestsRunner(abc.ABC):
     def create_executor(self):
         pass
 
-    def print_test_results(self, result: MultiTestResult):
+    def print_test_results(self, result: MultiTestResult, test_inputs: List[str] = None):
         if result.compilation_result:
             print(
                 f"compilation results:{result.compilation_result.program_status if result.compilation_result else ''}")
@@ -47,16 +47,19 @@ class PythonTestsRunner(abc.ABC):
             print(result.compilation_result.stderr)
 
         for i, test_res in enumerate(result.test_results):
+            print(f"input:\n{test_inputs[i]}")
+            print(f"expected output:\n{test_res.expected_output}")
+            print(f"actual output:\n{test_res.actual_output}")
             print(
                 f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}"
             )
             print(
                 "====================================================================="
             )
-            print(test_res.stdout)
-            print(
-                "====================================================================="
-            )
+            # print(test_res.stdout)
+            # print(
+            #     "====================================================================="
+            # )
 
 
 class LocalPythonTestsRunner(PythonTestsRunner):
@@ -125,9 +128,16 @@ class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
     def create_executor(self):
         return ThreadPoolExecutor, {}
 
-def eval_solution(evaluation_test_type, example, prediction):
-    test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
-    test_outputs = example.get(evaluation_test_type).get("output") if example.get(evaluation_test_type) else None
+
+def eval_solution(evaluation_test_type: str = "private_tests",
+                  example: dict = {},  # the code contest problem
+                  prediction: str = '',  # python code to be evaluated
+                  test_inputs: Optional[List[str]] = None,
+                  tests_outputs: Optional[List[str]] = None,
+                  ):
+    if not test_inputs or not tests_outputs:
+        test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
+        test_outputs = example.get(evaluation_test_type).get("output") if example.get(evaluation_test_type) else None
     if test_inputs and test_outputs:
         test_runner = PythonTestsRunner.factory(get_settings().code_tester.tester_type)
         _, _, results = test_runner.run_tests(
@@ -137,7 +147,7 @@ def eval_solution(evaluation_test_type, example, prediction):
             test_inputs=test_inputs,
             tests_outputs=test_outputs
         )
-        test_runner.print_test_results(results)
+        test_runner.print_test_results(results, test_inputs)
     else:
         print("example doesn't have inputs or outputs")
 
