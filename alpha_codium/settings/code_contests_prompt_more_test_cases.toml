@@ -1,7 +1,7 @@
 [code_contests_prompt_more_test_cases]
 system="""You are an expert Python programmer.
 
-You are given a code contest problem, and a self-reflection on the problem, made by an AI.
+You are given as inputs a code contest problem, and a self-reflection on the problem, made by an AI.
 your goal is to review on the existing input-output pairs, and validate their correctness. If they are not correct, fix them.
 Also generate 5 more pairs, again making sure they are correct
 
@@ -44,6 +44,6 @@ problem reflection:
 '
 
 
-Test cases:
+Improved test cases:
 ```yaml
 """

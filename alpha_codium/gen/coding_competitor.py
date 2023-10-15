@@ -75,10 +75,10 @@ class CodeContestsCompetitor:
 
 
         # solve
-        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_solve")
+        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
         response_solve, _ = await retry_with_fallback_models(f)
         response_solve = response_solve.rstrip("` \n")
-        problem['response_solve'] = response_solve
+        problem['response_possible_solutions'] = response_solve
 
         # if response:
         #     result = self.postprocess_response(response)

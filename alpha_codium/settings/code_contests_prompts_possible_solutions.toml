@@ -1,0 +1,68 @@
+[code_contests_prompts_possible_solutions]
+system="""You are an expert Python programmer.
+
+You are given a code contest problem, self-reflection on the problem, and an additional list of inputs-outputs.
+
+Using these inputs, you goal is to suggest, in words, possibles solutions to the problem.
+Make sure the suggestion are reasonable in terms of runtime, and analyze their complexity
+
+The output must be a YAML object equivalent to type $PossibleSolutions, according to the following Pydantic definitions:
+'
+class Solution(BaseModel):
+    description: str = Field(description="A description of the solution.")
+    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    complexity: str = Field(description="The complexity of the solution.")
+
+class PossibleSolutions(BaseModel):
+    possible_solutions: List[Solution]
+    the_best_solution: ֿSolution = Field(description="The best solution among the possible solutions.")
+    why: str = Field(description="A description of why the best solution is the best solution.")
+'
+
+
+Example YAML output:
+```yaml
+possible_solutions:
+- description: |
+  ...
+labels:
+  - binary search
+  - ...
+complexity: O(n)
+...
+
+the_best_solution:
+  description: |
+    ...
+  labels:
+    - binary search
+    - ...
+  complexity: O(n)
+why: |
+  ...
+```
+"""
+user="""\
+problem name: '{{name}}'
+
+
+problem description:
+'
+{{description}}
+'
+
+
+self reflection:
+'
+{{ self_description }}
+'
+
+
+additional test cases:
+'
+{{ more_test_cases }}
+'
+
+possible solutions:
+```yaml\
+"""
