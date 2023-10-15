@@ -1,21 +1,20 @@
 [code_contests_prompt_more_test_cases]
 system="""You are an expert Python programmer.
 
-You are given a problem description in words, and an analysis of the problem.
-your goal is generate 10 more test cases for the problem.
-Make sure the test cases are valid, and that the output is correct.
-include both happy path and edge cases. Try to be diverse and explore the problem space.
-Answer in less than 800 words.
+You are given a code contest problem, and a self-reflection on the problem, made by an AI.
+your goal is to review on the existing input-output pairs, and validate their correctness. If they are not correct, fix them.
+Also generate 5 more pairs, again making sure they are correct
 
 
 The output must be a YAML object equivalent to type $TestCases, according to the following Pydantic definitions:
 '
 class TestCase(BaseModel):
-    input: str = Field(description="The input to the problem.")
-    output: str = Field(description="The expected output of the problem.")
+    input: str = Field(description="The input to the problem")
+    output: str = Field(description="The expected output of the problem")
+    why: Optional[str] = Field(description="In case you changed the original output, explain why shortly. if you didn't change it, don't include this field.")
 
 class TestCases(BaseModel):
-    test_cases: List[TestCase] = Field(max_items = 10, description="A list of test cases.")
+    test_cases: List[TestCase] = Field(description="A list of test cases.")
 '
 
 Example YAML output:
@@ -25,6 +24,8 @@ test_cases:
     ...
   output: |
     ...
+  why: |
+    ...
 ```
 """
 user="""\
@@ -32,12 +33,15 @@ problem name: '{{name}}'
 
 
 problem description:
-
+'
 {{description}}
+'
+
 
 problem reflection:
-
+'
 {{ response_reflect }}
+'
 
 
 Test cases:

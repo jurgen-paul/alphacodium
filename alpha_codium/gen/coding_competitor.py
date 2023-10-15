@@ -63,17 +63,26 @@ class CodeContestsCompetitor:
         response_reflect = response_reflect.rstrip("` \n")
         response_reflect_yaml = yaml.safe_load(response_reflect)
         problem['response_reflect'] = response_reflect
+        problem['self_description'] = response_reflect_yaml['self_description']
 
         # generate more test cases
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
         response_more_cases, _ = await retry_with_fallback_models(f)
         response_more_cases = response_more_cases.rstrip("` \n")
         response_more_cases_yaml = yaml.safe_load(response_more_cases)
+        problem['response_more_cases'] = response_more_cases
+        problem['more_test_cases'] = response_more_cases_yaml['test_cases']
 
+
+        # solve
+        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_solve")
+        response_solve, _ = await retry_with_fallback_models(f)
+        response_solve = response_solve.rstrip("` \n")
+        problem['response_solve'] = response_solve
 
         # if response:
         #     result = self.postprocess_response(response)
-        return result
+        return response_solve
 
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
