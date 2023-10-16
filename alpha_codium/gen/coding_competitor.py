@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import logging
 
 import yaml
 from jinja2 import Environment, StrictUndefined
@@ -35,7 +36,7 @@ class CodeContestsCompetitor:
         usr_prompt = environment.from_string(self.prompt[prompt].user).render(problem_json)
         return sys_prompt, usr_prompt
 
-    async def _run(self, model, problem, prompt = "code_contests_prompt_reflect"):
+    async def _run(self, model, problem, prompt:str = "code_contests_prompt_reflect"):
         system_prompt, user_prompt = self.render(problem, prompt)
 
         response, finish_reason = await self.ai_handler.chat_completion(
@@ -56,33 +57,53 @@ class CodeContestsCompetitor:
     async def run(self, problem):
         result = None
         problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
+        use_baseline = False
+        if use_baseline:
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_baseline")
+            response_baseline, _ = await retry_with_fallback_models(f)
+            if response_baseline:
+                result = self.postprocess_response(response_baseline)
+        else:
 
-        # reflect
-        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
-        response_reflect, _ = await retry_with_fallback_models(f)
-        response_reflect = response_reflect.rstrip("` \n")
-        response_reflect_yaml = yaml.safe_load(response_reflect)
-        problem['response_reflect'] = response_reflect
-        problem['self_description'] = response_reflect_yaml['self_description']
+            # reflect
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
+            response_reflect, _ = await retry_with_fallback_models(f)
+            response_reflect = response_reflect.rstrip("` \n")
+            try:
+                response_reflect_yaml = yaml.safe_load(response_reflect)
+            except:
+                try:
+                    response_reflect = self.postprocess_response(response_reflect) # try to include only the yaml part
+                    response_reflect_yaml = yaml.safe_load(response_reflect)
+                except:
+                    logging.info(f"Failed to parse yaml: {response_reflect}")
+                    response_reflect_yaml = {'self_description': response_reflect}
+            problem['response_reflect'] = response_reflect
+            problem['self_description'] = response_reflect_yaml['self_description']
 
-        # generate more test cases
-        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
-        response_more_cases, _ = await retry_with_fallback_models(f)
-        response_more_cases = response_more_cases.rstrip("` \n")
-        response_more_cases_yaml = yaml.safe_load(response_more_cases)
-        problem['response_more_cases'] = response_more_cases
-        problem['more_test_cases'] = response_more_cases_yaml['test_cases']
+            # generate more test cases
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
+            response_more_cases, _ = await retry_with_fallback_models(f)
+            response_more_cases = response_more_cases.rstrip("` \n")
+            response_more_cases_yaml = yaml.safe_load(response_more_cases)
+            problem['response_more_cases'] = response_more_cases
+            problem['more_test_cases'] = response_more_cases_yaml['test_cases']
 
 
-        # solve
-        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
-        response_solve, _ = await retry_with_fallback_models(f)
-        response_solve = response_solve.rstrip("` \n")
-        problem['response_possible_solutions'] = response_solve
+            # possible solutions
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
+            response_possible_solutions, _ = await retry_with_fallback_models(f)
+            response_possible_solutions = response_possible_solutions.rstrip("` \n")
+            problem['response_possible_solutions'] = response_possible_solutions
+            response_possible_solutions_yaml = yaml.safe_load(response_possible_solutions)
+            best_solution_name = response_possible_solutions_yaml['best_solution']['name']
+            for solution in response_possible_solutions_yaml['possible_solutions']:
+                if solution['name'] == best_solution_name:
+                    problem['best_solution'] = solution
+                    break
 
-        # if response:
-        #     result = self.postprocess_response(response)
-        return response_solve
+
+        return result
 
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
