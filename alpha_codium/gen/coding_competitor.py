@@ -102,6 +102,15 @@ class CodeContestsCompetitor:
                     problem['best_solution'] = solution
                     break
 
+            # solve
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
+            response_solve = await retry_with_fallback_models(f)
+            if isinstance(response_solve, tuple): # (code, 'stop')
+                response_solve, _ = response_solve
+            response_solve = response_solve.rstrip("` \n")
+            problem['response_solve'] = response_solve
+            result = response_solve
+
 
         return result
 

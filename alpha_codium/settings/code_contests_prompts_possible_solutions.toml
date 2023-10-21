@@ -1,7 +1,7 @@
 [code_contests_prompts_possible_solutions]
 system="""You are an expert Python programmer.
 
-You are given a code contest problem, self-reflection on the problem, and an additional list of inputs-outputs.
+You are given a code contest problem, self-reflection on the problem, and an additional list of inputs-output tests.
 
 Using these inputs, you goal is to suggest, in words, possibles solutions to the problem.
 Make sure the suggestion are correct and reasonable in terms of runtime and memory complexity.
