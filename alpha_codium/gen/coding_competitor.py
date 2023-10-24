@@ -73,7 +73,7 @@ class CodeContestsCompetitor:
             print(f"recording_path: {recording_path}\ndo_record: {do_record}\nuse_record: {use_record}")
 
             # reflect
-            print("reflection stage")
+            print("--reflection stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
             if use_record:
                 response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
@@ -95,7 +95,7 @@ class CodeContestsCompetitor:
             problem['self_description'] = response_reflect_yaml['self_description']
 
             # reflect on test cases
-            print("reflect on test cases stage")
+            print("--reflect on test cases stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
             if use_record:
                 response_more_cases = np.load(recording_path + 'more_test_cases.npy', allow_pickle=True).tolist()
@@ -109,7 +109,7 @@ class CodeContestsCompetitor:
             problem['more_test_cases'] = response_more_cases_yaml['test_cases']
 
             # possible solutions
-            print("possible solutions stage")
+            print("--possible solutions stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
             if use_record:
                 response_possible_solutions = np.load(recording_path + 'possible_solutions.npy', allow_pickle=True).tolist()
@@ -124,10 +124,11 @@ class CodeContestsCompetitor:
             for solution in response_possible_solutions_yaml['possible_solutions']:
                 if solution['name'] == best_solution_name:
                     problem['best_solution'] = solution
+                    print(f"response_possible_solutions_yaml:\n{response_possible_solutions}")
                     break
 
             # solve
-            print("solve stage")
+            print("--solve stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
             if use_record:
                 response_solve = np.load(recording_path + 'solve.npy', allow_pickle=True).tolist()
@@ -141,12 +142,15 @@ class CodeContestsCompetitor:
                 response_solve, _ = response_solve
             response_solve = response_solve.rstrip("` \n")
             problem['best_solution_code'] = response_solve
+            print(f"response_solve:\n{response_solve}")
             result = response_solve
 
             # evaluate public tests
             is_all_passed_public = False
             counter = 0
-            max_allowed_counter = 3
+            max_allowed_counter = 4
+            problem['solution_code'] = problem['best_solution_code']
+            problem['last_solution_code'] = problem['best_solution_code']
             while not is_all_passed_public:
                 logging.info(f"evaluating public tests. attempt {counter}")
                 test_inputs, results = eval_solution(example=problem,
@@ -155,7 +159,12 @@ class CodeContestsCompetitor:
                                              test_outputs=problem['public_tests']['output'],)
 
                 if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
-                    print(f"timeout - took more than 3 seconds to run")
+                    print(f"timeout - took more than 10 seconds to run")
+                    counter += 1
+                    result = problem['last_solution_code']
+                    if counter > max_allowed_counter:
+                        print(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                        break
                     continue
                 else:
                     actual_output = results.test_results[0].actual_output
@@ -163,12 +172,12 @@ class CodeContestsCompetitor:
                     # is_all_passed_public = actual_output == expected_output
                     is_all_passed_public = results.test_results[0].passed
                 if is_all_passed_public:
-                    logging.info(f"Passed public tests after {counter} attempts")
+                    print(f"Passed public tests after {counter} attempts")
                     break
 
                 counter += 1
                 if counter > max_allowed_counter:
-                    logging.info(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                    print(f"Failed to pass public tests after {max_allowed_counter} attempts")
                     break
 
                 problem['test_inputs'] = test_inputs
@@ -182,56 +191,60 @@ class CodeContestsCompetitor:
                 response_fixed_code, _ = await retry_with_fallback_models(f)
                 try:
                     response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
-                    result = response_fixed_code_yaml['improved_code']
+                    result = response_fixed_code_yaml['new_solution_code']
+                    problem['last_solution_code'] = problem['solution_code']
+                    problem['solution_code'] = result
+
                     # result = remove_if_main(result)
                 except:
-                    logging.info(f"Failed to parse yaml: {response_fixed_code}")
+                    print(f"Failed to parse yaml: {response_fixed_code}")
                     # result = response_fixed_code
 
             if not is_all_passed_public:
                 print(f"Failed to pass public tests after {max_allowed_counter} attempts")
                 exit(-1)
 
-            # evaluate AI-generated tests
-            max_ai_tests = 10
-            for i, test_case in enumerate(problem['more_test_cases']):
-                if i > max_ai_tests:
-                    break
-                print(f"evaluating AI tests, test case remaining {len(problem['more_test_cases'])-i}")
-                test_inputs, results = eval_solution(example=problem,
-                                             prediction= remove_if_main(result),
-                                             test_inputs=[test_case['input']],
-                                             test_outputs=[test_case['output']],)
-                if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
-                    print(f"timeout - took more than 3 seconds to run")
-                    print(f"test input: {test_case['input']}")
-                    print(f"expected output: {test_case['output']}")
-                    actual_output = 'timeout - took more than 3 seconds to run'
-                    expected_output = test_case['output']
-                    # is_passed_AI = False
-                    is_passed_AI = True # For now, we don't care about runtime
-                else:
-                    actual_output = results.test_results[0].actual_output
-                    expected_output = results.test_results[0].expected_output
-                    is_passed_AI = results.test_results[0].passed
-
-                if not is_passed_AI:
-                    problem['test_inputs'] = test_inputs
-                    problem['expected_output'] = expected_output
-                    problem['actual_output'] = actual_output
-                    problem['possible_test_error'] = 'true'
-                    if not actual_output:
-                        logging.info(f"Failed to generate. actual_output is empty")
-                        break
-                    f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
-                    response_fixed_code, _ = await retry_with_fallback_models(f)
-                    try:
-                        response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
-                        result = response_fixed_code_yaml['improved_code']
-                        # result = remove_if_main(result)
-                    except:
-                        logging.info(f"Failed to parse yaml: {response_fixed_code}")
-                        # result = response_fixed_code
+            # # evaluate AI-generated tests
+            # max_ai_tests = 10
+            # for i, test_case in enumerate(problem['more_test_cases']):
+            #     if i > max_ai_tests:
+            #         break
+            #     print(f"evaluating AI tests, test case remaining {len(problem['more_test_cases'])-i}")
+            #     test_inputs, results = eval_solution(example=problem,
+            #                                  prediction= remove_if_main(result),
+            #                                  test_inputs=[test_case['input']],
+            #                                  test_outputs=[test_case['output']],)
+            #     if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
+            #         print(f"timeout - took more than 3 seconds to run")
+            #         print(f"test input: {test_case['input']}")
+            #         print(f"expected output: {test_case['output']}")
+            #         actual_output = 'timeout - took more than 3 seconds to run'
+            #         expected_output = test_case['output']
+            #         # is_passed_AI = False
+            #         is_passed_AI = True # For now, we don't care about runtime
+            #         break
+            #     else:
+            #         actual_output = results.test_results[0].actual_output
+            #         expected_output = results.test_results[0].expected_output
+            #         is_passed_AI = results.test_results[0].passed
+            #
+            #     if not is_passed_AI:
+            #         problem['test_inputs'] = test_inputs
+            #         problem['expected_output'] = expected_output
+            #         problem['actual_output'] = actual_output
+            #         problem['possible_test_error'] = 'true'
+            #         if not actual_output:
+            #             logging.info(f"Failed to generate. actual_output is empty")
+            #             break
+            #         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
+            #         response_fixed_code, _ = await retry_with_fallback_models(f)
+            #         try:
+            #             response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
+            #             result = response_fixed_code_yaml['improved_code']
+            #             # result = remove_if_main(result)
+            #         except:
+            #             logging.info(f"Failed to parse yaml: {response_fixed_code}")
+            #             # result = response_fixed_code
 
 
         # remove the if __name__ == '__main__' part. python eval fails to generate output with it

@@ -7,7 +7,7 @@ Using these inputs, you goal is to suggest, in words, possibles solutions to the
 Make sure the solutions are correct and reasonable in terms of runtime and memory complexity.
 
 Finally, you must select the best solution and explain why it is the best solution.
-Don't just pick the fastest solution. Also consider other factors such as simplicity and correctness.
+Don't just pick the fastest solution. The main consideration is that the solution is correct, and can handle all edge cases.
 However, make sure the best solution has a reasonable runtime and memory complexity.
 
 The output must be a YAML object equivalent to type $ProblemSolutions, according to the following Pydantic definitions:
