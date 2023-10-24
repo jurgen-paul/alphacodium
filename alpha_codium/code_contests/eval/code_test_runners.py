@@ -73,9 +73,9 @@ class LocalPythonTestsRunner(PythonTestsRunner):
                               PythonTestsRunner.test_inputs, PythonTestsRunner.test_outputs)
         super().print_test_results(result)
 
-    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
+    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10):
         multi_result = execute_candidate_code(candidate=candidate, inputs=test_inputs,
-                                              test_id=test_id, timeout=2, sandbox=self.sandbox)
+                                              test_id=test_id, timeout=timeout, sandbox=self.sandbox)
         tests_results = calculate_tests_pass_fail(multi_result, expected_results=tests_outputs)
         return test_id, candidate_id, tests_results
 
@@ -146,7 +146,8 @@ def eval_solution(evaluation_test_type: str = "private_tests",
             candidate_id="id",
             candidate=prediction,
             test_inputs=test_inputs,
-            tests_outputs=test_outputs
+            tests_outputs=test_outputs,
+            timeout = 10,
         )
         test_runner.print_test_results(results, test_inputs)
         return test_inputs, results

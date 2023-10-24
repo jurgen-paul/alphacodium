@@ -129,9 +129,9 @@ class AiHandler:
             raise TryAgain
         resp = response["choices"][0]["message"]["content"]
         finish_reason = response["choices"][0]["finish_reason"]
-        print("-----------------")
-        print(f"system:\n{system}")
-        print(f"user:\n{user}")
-        print(f"response:\n{resp}")
-        print("-----------------")
+        # print("-----------------")
+        # print(f"system:\n{system}")
+        # print(f"user:\n{user}")
+        # print(f"response:\n{resp}")
+        # print("-----------------")
         return resp, finish_reason
