@@ -17,8 +17,8 @@ class TestCase(BaseModel):
 
 class ProblemReflection(BaseModel):
     self_description: str = Field(description="Describe the problem in your own words. Don't descrbie a solution")
-    happy_paths: List[TestCase] = Field(min_items=2, max_items_8, description="A list of intresting and diverse inputs for the problem, representing happy paths.")
-    edge_cases: List[TestCase] = Field(min_items=2, max_items_8, description="A list of intresting and diverse inputs for the problem, representing edge cases.")
+    happy_paths: List[TestCase] = Field(min_items=4, max_items_8, unique_items=True, description="A list of intresting and diverse inputs for the problem, representing happy paths.")
+    edge_cases: List[TestCase] = Field(min_items=2, max_items_6, unique_items=True, description="A list of intresting and diverse inputs for the problem, representing edge cases.")
 '
 
 Example YAML output:

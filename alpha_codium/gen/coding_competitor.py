@@ -112,6 +112,16 @@ class CodeContestsCompetitor:
             problem['response_solve'] = response_solve
             result = response_solve
 
+            # evaluate public
+            test_inputs, results = eval_solution(example=problem,
+                                         prediction= remove_if_main(result),
+                                         test_inputs=problem['public_tests']['input'],
+                                         test_outputs=problem['public_tests']['output'],)
+            actual_output = results.test_results[0].actual_output
+            expected_output = results.test_results[0].expected_output
+            is_passed = results.compilation_result.passed
+            aaa=3
+
 
         # remove the if __name__ == '__main__' part. python eval fails to generate output with it
         result = remove_if_main(result)

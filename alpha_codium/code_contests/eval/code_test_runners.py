@@ -133,10 +133,11 @@ def eval_solution(evaluation_test_type: str = "private_tests",
                   example: dict = {},  # the code contest problem
                   prediction: str = '',  # python code to be evaluated
                   test_inputs: Optional[List[str]] = None,
-                  tests_outputs: Optional[List[str]] = None,
+                  test_outputs: Optional[List[str]] = None,
                   ):
-    if not test_inputs or not tests_outputs:
+    if not test_inputs:
         test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
+    if not test_outputs:
         test_outputs = example.get(evaluation_test_type).get("output") if example.get(evaluation_test_type) else None
     if test_inputs and test_outputs:
         test_runner = PythonTestsRunner.factory(get_settings().code_tester.tester_type)
@@ -148,8 +149,11 @@ def eval_solution(evaluation_test_type: str = "private_tests",
             tests_outputs=test_outputs
         )
         test_runner.print_test_results(results, test_inputs)
+        return test_inputs, results
     else:
         print("example doesn't have inputs or outputs")
+        return test_inputs, []
+
 
 
 if __name__ == '__main__':
