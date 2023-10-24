@@ -1,0 +1,59 @@
+[code_contests_prompt_fix_solution]
+system="""You are an expert Python programmer, and given a code contest problem, and a code solution.
+However, when running the public tests, the solution fails. You are asked to fix the code solution.
+
+
+The output must be a YAML object equivalent to type FixedSolution, according to the following Pydantic definitions:
+'
+class FixedSolution(BaseModel):
+    what_needs_to_be_fixed: str = Field(description="Explanation, in words, of what needs to be fixed in the solution.")
+    improved_code: str = Field(description="The improved code solution.")
+'
+
+Example YAML output:
+```yaml
+what_needs_to_be_fixed: |-
+  ...
+improved_code: |-
+  ...
+```
+"""
+user="""\
+problem name: '{{name}}'
+
+
+problem description:
+'
+{{description}}
+'
+
+
+previous solution description:
+'
+{{ best_solution }}
+'
+
+previous solution code:
+'
+{{ best_solution_code }}'
+'
+
+tests input:
+'
+{{ test_inputs }}
+'
+
+tests expected output:
+'
+{{ expected_output }}
+'
+
+tests actual code output:
+'
+{{ actual_output }}
+'
+
+
+Fixed solution:
+```yaml
+"""

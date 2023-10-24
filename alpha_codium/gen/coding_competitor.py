@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import logging
+import os
 
 import yaml
 from jinja2 import Environment, StrictUndefined
@@ -12,7 +13,7 @@ from alpha_codium.config_loader import get_settings
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.llm.token_handler import TokenHandler
-
+import numpy as np
 import re
 
 
@@ -65,10 +66,20 @@ class CodeContestsCompetitor:
             if response_baseline:
                 result = self.postprocess_response(response_baseline)
         else:
+            recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
+            os.makedirs(recording_path, exist_ok=True)
+            do_record = False
+            use_record = True
+            print(f"recording_path: {recording_path}\ndo_record: {do_record}\nuse_record: {use_record}")
 
             # reflect
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
-            response_reflect, _ = await retry_with_fallback_models(f)
+            if use_record:
+                response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
+            else:
+                response_reflect, _ = await retry_with_fallback_models(f)
+                if do_record:
+                    np.save(recording_path + 'reflect.npy', response_reflect)
             response_reflect = response_reflect.rstrip("` \n")
             try:
                 response_reflect_yaml = yaml.safe_load(response_reflect)
@@ -84,7 +95,12 @@ class CodeContestsCompetitor:
 
             # generate more test cases
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
-            response_more_cases, _ = await retry_with_fallback_models(f)
+            if use_record:
+                response_more_cases = np.load(recording_path + 'more_test_cases.npy', allow_pickle=True).tolist()
+            else:
+                response_more_cases, _ = await retry_with_fallback_models(f)
+                if do_record:
+                    np.save(recording_path + 'more_test_cases.npy', response_more_cases)
             response_more_cases = response_more_cases.rstrip("` \n")
             response_more_cases_yaml = yaml.safe_load(response_more_cases)
             problem['response_more_cases'] = response_more_cases
@@ -93,7 +109,12 @@ class CodeContestsCompetitor:
 
             # possible solutions
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
-            response_possible_solutions, _ = await retry_with_fallback_models(f)
+            if use_record:
+                response_possible_solutions = np.load(recording_path + 'possible_solutions.npy', allow_pickle=True).tolist()
+            else:
+                response_possible_solutions, _ = await retry_with_fallback_models(f)
+                if do_record:
+                    np.save(recording_path + 'possible_solutions.npy', response_possible_solutions)
             response_possible_solutions = response_possible_solutions.rstrip("` \n")
             problem['response_possible_solutions'] = response_possible_solutions
             response_possible_solutions_yaml = yaml.safe_load(response_possible_solutions)
@@ -105,21 +126,59 @@ class CodeContestsCompetitor:
 
             # solve
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
-            response_solve = await retry_with_fallback_models(f)
+            if use_record:
+                response_solve = np.load(recording_path + 'solve.npy', allow_pickle=True).tolist()
+                if isinstance(response_solve, list):
+                    response_solve = response_solve[0]
+            else:
+                response_solve, _ = await retry_with_fallback_models(f)
+                if do_record:
+                    np.save(recording_path + 'solve.npy', response_solve)
             if isinstance(response_solve, tuple): # (code, 'stop')
                 response_solve, _ = response_solve
             response_solve = response_solve.rstrip("` \n")
-            problem['response_solve'] = response_solve
+            problem['best_solution_code'] = response_solve
             result = response_solve
 
             # evaluate public
-            test_inputs, results = eval_solution(example=problem,
-                                         prediction= remove_if_main(result),
-                                         test_inputs=problem['public_tests']['input'],
-                                         test_outputs=problem['public_tests']['output'],)
-            actual_output = results.test_results[0].actual_output
-            expected_output = results.test_results[0].expected_output
-            is_passed = results.compilation_result.passed
+            is_all_passed_public = False
+            counter = 0
+            max_allowed_counter = 3
+            while not is_all_passed_public:
+                logging.info(f"evaluating public tests. attempt {counter}")
+                test_inputs, results = eval_solution(example=problem,
+                                             prediction= remove_if_main(result),
+                                             test_inputs=problem['public_tests']['input'],
+                                             test_outputs=problem['public_tests']['output'],)
+                actual_output = results.test_results[0].actual_output
+                expected_output = results.test_results[0].expected_output
+                # is_all_passed_public = actual_output == expected_output
+                is_all_passed_public = results.test_results[0].passed
+                if is_all_passed_public:
+                    logging.info(f"Passed public tests after {counter} attempts")
+                    break
+
+                counter += 1
+                if counter > max_allowed_counter:
+                    logging.info(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                    break
+
+                problem['test_inputs'] = test_inputs
+                problem['expected_output'] = expected_output
+                problem['actual_output'] = actual_output
+                if not actual_output:
+                    logging.info(f"Failed to pass public tests. actual_output is empty")
+                    break
+                f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
+                response_fixed_code, _ = await retry_with_fallback_models(f)
+                try:
+                    response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
+                    result = response_fixed_code_yaml['improved_code']
+                    # result = remove_if_main(result)
+                except:
+                    logging.info(f"Failed to parse yaml: {response_fixed_code}")
+                    # result = response_fixed_code
+
             aaa=3
 
 
