@@ -7,8 +7,9 @@ Your goal is to provide a vaild python3 code that solves the problem.
 Make sure to fully address the problem description, self-reflection, the additional test cases, and the solution description.
 The code should handle all the test cases provided.
 
-Reading the input should be done using the 'input()' method.
+Reading the input should be done using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
+The solution should run in less than 3 seconds on a standard computer.
 
 
 Solution structure:

@@ -8,7 +8,7 @@ Make sure the solutions are correct and reasonable in terms of runtime and memor
 
 Finally, you must select the best solution and explain why it is the best solution.
 Don't just pick the fastest solution. The main consideration is that the solution is correct, and can handle all edge cases.
-However, make sure the best solution has a reasonable runtime and memory complexity.
+However, make sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
 
 The output must be a YAML object equivalent to type $ProblemSolutions, according to the following Pydantic definitions:
 '

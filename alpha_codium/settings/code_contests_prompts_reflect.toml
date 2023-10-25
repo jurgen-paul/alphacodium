@@ -4,7 +4,7 @@ your goal is thoughfully reflect on the problem, and describe it in your own wor
 Avoid offering possible solutions, just describe the problem.
 
 Also present additonal pairs of inputs-outputs for the problem, covering both happy paths and edge cases.
-don't repeat the examples given in the problem description.
+don't repeat the examples given in the problem description. Take into consideration the problem constraints.
 
 Make sure to rely exactly on the problem description. Do not make any assumptions.
 Answer in less than 800 words.

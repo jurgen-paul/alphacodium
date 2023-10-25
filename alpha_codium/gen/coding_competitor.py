@@ -167,10 +167,18 @@ class CodeContestsCompetitor:
                         break
                     continue
                 else:
-                    actual_output = results.test_results[0].actual_output
-                    expected_output = results.test_results[0].expected_output
-                    # is_all_passed_public = actual_output == expected_output
-                    is_all_passed_public = results.test_results[0].passed
+                    # bug - only a single test is evaluated
+                    error_str = ""
+                    is_all_passed_public = True
+                    is_valid_output = True
+                    for i, t in enumerate(results.test_results):
+                        error_str += f"test input:\n{test_inputs[i]}\n" \
+                                     f"expected output:\n{t.expected_output}\n" \
+                                     f"actual output:\n{t.actual_output}\n" \
+                                     f"====================\n====================\n"
+                        # is_all_passed_public = actual_output == expected_output
+                        is_all_passed_public = is_all_passed_public and t.passed
+                        is_valid_output = is_valid_output and t.actual_output
                 if is_all_passed_public:
                     print(f"Passed public tests after {counter} attempts")
                     break
@@ -180,11 +188,9 @@ class CodeContestsCompetitor:
                     print(f"Failed to pass public tests after {max_allowed_counter} attempts")
                     break
 
-                problem['test_inputs'] = test_inputs
-                problem['expected_output'] = expected_output
-                problem['actual_output'] = actual_output
+                problem['error_str'] = error_str
                 problem['possible_test_error'] = ''
-                if not actual_output:
+                if not is_valid_output:
                     logging.info(f"Failed to pass public tests. actual_output is empty")
                     break
                 f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
