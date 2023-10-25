@@ -60,7 +60,7 @@ class PythonTestsRunner(abc.ABC):
                 if test_res.stderr.strip() != "":
                     error = f"strerror: {test_res.stderr}."
                 if test_res.sandbox_result:
-                    error_lines = self.format_exception(test_res.sandbox_result)
+                    error_lines = test_res.sandbox_result
                     error = f"{error} sandbox error: {error_lines}"
                 details = f"{details}. {error}"
             if test_res.program_status == ProgramStatus.kTimeout:
@@ -91,9 +91,14 @@ class LocalPythonTestsRunner(PythonTestsRunner):
         super().print_test_results(result)
 
     @staticmethod
-    def remove_if_main(result: str):
-        if 'if __name__ ==' in result:
-            result_lines = result.split('\n')
+    def prepare_script(script: str):
+        script = LocalPythonTestsRunner.remove_if_main(script)
+        return script
+
+    @staticmethod
+    def remove_if_main(script: str):
+        if 'if __name__ ==' in script:
+            result_lines = script.split('\n')
             start_dedent = False
             for i, line in enumerate(result_lines):
                 if 'if __name__ ==' in line:
@@ -101,8 +106,8 @@ class LocalPythonTestsRunner(PythonTestsRunner):
                     result_lines[i] = ''
                 if start_dedent:
                     result_lines[i] = result_lines[i][4:]
-            result = '\n'.join(result_lines)
-        return result
+            script = '\n'.join(result_lines)
+        return script
 
     def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10):
         candidate = LocalPythonTestsRunner.remove_if_main(candidate)
@@ -190,5 +195,18 @@ def eval_solution(evaluation_test_type: str = "private_tests",
 
 if __name__ == '__main__':
     runner = LocalPythonTestsRunner()
-    _, _, results = runner.run_tests("test", 1, "x=input()\nraise ValueError('some error')", ["1", "2"], ["1", "2"])
+    program = """
+
+x = input()
+
+def f1(val):
+    return f2(val)
+
+def f2(val):
+    raise ValueError("manually triggered exception")
+    
+f1(x)
+
+"""
+    _, _, results = runner.run_tests("test", 1, program, ["1", "2"], ["1", "2"])
     runner.print_test_results(results, ["1", "2"])

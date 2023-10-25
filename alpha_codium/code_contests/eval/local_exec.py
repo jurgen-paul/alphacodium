@@ -26,6 +26,7 @@ import platform
 import signal
 import sys
 import tempfile
+import traceback
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
@@ -128,8 +129,9 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox):
                     exec_result.stdout = captured_output
                 except TimeoutException:
                     exec_result.program_status = ProgramStatus.kTimeout
-                except BaseException as e:
-                    exec_result.sandbox_result = e
+                    exec_result.program_status = ProgramStatus.kFailed
+                except BaseException:
+                    exec_result.sandbox_result = traceback.format_exc()
                     exec_result.program_status = ProgramStatus.kFailed
 
         finally:
