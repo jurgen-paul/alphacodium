@@ -2,19 +2,17 @@ import asyncio
 import functools
 import logging
 import os
+import re
 
+import numpy as np
 import yaml
 from jinja2 import Environment, StrictUndefined
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
-
 from alpha_codium.config_loader import get_settings
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
-from alpha_codium.llm.token_handler import TokenHandler
-import numpy as np
-import re
 
 
 class CodeContestsCompetitor:
@@ -69,7 +67,7 @@ class CodeContestsCompetitor:
             recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
             os.makedirs(recording_path, exist_ok=True)
             do_record = False
-            use_record = True
+            use_record = False
             print(f"recording_path: {recording_path}\ndo_record: {do_record}\nuse_record: {use_record}")
 
             # reflect
@@ -84,11 +82,11 @@ class CodeContestsCompetitor:
             response_reflect = response_reflect.rstrip("` \n")
             try:
                 response_reflect_yaml = yaml.safe_load(response_reflect)
-            except:
+            except yaml.YAMLError:
                 try:
                     response_reflect = self.postprocess_response(response_reflect) # try to include only the yaml part
                     response_reflect_yaml = yaml.safe_load(response_reflect)
-                except:
+                except yaml.YAMLError:
                     logging.info(f"Failed to parse yaml: {response_reflect}")
                     response_reflect_yaml = {'self_description': response_reflect}
             problem['response_reflect'] = response_reflect
@@ -112,7 +110,8 @@ class CodeContestsCompetitor:
             print("--possible solutions stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
             if use_record:
-                response_possible_solutions = np.load(recording_path + 'possible_solutions.npy', allow_pickle=True).tolist()
+                response_possible_solutions = np.load(recording_path + 'possible_solutions.npy', allow_pickle=True)\
+                                                .tolist()
             else:
                 response_possible_solutions, _ = await retry_with_fallback_models(f)
                 if do_record:
@@ -154,12 +153,12 @@ class CodeContestsCompetitor:
             while not is_all_passed_public:
                 logging.info(f"evaluating public tests. attempt {counter}")
                 test_inputs, results = eval_solution(example=problem,
-                                             prediction= remove_if_main(result),
+                                             prediction= result,
                                              test_inputs=problem['public_tests']['input'],
                                              test_outputs=problem['public_tests']['output'],)
 
                 if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
-                    print(f"timeout - took more than 10 seconds to run")
+                    print("timeout - took more than 10 seconds to run")
                     counter += 1
                     result = problem['last_solution_code']
                     if counter > max_allowed_counter:
@@ -191,7 +190,7 @@ class CodeContestsCompetitor:
                 problem['error_str'] = error_str
                 problem['possible_test_error'] = ''
                 if not is_valid_output:
-                    logging.info(f"Failed to pass public tests. actual_output is empty")
+                    logging.info("Failed to pass public tests. actual_output is empty")
                     break
                 f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
                 response_fixed_code, _ = await retry_with_fallback_models(f)
@@ -202,7 +201,7 @@ class CodeContestsCompetitor:
                     problem['solution_code'] = result
 
                     # result = remove_if_main(result)
-                except:
+                except yaml.YAMLError:
                     print(f"Failed to parse yaml: {response_fixed_code}")
                     # result = response_fixed_code
 
@@ -254,7 +253,6 @@ class CodeContestsCompetitor:
 
 
         # remove the if __name__ == '__main__' part. python eval fails to generate output with it
-        result = remove_if_main(result)
         return result
 
     def solve_problem(self, example):
@@ -276,18 +274,6 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
     return solution, test_results
 
-def remove_if_main(result: str):
-    if 'if __name__ ==' in result:
-        result_lines = result.split('\n')
-        start_dedent = False
-        for i, line in enumerate(result_lines):
-            if 'if __name__ ==' in line:
-                start_dedent = True
-                result_lines[i] = ''
-            if start_dedent:
-                result_lines[i] = result_lines[i][4:]
-        result = '\n'.join(result_lines)
-    return result
 
 if __name__ == "__main__":
     solve_and_test("assaf_test", "train")
