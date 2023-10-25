@@ -67,7 +67,7 @@ class CodeContestsCompetitor:
             recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
             os.makedirs(recording_path, exist_ok=True)
             do_record = False
-            use_record = False
+            use_record = True
             print(f"recording_path: {recording_path}\ndo_record: {do_record}\nuse_record: {use_record}")
 
             # reflect
