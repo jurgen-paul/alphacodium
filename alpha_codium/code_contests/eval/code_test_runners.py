@@ -203,7 +203,7 @@ def f1(val):
     return f2(val)
 
 def f2(val):
-    raise ValueError("manually triggered exception")
+    return int(val)/0
     
 f1(x)
 

@@ -131,7 +131,9 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox):
                     exec_result.program_status = ProgramStatus.kTimeout
                     exec_result.program_status = ProgramStatus.kFailed
                 except BaseException:
-                    exec_result.sandbox_result = traceback.format_exc()
+                    lines = traceback.format_exc().splitlines()
+                    filtered_trace = '\n'.join(lines[3:])
+                    exec_result.sandbox_result = filtered_trace
                     exec_result.program_status = ProgramStatus.kFailed
 
         finally:
