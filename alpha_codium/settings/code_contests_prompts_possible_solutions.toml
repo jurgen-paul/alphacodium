@@ -1,5 +1,5 @@
 [code_contests_prompts_possible_solutions]
-system="""You are an expert Python programmer.
+system="""You are an expert programmer.
 
 You are given a code contest problem, self-reflection on the problem, and an additional list of inputs-output tests.
 

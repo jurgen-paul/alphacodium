@@ -150,7 +150,8 @@ class CodeContestsCompetitor:
                 if do_recording:
                     np.save(recording_path + 'solve.npy', response_solve)
             response_solve = response_solve.rstrip("` \n")
-            problem['best_solution_code'] = response_solve
+            response_solve_yaml = yaml.safe_load(response_solve)
+            problem['best_solution_code'] = response_solve_yaml['solution_code']
             result = response_solve
 
             # evaluate public tests
@@ -167,11 +168,11 @@ class CodeContestsCompetitor:
                                              test_outputs=problem['public_tests']['output'],)
 
                 if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
-                    print("timeout - took more than 10 seconds to run")
+                    logger.error("timeout - took more than 10 seconds to run")
                     counter += 1
                     result = problem['last_solution_code']
                     if counter > max_allowed_counter:
-                        print(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                        logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                         break
                     continue
                 else:
@@ -188,12 +189,12 @@ class CodeContestsCompetitor:
                         is_all_passed_public = is_all_passed_public and t.passed
                         is_valid_output = is_valid_output and t.actual_output
                 if is_all_passed_public:
-                    print(f"Passed public tests after {counter} attempts")
+                    logger.info(f"Passed public tests after {counter} attempts")
                     break
 
                 counter += 1
                 if counter > max_allowed_counter:
-                    print(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                    logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                     break
 
                 problem['error_str'] = error_str
@@ -215,7 +216,7 @@ class CodeContestsCompetitor:
                     # result = response_fixed_code
 
             if not is_all_passed_public:
-                print(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
                 exit(-1)
 
             # # evaluate AI-generated tests

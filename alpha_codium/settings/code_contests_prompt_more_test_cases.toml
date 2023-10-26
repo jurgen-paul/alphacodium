@@ -1,5 +1,5 @@
 [code_contests_prompt_more_test_cases]
-system="""You are an expert Python programmer.
+system="""You are an expert programmer.
 
 You are given as inputs a code contest problem, and a self-reflection on the problem, made by an AI.
 your goal is to review existing input-output pairs, and validate their correctness. If they are not correct, fix them.

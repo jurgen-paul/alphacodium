@@ -5,8 +5,6 @@ from alpha_codium.code_contests.eval import cli as eval_cli
 from alpha_codium.gen import cli as gen_cli
 from alpha_codium.log import setup_logger
 
-setup_logger()
-
 @click.group()
 def cli():
     pass
@@ -17,4 +15,5 @@ cli.add_command(data_cli.data)
 cli.add_command(eval_cli.eval)
 
 if __name__ == "__main__":
+    setup_logger()
     cli()

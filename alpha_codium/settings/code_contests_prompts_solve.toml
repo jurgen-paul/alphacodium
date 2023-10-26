@@ -3,7 +3,7 @@ system="""You are an expert Python programmer.
 
 You are given a code contest problem, self-reflection on the problem, an additional list of inputs-output tests, and description, in words, of the desired solution
 
-Your goal is to provide a vaild python3 code that solves the problem.
+Your goal is to provide a vaild Python code that solves the problem.
 Make sure to fully address the problem description, self-reflection, the additional test cases, and the solution description.
 The code should handle all the test cases provided.
 
@@ -11,15 +11,33 @@ Reading the input should be done using the 'input()' method. Make sure to proper
 The output should be printed without additional words using the 'print()' method.
 The solution should run in less than 3 seconds on a standard computer.
 
+The output must be a YAML object equivalent to type $CodeSolution, according to the following Pydantic definitions:
 
-Solution structure:
-def f(...):
-    ...
-    return ...
+'
+class CodeSolution(BaseModel):
+    solution_steps: str = Field(..., description="Describe, in bullet points, the steps and flow of the solution")
+    solution_code: str = Field(..., description="The python code that solves the problem")
+'
+
+Example YAML output:
+```yaml
+solution_steps: |
+  ...
+solution_code: |
+  ...
+```
+
+The 'solution_code' output must follow this structre:
+'
+    def f(...):
+        ...
+        return ...
 
 
-if __name__ == "__main__":
-    ...
+    if __name__ == "__main__":
+        ...
+'
+
 """
 user="""\
 problem name: '{{name}}'
@@ -47,6 +65,6 @@ solution description:
 {{ best_solution }}
 '
 
-code to solve the problem:
-```python\
+answer:
+```yaml\
 """
