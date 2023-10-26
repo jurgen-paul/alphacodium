@@ -22,7 +22,7 @@ solution_code: |
   ...
 ```
 
-The 'solution_code' yaml output must follow this structre:
+The 'solution_code' yaml output must follow this structure:
 '
     def f(...):
         ...

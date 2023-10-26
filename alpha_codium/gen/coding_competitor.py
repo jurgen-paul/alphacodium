@@ -169,15 +169,19 @@ class CodeContestsCompetitor:
                                                      test_inputs=problem['public_tests']['input'],
                                                      test_outputs=problem['public_tests']['output'], )
 
-                if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout' or\
-                    str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
-                    logger.error("failed to run tests. reverting to last solution")
+                if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
+                    logger.error("timeout. reverting to last solution")
                     counter += 1
                     recent_solution = problem['last_solution_code']
                     if counter > max_allowed_counter:
                         logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                         break
                     continue
+                elif str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
+                    logger.error("failed to run solution")
+                    error_str = results.test_results[0].sandbox_result
+                    is_all_passed_public = False
+                    is_valid_output = True
                 else:
                     # build the error string
                     error_str = ""
@@ -203,7 +207,9 @@ class CodeContestsCompetitor:
 
                 if not is_valid_output:
                     logging.info("Failed to pass public tests. actual_output is empty")
-                    break
+                    recent_solution = problem['last_solution_code']
+                    counter += 1
+                    continue
                 else:
                     # tests run. save the last solution
                     problem['last_solution_code'] = recent_solution
