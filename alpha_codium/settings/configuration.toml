@@ -26,4 +26,4 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [code_tester]
 tester_type="local" # local, code_contests
-sandbox=true
+sandbox=false
