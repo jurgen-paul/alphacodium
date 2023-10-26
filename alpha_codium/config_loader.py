@@ -13,7 +13,12 @@ global_settings = Dynaconf(
         for f in [
             "settings/.secrets.toml",
             "settings/configuration.toml",
-            "settings/code_contests_prompts.toml",
+            "settings/code_contests_prompts_baseline.toml",
+            "settings/code_contests_prompts_reflect.toml",
+            "settings/code_contests_prompt_more_test_cases.toml",
+            "settings/code_contests_prompts_solve.toml",
+            "settings/code_contests_prompts_possible_solutions.toml",
+            "settings/code_contests_prompts_fix_solution.toml",
         ]
     ],
 )

@@ -1,5 +1,6 @@
 [config]
-model="gpt-4"
+#model="gpt-4"
+model = "gpt-3.5-turbo"
 requests_per_minute=60
 fallback_models=["gpt-3.5-turbo-16k"]
 git_provider="github"
@@ -14,10 +15,15 @@ max_commits_tokens = 500
 secret_provider="google_cloud_storage"
 cli_mode=false
 
+[solve]
+use_baselines=false
+do_recording = false
+use_recording = false
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
+#private_dataset_cache_dir='/Users/talrid/Desktop/code_contest_dataset'
 
 [code_tester]
-tester_type="local"
+tester_type="local" # local, code_contests
 sandbox=true

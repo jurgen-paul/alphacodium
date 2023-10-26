@@ -26,6 +26,7 @@ import platform
 import signal
 import sys
 import tempfile
+import traceback
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
@@ -128,8 +129,11 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox):
                     exec_result.stdout = captured_output
                 except TimeoutException:
                     exec_result.program_status = ProgramStatus.kTimeout
-                except BaseException as e:
-                    exec_result.sandbox_result = e
+                    exec_result.program_status = ProgramStatus.kFailed
+                except BaseException:
+                    lines = traceback.format_exc().splitlines()
+                    filtered_trace = '\n'.join(lines[3:])
+                    exec_result.sandbox_result = filtered_trace
                     exec_result.program_status = ProgramStatus.kFailed
 
         finally:
@@ -154,10 +158,13 @@ def calculate_tests_pass_fail(multi_tests_results: MultiTestResult, expected_res
     result.test_results = []
     if multi_tests_results.test_results and expected_results:
         for exec_result, expected_result in zip(multi_tests_results.test_results, expected_results):
+            expected_result = copy.deepcopy(expected_result).rstrip()
             validated_exec_result = copy.deepcopy(exec_result)
-            actual_output = validated_exec_result.stdout
+            actual_output = validated_exec_result.stdout.rstrip()
             passed = compare_func(actual_output, expected_result)
             validated_exec_result.passed = passed
+            validated_exec_result.expected_output = expected_result
+            validated_exec_result.actual_output = actual_output
             result.test_results.append(validated_exec_result)
     return result
 

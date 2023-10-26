@@ -6,7 +6,9 @@ from alpha_codium.gen.coding_competitor import solve_and_test
 
 from alpha_codium.gen.gen_loop import solve_and_evaluate_dataset
 from alpha_codium.gen.generators import SimplePrompt
+from alpha_codium.log import get_logger
 
+logger = get_logger(__name__)
 
 @click.group(
     name="gen",
@@ -57,6 +59,7 @@ def run_internal(prompt):
     help="Type of the test",
     required=False,
 )
+
 def solve_problem(dataset_name, split_name, problem_name, evaluation_test_type):
     return solve_and_test(dataset_name=dataset_name, split_name=split_name,
                           problem_name=problem_name, evaluation_test_type=evaluation_test_type)
@@ -93,9 +96,9 @@ def solve_and_evaluate_set(dataset_name, split_name, evaluation_test_type, sampl
                                                            evaluation_test_type=evaluation_test_type)
 
     if predictions:
-        print(f"generated {len(predictions)} predictions")
+        logger.info(f"generated {len(predictions)} predictions")
     if eval_results:
-        print(eval_results)
+        logger.info(eval_results)
 
 
 if __name__ == "__main__":

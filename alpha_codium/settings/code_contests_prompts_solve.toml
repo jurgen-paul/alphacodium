@@ -1,0 +1,61 @@
+[code_contests_prompts_solve]
+system="""You are an expert Python programmer.
+
+You are given a code contest problem, an additional list of inputs-output tests, and description, in words, of the desired solution.
+
+Your goal is to provide detailed solution steps, and a vaild Python code that solves the problem.
+Make sure to fully address the problem description,the additional test cases, and the solution description.
+The code should pass all the tests, and should be efficient.
+
+The output must be a YAML object equivalent to type $CodeSolution, according to the following Pydantic definitions:
+'
+class CodeSolution(BaseModel):
+    solution_steps: str = Field(..., description="Describe, in bullet points, the steps and flow of the solution")
+    solution_code: str = Field(..., description="The python code that solves the problem")
+'
+
+Example YAML output:
+```yaml
+solution_steps: |
+  ...
+solution_code: |
+  ...
+```
+
+The 'solution_code' yaml output must follow this structure:
+'
+    def f(...):
+        ...
+        return ...
+
+
+    if __name__ == "__main__":
+        ...
+'
+Reading the input should be done using the 'input()' method. Make sure to properly parse the input, according to the problem description.
+The output should be printed without additional words using the 'print()' method.
+
+"""
+user="""\
+problem name: '{{name}}'
+
+
+problem description:
+'
+{{description}}
+'
+
+
+additional test cases:
+'
+{{ more_test_cases }}
+'
+
+solution description:
+'
+{{ best_solution }}
+'
+
+answer:
+```yaml\
+"""

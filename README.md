@@ -15,7 +15,7 @@ Generating solutions is done using a lighweight framework (leveraging assets and
 
 The generation should result in a dataset of problem_id -> solution candidates, which will then be evaluated against test cases.
 
-The main prompts are in `code_contests_prompts.toml`
+The main prompts are in `code_contests_prompts_baseline.toml`
 
 ## Eval
 
@@ -54,12 +54,6 @@ Base command: `gencode data etl --source deepmind/code_contests --output_dataset
 This command downloads the hugging face dataset and applies common transformations (filtering only Python3 solutions, sampling data, and translating references).
 It then stores the derived dataset called `101_test` (locally)
 
-### eval
-Example command: `gencode eval pass_at_k --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
-
-This command takes a dataset name (can be a dataset stored locally) and evaluates the  one of it's split of the dataset against specified test types that accompany the problems.
-The result is a `pass@k` metric
-
 
 ### gen
 
@@ -74,6 +68,13 @@ for example, try:
 
 
 `solve_and_evaluate_set` - specify a dataset, split, sample etc. and the code will generate solutions for all the problems in the dataset, and calulate `pass@k`
+
+### eval
+Example command: `gencode eval pass_at_k --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
+
+This command takes a dataset name (can be a dataset stored locally) and evaluates the  one of it's split of the dataset against specified test types that accompany the problems.
+The result is a `pass@k` metric
+
 
 ## installation
 

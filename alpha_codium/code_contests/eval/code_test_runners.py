@@ -1,11 +1,12 @@
 import abc
+import traceback
 from abc import abstractmethod
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-from typing import List
+from typing import List, Optional
 
-from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.local_exec import (
     MultiTestResult,
+    ProgramStatus,
     calculate_tests_pass_fail,
     execute_candidate_code,
 )
@@ -34,12 +35,15 @@ class PythonTestsRunner(abc.ABC):
     def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
         pass
 
+    def format_exception(self, e):
+        formatted_lines = traceback.format_exception(type(e), e, e.__traceback__)
+        return ("\n".join(formatted_lines[-3:]))
 
     @abstractmethod
     def create_executor(self):
         pass
 
-    def print_test_results(self, result: MultiTestResult):
+    def print_test_results(self, result: MultiTestResult, test_inputs: List[str] = None):
         if result.compilation_result:
             print(
                 f"compilation results:{result.compilation_result.program_status if result.compilation_result else ''}")
@@ -47,16 +51,32 @@ class PythonTestsRunner(abc.ABC):
             print(result.compilation_result.stderr)
 
         for i, test_res in enumerate(result.test_results):
+            print(f"input:\n{test_inputs[i]}")
+            print(f"expected output:\n{test_res.expected_output}")
+            print(f"actual output:\n{test_res.actual_output}")
+            details = f"passed={test_res.passed}"
+            if not test_res.passed:
+                error = ""
+                if test_res.stderr.strip() != "":
+                    error = f"strerror: {test_res.stderr}."
+                if test_res.sandbox_result:
+                    error_lines = test_res.sandbox_result
+                    error = f"{error} sandbox error: {error_lines}"
+                details = f"{details}. {error}"
+            if test_res.program_status == ProgramStatus.kTimeout:
+                details = f"runtime of {test_res.execution_duration} exceeded allowed runtime"
             print(
-                f"test-{i} :: status={test_res.program_status}, pased={test_res.passed}"
+                f"test-{i} :: status={test_res.program_status}, {details}"
+
             )
+
             print(
                 "====================================================================="
             )
-            print(test_res.stdout)
-            print(
-                "====================================================================="
-            )
+            # print(test_res.stdout)
+            # print(
+            #     "====================================================================="
+            # )
 
 
 class LocalPythonTestsRunner(PythonTestsRunner):
@@ -67,17 +87,37 @@ class LocalPythonTestsRunner(PythonTestsRunner):
 
     def test_interpreter(self):
         _, _, result = self.run_tests(0, "test interpreter", PythonTestsRunner.test_program,
-                              PythonTestsRunner.test_inputs, PythonTestsRunner.test_outputs)
+                                      PythonTestsRunner.test_inputs, PythonTestsRunner.test_outputs)
         super().print_test_results(result)
 
-    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
+    @staticmethod
+    def prepare_script(script: str):
+        script = LocalPythonTestsRunner.remove_if_main(script)
+        return script
+
+    @staticmethod
+    def remove_if_main(script: str):
+        if 'if __name__ ==' in script:
+            result_lines = script.split('\n')
+            start_dedent = False
+            for i, line in enumerate(result_lines):
+                if 'if __name__ ==' in line:
+                    start_dedent = True
+                    result_lines[i] = ''
+                if start_dedent:
+                    result_lines[i] = result_lines[i][4:]
+            script = '\n'.join(result_lines)
+        return script
+
+    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10):
+        candidate = LocalPythonTestsRunner.remove_if_main(candidate)
         multi_result = execute_candidate_code(candidate=candidate, inputs=test_inputs,
-                                              test_id=test_id, timeout=2, sandbox=self.sandbox)
+                                              test_id=test_id, timeout=timeout, sandbox=self.sandbox)
         tests_results = calculate_tests_pass_fail(multi_result, expected_results=tests_outputs)
         return test_id, candidate_id, tests_results
 
     def create_executor(self):
-        return ProcessPoolExecutor, {}#{'initializer': reliability_guard}
+        return ProcessPoolExecutor, {}  # {'initializer': reliability_guard}
 
 
 class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
@@ -125,9 +165,17 @@ class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
     def create_executor(self):
         return ThreadPoolExecutor, {}
 
-def eval_solution(evaluation_test_type, example, prediction):
-    test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
-    test_outputs = example.get(evaluation_test_type).get("output") if example.get(evaluation_test_type) else None
+
+def eval_solution(evaluation_test_type: str = "private_tests",
+                  example: dict = {},  # noqa # the code contest problem
+                  prediction: str = '',  # python code to be evaluated
+                  test_inputs: Optional[List[str]] = None,
+                  test_outputs: Optional[List[str]] = None,
+                  ):
+    if not test_inputs:
+        test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
+    if not test_outputs:
+        test_outputs = example.get(evaluation_test_type).get("output") if example.get(evaluation_test_type) else None
     if test_inputs and test_outputs:
         test_runner = PythonTestsRunner.factory(get_settings().code_tester.tester_type)
         _, _, results = test_runner.run_tests(
@@ -135,25 +183,30 @@ def eval_solution(evaluation_test_type, example, prediction):
             candidate_id="id",
             candidate=prediction,
             test_inputs=test_inputs,
-            tests_outputs=test_outputs
+            tests_outputs=test_outputs,
+            timeout=10,
         )
-        test_runner.print_test_results(results)
+        test_runner.print_test_results(results, test_inputs)
+        return test_inputs, results
     else:
         print("example doesn't have inputs or outputs")
+        return test_inputs, []
 
 
 if __name__ == '__main__':
-    cc = CodeContestDataProvider("assaf_test")
-    problem = CodeContestDataProvider.find_problem(cc.dataset, problem_name= "1551_E. Fixed Points",
-                                                   split_name= "valid", evaluation_test_type="private_tests",)
-    sols = problem['solutions']
-    #for solution in sols.get('solution'):
-    solution = sols.get('solution')[1]
-    eval_solution(evaluation_test_type="private_tests", example=problem, prediction=solution)
+    runner = LocalPythonTestsRunner()
+    program = """
 
-    for test_input, test_output in zip(problem['private_tests']['input'], problem['private_tests']['output'] ):
-        print("===========")
-        print(test_input)
-        print("***")
-        print(test_output)
-        print("===========")
+x = input()
+
+def f1(val):
+    return f2(val)
+
+def f2(val):
+    return int(val)/0
+    
+f1(x)
+
+"""
+    _, _, results = runner.run_tests("test", 1, program, ["1", "2"], ["1", "2"])
+    runner.print_test_results(results, ["1", "2"])

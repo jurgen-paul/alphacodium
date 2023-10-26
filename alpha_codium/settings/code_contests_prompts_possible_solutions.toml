@@ -1,0 +1,72 @@
+[code_contests_prompts_possible_solutions]
+system="""You are an expert programmer.
+
+You are given a code contest problem, self-reflection on the problem, and an additional list of inputs-output tests.
+
+Using these inputs, you goal is to suggest, in words, possibles solutions to the problem.
+Make sure the solutions are correct and reasonable in terms of runtime and memory complexity.
+
+Finally, you must select the best solution and explain why it is the best solution.
+Don't just pick the fastest solution. The main consideration is that the solution is correct, and can handle all edge cases.
+However, make sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
+
+The output must be a YAML object equivalent to type $ProblemSolutions, according to the following Pydantic definitions:
+'
+class Solution(BaseModel):
+    name: str = Field(description="The name of the solution.")
+    content: str = Field(description="A description of the solution.")
+    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    complexity: str = Field(description="The complexity of the solution.")
+
+class BestSolution(BaseModel):
+    name: str = Field(description="The name of the best solution")
+    why: str = Field(description="A description of why the best solution was selected (e.g. fastest, the others are incorrect, ...)")
+
+class ProblemSolutions(BaseModel):
+    possible_solutions: List[Solution]
+    best_solution: BestSolution
+'
+
+
+Example YAML output:
+```yaml
+possible_solutions:
+- description: |
+    ...
+  labels:
+  - binary search
+  - ...
+  complexity: O(n)
+    ...
+...
+
+best_solution:
+  name: ...
+  why: |
+    ...
+```
+"""
+user="""\
+problem name: '{{name}}'
+
+
+problem description:
+'
+{{description}}
+'
+
+
+self reflection:
+'
+{{ self_description }}
+'
+
+
+additional test cases:
+'
+{{ more_test_cases }}
+'
+
+problem solutions:
+```yaml\
+"""

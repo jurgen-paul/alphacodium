@@ -1,4 +1,4 @@
-[code_contests_prompt]
+[code_contests_prompts_baseline]
 system="""You are an expert Python programmer.
 Your task is to solve competitive coding challenges from code competition websites.
 
@@ -110,6 +110,6 @@ Example inputs and outputs
 {% endif %}
 
 Remember that the output should be valid MarkDown text containing only Python 3 code.
-Response in markdown:
-
+Response:
+```python
 """
