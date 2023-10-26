@@ -13,7 +13,9 @@ from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.log import get_logger
 
+logger = get_logger(__name__)
 
 class CodeContestsCompetitor:
     def __init__(self, test_flavor='local'):
@@ -54,30 +56,37 @@ class CodeContestsCompetitor:
         return response
 
     async def run(self, problem):
+        logger.info("Running code contests competitor")
+
+        # configurations
         result = None
         problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
-        use_baseline = False
+        use_baseline = get_settings().get("solve.use_baseline", False)
+        do_recording = get_settings().get("solve.do_recording", False)
+        use_recording = get_settings().get("solve.use_recording", False)
+        if use_recording or do_recording:
+            recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
+            logger.info(f"recording_path: {recording_path}\ndo_record: {do_recording}\nuse_record: {use_recording}")
+            if do_recording:
+                os.makedirs(recording_path, exist_ok=True)
+
         if use_baseline:
-            logging.info("Using baseline")
+            logging.info("Using baseline prompt")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_baseline")
             response_baseline, _ = await retry_with_fallback_models(f)
             if response_baseline:
                 result = self.postprocess_response(response_baseline)
         else:
-            recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
-            os.makedirs(recording_path, exist_ok=True)
-            do_record = False
-            use_record = True
-            print(f"recording_path: {recording_path}\ndo_record: {do_record}\nuse_record: {use_record}")
-
             # reflect
-            print("--reflection stage--")
+            logger.info("--reflection stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
-            if use_record:
+            if use_recording:
                 response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
+                logger.info(f"Using recording")
+                logger.debug(f"response_reflect:\n{response_reflect}")
             else:
                 response_reflect, _ = await retry_with_fallback_models(f)
-                if do_record:
+                if use_recording:
                     np.save(recording_path + 'reflect.npy', response_reflect)
             response_reflect = response_reflect.rstrip("` \n")
             try:
@@ -93,13 +102,15 @@ class CodeContestsCompetitor:
             problem['self_description'] = response_reflect_yaml['self_description']
 
             # reflect on test cases
-            print("--reflect on test cases stage--")
+            logger.info("--reflect on test cases stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
-            if use_record:
+            if use_recording:
                 response_more_cases = np.load(recording_path + 'more_test_cases.npy', allow_pickle=True).tolist()
+                logger.info(f"Using recording")
+                logger.debug(f"response_more_cases:\n{response_more_cases}")
             else:
                 response_more_cases, _ = await retry_with_fallback_models(f)
-                if do_record:
+                if do_recording:
                     np.save(recording_path + 'more_test_cases.npy', response_more_cases)
             response_more_cases = response_more_cases.rstrip("` \n")
             response_more_cases_yaml = yaml.safe_load(response_more_cases)
@@ -107,14 +118,16 @@ class CodeContestsCompetitor:
             problem['more_test_cases'] = response_more_cases_yaml['test_cases']
 
             # possible solutions
-            print("--possible solutions stage--")
+            logger.info("--possible solutions stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
-            if use_record:
+            if use_recording:
                 response_possible_solutions = np.load(recording_path + 'possible_solutions.npy', allow_pickle=True)\
                                                 .tolist()
+                logger.info(f"Using recording")
+                logger.debug(f"response_possible_solutions:\n{response_possible_solutions}")
             else:
                 response_possible_solutions, _ = await retry_with_fallback_models(f)
-                if do_record:
+                if do_recording:
                     np.save(recording_path + 'possible_solutions.npy', response_possible_solutions)
             response_possible_solutions = response_possible_solutions.rstrip("` \n")
             problem['response_possible_solutions'] = response_possible_solutions
@@ -123,25 +136,21 @@ class CodeContestsCompetitor:
             for solution in response_possible_solutions_yaml['possible_solutions']:
                 if solution['name'] == best_solution_name:
                     problem['best_solution'] = solution
-                    print(f"response_possible_solutions_yaml:\n{response_possible_solutions}")
                     break
 
             # solve
-            print("--solve stage--")
+            logger.info("--solve stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
-            if use_record:
+            if use_recording:
                 response_solve = np.load(recording_path + 'solve.npy', allow_pickle=True).tolist()
-                if isinstance(response_solve, list):
-                    response_solve = response_solve[0]
+                logger.info(f"Using recording")
+                logger.debug(f"response_solve:\n{response_solve}")
             else:
                 response_solve, _ = await retry_with_fallback_models(f)
-                if do_record:
+                if do_recording:
                     np.save(recording_path + 'solve.npy', response_solve)
-            if isinstance(response_solve, tuple): # (code, 'stop')
-                response_solve, _ = response_solve
             response_solve = response_solve.rstrip("` \n")
             problem['best_solution_code'] = response_solve
-            print(f"response_solve:\n{response_solve}")
             result = response_solve
 
             # evaluate public tests
@@ -258,20 +267,28 @@ class CodeContestsCompetitor:
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
         prediction = asyncio.run(self.run(problem=problem))
+        logger.info("testing solution on private tests")
+        logger.info(f"prediction:\n{prediction}")
         return prediction
 
 
 def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_test_type=None):
+    # logger.info('solve_and_test')
+
+    # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
     problem = data_provider.find_problem(ds=data_provider.dataset, problem_name=problem_name, split_name=split_name,
                                          evaluation_test_type=evaluation_test_type)
+
+    # solve problem
     solver = CodeContestsCompetitor()
     solution = solver.solve_problem(problem)
-    print("testing solution on private tests")
-    print(f"solution:\n{solution}")
+
+    # test solution
     test_results = None
     if evaluation_test_type:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
+
     return solution, test_results
 
 

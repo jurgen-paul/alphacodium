@@ -3,7 +3,9 @@ import click
 from alpha_codium.code_contests.data import cli as data_cli
 from alpha_codium.code_contests.eval import cli as eval_cli
 from alpha_codium.gen import cli as gen_cli
+from alpha_codium.log import setup_logger
 
+setup_logger()
 
 @click.group()
 def cli():

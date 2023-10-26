@@ -9,7 +9,9 @@ from openai.error import APIError, RateLimitError, Timeout, TryAgain
 from retry import retry
 
 from alpha_codium.config_loader import get_settings
+from alpha_codium.log import get_logger
 
+logger = get_logger(__name__)
 OPENAI_RETRIES = 5
 
 
@@ -105,9 +107,10 @@ class AiHandler:
                 )
 
             async with self.limiter:
-                print("-----------------")
-                print(f"system:\n{system}")
-                print(f"user:\n{user}")
+                logger.info("-----------------")
+                logger.info("Running inference ...")
+                logger.debug(f"system:\n{system}")
+                logger.debug(f"user:\n{user}")
                 response = await acompletion(
                     model=model,
                     deployment_id=deployment_id,
@@ -131,6 +134,7 @@ class AiHandler:
             raise TryAgain
         resp = response["choices"][0]["message"]["content"]
         finish_reason = response["choices"][0]["finish_reason"]
-        print(f"response:\n{resp}")
-        print("-----------------")
+        logger.debug(f"response:\n{resp}")
+        logger.info('done')
+        logger.info("-----------------")
         return resp, finish_reason

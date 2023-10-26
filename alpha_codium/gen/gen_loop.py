@@ -5,7 +5,9 @@ from datasets import Dataset, Features, Sequence, Value
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.pass_at_k_evaluator import calculate_metrics
 from alpha_codium.gen.coding_competitor import CodeContestsCompetitor
+from alpha_codium.log import get_logger
 
+logger = get_logger(__name__)
 features = Features(
     {"task_name": Value("string"), "solution_candidates": Sequence(Value("string"))}
 )
@@ -26,7 +28,7 @@ async def generate_candidate_solutions(ds):
 
 
 def solve_and_evaluate_dataset(dataset_name, split_name='valid',  sample_rate=0.1, evaluation_test_type=None):
-
+    logger.info('solve_and_evaluate_dataset')
     cc = CodeContestDataProvider(dataset_location=dataset_name)
     ds = cc.dataset[split_name]
     ds = cc.sample(ds, sample_rate)
