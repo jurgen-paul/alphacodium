@@ -56,7 +56,7 @@ class CodeContestsCompetitor:
         return response
 
     async def run(self, problem):
-        logger.info("Running code contests competitor")
+        logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
         # configurations
         result = None
@@ -152,9 +152,10 @@ class CodeContestsCompetitor:
             response_solve = response_solve.rstrip("` \n")
             response_solve_yaml = yaml.safe_load(response_solve)
             problem['best_solution_code'] = response_solve_yaml['solution_code']
-            result = response_solve
+            recent_solution = response_solve_yaml['solution_code']
 
             # evaluate public tests
+            logger.info("--iterate on public tests stage--")
             is_all_passed_public = False
             counter = 0
             max_allowed_counter = 4
@@ -163,14 +164,14 @@ class CodeContestsCompetitor:
             while not is_all_passed_public:
                 logging.info(f"evaluating public tests. attempt {counter}")
                 test_inputs, results = eval_solution(example=problem,
-                                             prediction= result,
+                                             prediction= recent_solution,
                                              test_inputs=problem['public_tests']['input'],
                                              test_outputs=problem['public_tests']['output'],)
 
                 if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
                     logger.error("timeout - took more than 10 seconds to run")
                     counter += 1
-                    result = problem['last_solution_code']
+                    recent_solution = problem['last_solution_code']
                     if counter > max_allowed_counter:
                         logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                         break
@@ -206,9 +207,9 @@ class CodeContestsCompetitor:
                 response_fixed_code, _ = await retry_with_fallback_models(f)
                 try:
                     response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
-                    result = response_fixed_code_yaml['new_solution_code']
+                    recent_solution = response_fixed_code_yaml['new_solution_code']
                     problem['last_solution_code'] = problem['solution_code']
-                    problem['solution_code'] = result
+                    problem['solution_code'] = recent_solution
 
                     # result = remove_if_main(result)
                 except yaml.YAMLError:
