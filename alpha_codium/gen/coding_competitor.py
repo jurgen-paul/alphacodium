@@ -159,17 +159,19 @@ class CodeContestsCompetitor:
             is_all_passed_public = False
             counter = 0
             max_allowed_counter = 4
-            problem['solution_code'] = problem['best_solution_code']
-            problem['last_solution_code'] = problem['best_solution_code']
+            problem['recent_solution'] = problem['last_solution_code'] = problem['best_solution_code']
             while not is_all_passed_public:
+
+                # run the solution on the public tests
                 logging.info(f"evaluating public tests. attempt {counter}")
                 test_inputs, results = eval_solution(example=problem,
-                                             prediction= recent_solution,
-                                             test_inputs=problem['public_tests']['input'],
-                                             test_outputs=problem['public_tests']['output'],)
+                                                     prediction=recent_solution,
+                                                     test_inputs=problem['public_tests']['input'],
+                                                     test_outputs=problem['public_tests']['output'], )
 
-                if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
-                    logger.error("timeout - took more than 10 seconds to run")
+                if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout' or\
+                    str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
+                    logger.error("failed to run tests. reverting to last solution")
                     counter += 1
                     recent_solution = problem['last_solution_code']
                     if counter > max_allowed_counter:
@@ -177,7 +179,7 @@ class CodeContestsCompetitor:
                         break
                     continue
                 else:
-                    # bug - only a single test is evaluated
+                    # build the error string
                     error_str = ""
                     is_all_passed_public = True
                     is_valid_output = True
@@ -189,6 +191,7 @@ class CodeContestsCompetitor:
                         # is_all_passed_public = actual_output == expected_output
                         is_all_passed_public = is_all_passed_public and t.passed
                         is_valid_output = is_valid_output and t.actual_output
+
                 if is_all_passed_public:
                     logger.info(f"Passed public tests after {counter} attempts")
                     break
@@ -198,19 +201,22 @@ class CodeContestsCompetitor:
                     logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                     break
 
-                problem['error_str'] = error_str
-                problem['possible_test_error'] = ''
                 if not is_valid_output:
                     logging.info("Failed to pass public tests. actual_output is empty")
                     break
+                else:
+                    # tests run. save the last solution
+                    problem['last_solution_code'] = recent_solution
+
+                # try to fix the solution
+                problem['error_str'] = error_str
+                problem['possible_test_error'] = ''
                 f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
                 response_fixed_code, _ = await retry_with_fallback_models(f)
                 try:
                     response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
                     recent_solution = response_fixed_code_yaml['new_solution_code']
-                    problem['last_solution_code'] = problem['solution_code']
-                    problem['solution_code'] = recent_solution
-
+                    problem['recent_solution'] = recent_solution
                     # result = remove_if_main(result)
                 except yaml.YAMLError:
                     print(f"Failed to parse yaml: {response_fixed_code}")

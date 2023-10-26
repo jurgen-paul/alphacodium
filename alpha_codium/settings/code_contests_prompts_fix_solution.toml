@@ -27,6 +27,20 @@ new_solution_description: |-
   ...
 new_solution_code: |-
   ...
+
+The 'new_solution_code' yaml output must follow this structre:
+'
+    def f(...):
+        ...
+        return ...
+
+
+    if __name__ == "__main__":
+        ...
+'
+Reading the input should be done using the 'input()' method. Make sure to properly parse the input, according to the problem description.
+The output should be printed without additional words using the 'print()' method.
+
 ```
 """
 user="""\
@@ -39,9 +53,9 @@ problem description:
 '
 
 
-previous solution code:
+solution code:
 '
-{{ solution_code }}'
+{{ recent_solution }}'
 '
 
 Error message:
