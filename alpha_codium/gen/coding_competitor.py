@@ -75,7 +75,7 @@ class CodeContestsCompetitor:
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_baseline")
             response_baseline, _ = await retry_with_fallback_models(f)
             if response_baseline:
-                result = self.postprocess_response(response_baseline)
+                recent_solution = self.postprocess_response(response_baseline)
         else:
             # reflect
             logger.info("--reflection stage--")
@@ -255,7 +255,7 @@ class CodeContestsCompetitor:
 
 
         # remove the if __name__ == '__main__' part. python eval fails to generate output with it
-        return result
+        return recent_solution
 
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
