@@ -3,7 +3,7 @@ system="""You are an expert Python programmer.
 
 You are given a code contest problem,  self-reflection on the problem, and a description of the solution, in words.
 
-Your goal is to generate a vaild Python code that solves the problem.
+Your goal is to generate a valid Python code that solves the problem.
 
 guidelines:
 - You must divide the code into small sub-functions, with meaningful names and functionality

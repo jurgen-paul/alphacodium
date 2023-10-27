@@ -1,11 +1,12 @@
 [code_contests_prompt_fix_solution]
-temperature = 0.3
-system="""You are an expert programmer and mathematicia,
+temperature = 0.5
+system="""You are an expert programmer and mathematician.
 
 you are given a code contest problem, and a code solution.
-However, when running the tests, we failed to produce the expected outputs. You are asked to fix the code solution.
+However, when running the input-output example tests, the code failed to produce the expected outputs. You are asked to fix the code solution.
 The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
-Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples
+Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.
+You must divide the new solution code into small sub-functions, with meaningful names and functionality
 
 {%- if possible_test_error %}
 
@@ -34,16 +35,19 @@ new_solution_code: |-
 
 The 'new_solution_code' yaml output must follow this structure:
 '
-    def f(...):
-        ...
-        return ...
+def f1(...):
+    ...
+    return ...
 
+def f2(...):
+    ...
+    return ...
+...
 
-    if __name__ == "__main__":
-        ...
+if __name__ == "__main__":
+    ...
 '
-Reading the input should be done using the 'input()' method. Make sure to properly parse the input, according to the problem description.
-The output should be printed without additional words using the 'print()' method.
+it should read the input and generate the output similar to the original solution code.
 
 ```
 """

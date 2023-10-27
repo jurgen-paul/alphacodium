@@ -86,7 +86,7 @@ class CodeContestsCompetitor:
                 logger.debug(f"response_reflect:\n{response_reflect}")
             else:
                 response_reflect, _ = await retry_with_fallback_models(f)
-                if use_recording:
+                if do_recording:
                     np.save(recording_path + 'reflect.npy', response_reflect)
             response_reflect = response_reflect.rstrip("` \n")
             try:
@@ -135,6 +135,10 @@ class CodeContestsCompetitor:
             counter = 0
             max_allowed_counter = 4
             problem['recent_solution'] = problem['last_solution_code'] = problem['best_solution_code']
+
+            test_inputs_list = problem['public_tests']['input']
+            test_outputs_list = problem['public_tests']['output']
+
             while not is_all_passed_public:
 
                 # run the solution on the public tests
