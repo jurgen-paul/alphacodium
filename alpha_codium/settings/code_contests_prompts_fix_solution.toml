@@ -1,9 +1,11 @@
 [code_contests_prompt_fix_solution]
 temperature = 0.3
-system="""You are an expert Python programmer, and given a code contest problem, and a code solution.
+system="""You are an expert programmer and mathematicia,
+
+you are given a code contest problem, and a code solution.
 However, when running the tests, we failed to produce the expected outputs. You are asked to fix the code solution.
 The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
-Try to simulate the process of running the tests input, and understand what went wrong in the code solution.
+Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples
 
 {%- if possible_test_error %}
 

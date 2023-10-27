@@ -92,51 +92,27 @@ class CodeContestsCompetitor:
             try:
                 response_reflect_yaml = yaml.safe_load(response_reflect)
             except yaml.YAMLError:
-                try:
-                    response_reflect = self.postprocess_response(response_reflect) # try to include only the yaml part
-                    response_reflect_yaml = yaml.safe_load(response_reflect)
-                except yaml.YAMLError:
-                    logging.info(f"Failed to parse yaml: {response_reflect}")
-                    response_reflect_yaml = {'self_description': response_reflect}
+                response_reflect = self.postprocess_response(response_reflect) # try to include only the yaml part
+                response_reflect_yaml = yaml.safe_load(response_reflect)
             problem['response_reflect'] = response_reflect
             problem['self_description'] = response_reflect_yaml['self_description']
+            problem['possible_solutions'] = response_reflect_yaml['possible_solutions']
 
-            # reflect on test cases
-            logger.info("--reflect on test cases stage--")
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_more_test_cases")
+            # choose best solution
+            logger.info("--choose best solution stage--")
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_choose_best_solution")
             if use_recording:
-                response_more_cases = np.load(recording_path + 'more_test_cases.npy', allow_pickle=True).tolist()
-                logger.info(f"Using recording")
-                logger.debug(f"response_more_cases:\n{response_more_cases}")
-            else:
-                response_more_cases, _ = await retry_with_fallback_models(f)
-                if do_recording:
-                    np.save(recording_path + 'more_test_cases.npy', response_more_cases)
-            response_more_cases = response_more_cases.rstrip("` \n")
-            response_more_cases_yaml = yaml.safe_load(response_more_cases)
-            problem['response_more_cases'] = response_more_cases
-            problem['more_test_cases'] = response_more_cases_yaml['test_cases']
-
-            # possible solutions
-            logger.info("--possible solutions stage--")
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_possible_solutions")
-            if use_recording:
-                response_possible_solutions = np.load(recording_path + 'possible_solutions.npy', allow_pickle=True)\
+                response_best_solution = np.load(recording_path + 'best_solution.npy', allow_pickle=True)\
                                                 .tolist()
                 logger.info(f"Using recording")
-                logger.debug(f"response_possible_solutions:\n{response_possible_solutions}")
+                logger.debug(f"response_best_solution:\n{response_best_solution}")
             else:
-                response_possible_solutions, _ = await retry_with_fallback_models(f)
+                response_best_solution, _ = await retry_with_fallback_models(f)
                 if do_recording:
-                    np.save(recording_path + 'possible_solutions.npy', response_possible_solutions)
-            response_possible_solutions = response_possible_solutions.rstrip("` \n")
-            problem['response_possible_solutions'] = response_possible_solutions
-            response_possible_solutions_yaml = yaml.safe_load(response_possible_solutions)
-            best_solution_name = response_possible_solutions_yaml['best_solution']['name']
-            for solution in response_possible_solutions_yaml['possible_solutions']:
-                if solution['name'] == best_solution_name:
-                    problem['best_solution'] = solution
-                    break
+                    np.save(recording_path + 'best_solution.npy', response_best_solution)
+            response_best_solution = response_best_solution.rstrip("` \n")
+            problem['response_best_solution'] = response_best_solution
+            response_best_solution_yaml = yaml.safe_load(response_best_solution)
 
             # solve
             logger.info("--solve stage--")
@@ -150,9 +126,8 @@ class CodeContestsCompetitor:
                 if do_recording:
                     np.save(recording_path + 'solve.npy', response_solve)
             response_solve = response_solve.rstrip("` \n")
-            response_solve_yaml = yaml.safe_load(response_solve)
-            problem['best_solution_code'] = response_solve_yaml['solution_code']
-            recent_solution = response_solve_yaml['solution_code']
+            problem['best_solution_code'] = response_solve
+            recent_solution = response_solve
 
             # evaluate public tests
             logger.info("--iterate on public tests stage--")

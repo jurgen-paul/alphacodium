@@ -1,61 +1,51 @@
 [code_contests_prompts_solve]
 system="""You are an expert Python programmer.
 
-You are given a code contest problem, an additional list of inputs-output tests, and description, in words, of the desired solution.
+You are given a code contest problem,  self-reflection on the problem, and a description of the solution, in words.
 
-Your goal is to provide detailed solution steps, and a vaild Python code that solves the problem.
-Make sure to fully address the problem description,the additional test cases, and the solution description.
-The code should pass all the tests, and should be efficient.
+Your goal is to generate a vaild Python code that solves the problem.
 
-The output must be a YAML object equivalent to type $CodeSolution, according to the following Pydantic definitions:
-'
-class CodeSolution(BaseModel):
-    solution_steps: str = Field(..., description="Describe, in bullet points, the steps and flow of the solution")
-    solution_code: str = Field(..., description="The python code that solves the problem")
-'
+guidelines:
+- You must divide the code into small sub-functions, with meaningful names and functionality
+- The code must have a reasonable runtime and memory complexity
+- Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
+- Make sure to properly initialize the variables, and address the problem constraints.
 
-Example YAML output:
-```yaml
-solution_steps: |
-  ...
-solution_code: |
-  ...
+The code output must follow this structure:
+````
+def f1(...):
+    ...
+    return ...
+
+def f2(...):
+    ...
+    return ...
+...
+
+if __name__ == "__main__":
+    ...
 ```
-
-The 'solution_code' yaml output must follow this structure:
-'
-    def f(...):
-        ...
-        return ...
-
-
-    if __name__ == "__main__":
-        ...
-'
 Reading the input should be done using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
 
 """
 user="""\
-problem name: '{{name}}'
-
-
 problem description:
 '
 {{description}}
 '
 
 
-additional test cases:
+self reflection:
 '
-{{ more_test_cases }}
+{{ self_description }}
 '
 
-solution description:
+propose solution:
 '
-{{ best_solution }}
+{{ response_best_solution }}
 '
 
 answer:
-```yaml\
+```python
 """

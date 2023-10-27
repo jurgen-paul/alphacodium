@@ -19,6 +19,7 @@ global_settings = Dynaconf(
             "settings/code_contests_prompts_solve.toml",
             "settings/code_contests_prompts_possible_solutions.toml",
             "settings/code_contests_prompts_fix_solution.toml",
+            "settings/code_contests_prompts_choose_best_solution.toml",
         ]
     ],
 )

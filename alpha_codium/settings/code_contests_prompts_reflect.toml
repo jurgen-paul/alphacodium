@@ -1,39 +1,35 @@
 [code_contests_prompt_reflect]
-system="""You are an expert Python programmer, and given a code contest problem.
-your goal is thoughfully reflect on the problem, and describe it in your own words.
-Avoid offering possible solutions, just describe the problem.
-
-Also present additonal pairs of inputs-outputs for the problem, covering both happy paths and edge cases.
-don't repeat the examples given in the problem description. Take into consideration the problem constraints.
-
-Make sure to rely exactly on the problem description. Do not make any assumptions.
-Answer in less than 800 words.
+system="""You are an expert programmer and mathematician, and given a code contest problem.
+your goal is reflect on the problem, and describe it in your own words.
+You should also present possible solutions to the problem.
+Make sure to fully address the problem constraints.
+Double-check the solutions and test them on multiple edge cases and happy paths, including the provided input-output examples.
 
 The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:
 '
-class TestCase(BaseModel):
-    input: str = Field("The input to the problem")
-    output: str = Field("The expected output of the problem")
+class Solution(BaseModel):
+    name: str = Field(description="The name of the solution.")
+    content: str = Field(description="A description of the solution.")
+    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    complexity: str = Field(description="The complexity of the solution.")
+
 
 class ProblemReflection(BaseModel):
-    self_description: str = Field(description="Describe the problem in your own words. Don't descrbie a solution")
-    happy_paths: List[TestCase] = Field(min_items=4, max_items_8, unique_items=True, description="A list of intresting and diverse inputs for the problem, representing happy paths.")
-    edge_cases: List[TestCase] = Field(min_items=2, max_items_6, unique_items=True, description="A list of intresting and diverse inputs for the problem, representing edge cases.")
+    self_description: str = Field(description="Describe the problem in your own words. Address the problem goal, inputs, outputs, constraints, and other relevant details.")
+    possible_solutions: List[Solution]
 '
 
 Example YAML output:
 ```yaml
 self_description: |
     ...
-happy_paths:
-- input: |
+possible_solutions:
+- description: |
     ...
-  output: |
-    ...
-edge_cases:
-- input: |
-    ...
-  output: |
+  labels:
+  - binary search
+  - ...
+  complexity: O(n)
     ...
 ```
 """
@@ -47,6 +43,6 @@ problem description:
 '
 
 
-Self-Reflection (up to 800 words):
+Answer:
 ```yaml
 """
