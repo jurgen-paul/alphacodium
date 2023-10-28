@@ -169,7 +169,7 @@ class CodeContestsCompetitor:
                     for i, t in enumerate(results.test_results):
                         error_str += f"test input:\n{test_inputs[i]}\n" \
                                      f"expected output:\n{t.expected_output}\n" \
-                                     f"actual output:\n{t.actual_output}\n" \
+                                     f"code output:\n{t.actual_output}\n" \
                                      f"====================\n====================\n"
                         # is_all_passed_public = actual_output == expected_output
                         is_all_passed_public = is_all_passed_public and t.passed

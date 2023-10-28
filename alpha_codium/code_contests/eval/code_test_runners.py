@@ -53,7 +53,7 @@ class PythonTestsRunner(abc.ABC):
         for i, test_res in enumerate(result.test_results):
             print(f"input:\n{test_inputs[i]}")
             print(f"expected output:\n{test_res.expected_output}")
-            print(f"actual output:\n{test_res.actual_output}")
+            print(f"code output:\n{test_res.actual_output}")
             details = f"passed={test_res.passed}"
             if not test_res.passed:
                 error = ""
