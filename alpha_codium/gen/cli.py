@@ -53,6 +53,12 @@ def run_internal(prompt):
     required=False
 )
 @click.option(
+    "--problem_number",
+    default=None,
+    show_default=True,
+    required=False
+)
+@click.option(
     "--evaluation_test_type",
     show_default=True,
     type=click.Choice(['private_tests', 'public_tests', 'generated_tests'], case_sensitive=False),
@@ -60,9 +66,10 @@ def run_internal(prompt):
     required=False,
 )
 
-def solve_problem(dataset_name, split_name, problem_name, evaluation_test_type):
+def solve_problem(dataset_name, split_name, problem_name, evaluation_test_type, problem_number):
     return solve_and_test(dataset_name=dataset_name, split_name=split_name,
-                          problem_name=problem_name, evaluation_test_type=evaluation_test_type)
+                          problem_name=problem_name, evaluation_test_type=evaluation_test_type,
+                          problem_number=problem_number)
 
 
 @gen.command("solve_and_evaluate_set")

@@ -133,7 +133,7 @@ class CodeContestsCompetitor:
             logger.info("--iterate on public tests stage--")
             is_all_passed_public = False
             counter = 0
-            max_allowed_counter = 4
+            max_allowed_counter = 5
             problem['recent_solution'] = problem['last_solution_code'] = problem['best_solution_code']
 
             test_inputs_list = problem['public_tests']['input']
@@ -265,11 +265,14 @@ class CodeContestsCompetitor:
         return prediction
 
 
-def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_test_type=None):
+def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_test_type=None, problem_number=None):
     # logger.info('solve_and_test')
 
     # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
+    if not problem_name and problem_number:
+        problem_name = data_provider.dataset[split_name][int(problem_number)]['name']
+        logger.info(f"problem_name: {problem_name}")
     problem = data_provider.find_problem(ds=data_provider.dataset, problem_name=problem_name, split_name=split_name,
                                          evaluation_test_type=evaluation_test_type)
 
