@@ -59,7 +59,6 @@ class CodeContestsCompetitor:
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
         # configurations
-        result = None
         problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
         use_baseline = get_settings().get("solve.use_baseline", False)
         do_recording = get_settings().get("solve.do_recording", False)
@@ -82,7 +81,7 @@ class CodeContestsCompetitor:
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
             if use_recording:
                 response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
-                logger.info(f"Using recording")
+                logger.info("Using recording")
                 logger.debug(f"response_reflect:\n{response_reflect}")
             else:
                 response_reflect, _ = await retry_with_fallback_models(f)
@@ -104,7 +103,7 @@ class CodeContestsCompetitor:
             if use_recording:
                 response_best_solution = np.load(recording_path + 'best_solution.npy', allow_pickle=True)\
                                                 .tolist()
-                logger.info(f"Using recording")
+                logger.info("Using recording")
                 logger.debug(f"response_best_solution:\n{response_best_solution}")
             else:
                 response_best_solution, _ = await retry_with_fallback_models(f)
@@ -112,14 +111,14 @@ class CodeContestsCompetitor:
                     np.save(recording_path + 'best_solution.npy', response_best_solution)
             response_best_solution = response_best_solution.rstrip("` \n")
             problem['response_best_solution'] = response_best_solution
-            response_best_solution_yaml = yaml.safe_load(response_best_solution)
+            response_best_solution_yaml = yaml.safe_load(response_best_solution) # noqa
 
             # solve
             logger.info("--solve stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
             if use_recording:
                 response_solve = np.load(recording_path + 'solve.npy', allow_pickle=True).tolist()
-                logger.info(f"Using recording")
+                logger.info("Using recording")
                 logger.debug(f"response_solve:\n{response_solve}")
             else:
                 response_solve, _ = await retry_with_fallback_models(f)
@@ -135,9 +134,6 @@ class CodeContestsCompetitor:
             counter = 0
             max_allowed_counter = 5
             problem['recent_solution'] = problem['last_solution_code'] = problem['best_solution_code']
-
-            test_inputs_list = problem['public_tests']['input']
-            test_outputs_list = problem['public_tests']['output']
 
             while not is_all_passed_public:
 
@@ -159,11 +155,13 @@ class CodeContestsCompetitor:
                 elif str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
                     logger.error("failed to run solution")
                     error_str = results.test_results[0].sandbox_result
+                    trace_str = f"trace information:\n{self.render_trace(results.test_results[0].trace)}\n\n"
                     is_all_passed_public = False
                     is_valid_output = True
                 else:
                     # build the error string
                     error_str = ""
+                    trace_str = ""
                     is_all_passed_public = True
                     is_valid_output = True
                     for i, t in enumerate(results.test_results):
@@ -171,6 +169,12 @@ class CodeContestsCompetitor:
                                      f"expected output:\n{t.expected_output}\n" \
                                      f"code output:\n{t.actual_output}\n" \
                                      f"====================\n====================\n"
+
+                        trace_str += f"trace:\n{self.render_trace(t.trace)}\n" \
+                                     f"====================\n====================\n"
+
+                        logger.debug(f"trace_str:\n{trace_str}")
+
                         # is_all_passed_public = actual_output == expected_output
                         is_all_passed_public = is_all_passed_public and t.passed
                         is_valid_output = is_valid_output and t.actual_output
@@ -195,6 +199,10 @@ class CodeContestsCompetitor:
 
                 # try to fix the solution
                 problem['error_str'] = error_str
+                if get_settings().code_tester.use_trace:
+                    problem['trace_str'] = trace_str
+                else:
+                    problem['trace_str'] = ''
                 problem['possible_test_error'] = ''
                 f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
                 response_fixed_code, _ = await retry_with_fallback_models(f)
@@ -257,6 +265,22 @@ class CodeContestsCompetitor:
         # remove the if __name__ == '__main__' part. python eval fails to generate output with it
         return recent_solution
 
+    def render_trace(self, trace_data):
+        if not trace_data:
+            return ''
+
+        max_trace_length = get_settings().code_tester.get("max_trace_length")
+        trace_lines = trace_data.split("\n")
+        if max_trace_length is not None and 0 < max_trace_length < len(trace_lines):
+            half_lines = int(max_trace_length / 2)
+            trace_lines = (
+                    trace_lines[:half_lines] +
+                    [f".... {len(trace_lines) - max_trace_length} omitted lines ...."] +
+                    trace_lines[-half_lines:]
+            )
+        joined_lines = "\n".join(trace_lines)
+        return joined_lines
+
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
         prediction = asyncio.run(self.run(problem=problem))
@@ -289,4 +313,8 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
 
 if __name__ == "__main__":
-    solve_and_test("assaf_test", "train")
+        solve_and_test(dataset_name="deepmind/code_contests", split_name="valid",
+                       problem_name="1560_F1. Nearest Beautiful Number (easy version)",
+                       evaluation_test_type="private_tests")
+
+

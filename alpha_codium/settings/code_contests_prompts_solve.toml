@@ -29,6 +29,9 @@ if __name__ == "__main__":
 Reading the input should be done using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
 
+Make sure to include all the necessary module imports at the top of the file.
+The code needs to be executable as-is.
+
 """
 user="""\
 problem description:

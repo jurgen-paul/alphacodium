@@ -1,20 +1,3 @@
-# Copyright 2020 The HuggingFace Datasets Authors and the current dataset script contributor.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# This code is adapted from OpenAI's release
-# https://github.com/openai/human-eval/blob/master/human_eval/execution.py
-
 import contextlib
 import copy
 import datetime
@@ -30,6 +13,9 @@ import traceback
 from dataclasses import dataclass
 from enum import Enum
 from typing import List
+
+from alpha_codium.code_contests.eval import tracer
+from alpha_codium.code_contests.eval.tracer import run_generated_code
 
 
 class ProgramStatus(Enum):
@@ -49,6 +35,7 @@ class ExecutionResult:
     program_hash: int = 0
     sandbox_result: str = ''
     passed: bool = False
+    trace: str = None
 
 
 @dataclass
@@ -67,12 +54,12 @@ class DualModeStream(io.BytesIO):
         return self.text_io.readline(*args, **kwargs)
 
 
-def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True):
-
+def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True, snoop=False):
     if sandbox:
         manager = multiprocessing.Manager()
         result = manager.list()
-        p = multiprocessing.Process(target=unsafe_execute, args=(test_id, candidate, inputs, result, timeout, sandbox))
+        p = multiprocessing.Process(target=unsafe_execute,
+                                    args=(test_id, candidate, inputs, result, timeout, sandbox, snoop))
         p.start()
         p.join(timeout=timeout + 1)
 
@@ -80,8 +67,8 @@ def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True):
             p.kill()
     else:
         result = []
-        unsafe_execute(test_id=test_id,check_program=candidate ,inputs= inputs,
-                       result=result, timeout=timeout, sandbox=sandbox)
+        unsafe_execute(test_id=test_id, check_program=candidate, inputs=inputs,
+                       result=result, timeout=timeout, sandbox=sandbox, snoop=snoop)
     if not result:
         multi_result = MultiTestResult()
         exec_result = ExecutionResult(program_status=ProgramStatus.kTimeout)
@@ -95,7 +82,7 @@ def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True):
     return multi_result
 
 
-def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox):
+def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, snoop=False):
     with create_tempdir():
         # These system calls are needed when cleaning up tempdir.
         import os
@@ -113,35 +100,49 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox):
         multi_results = MultiTestResult()
         test_results_list = []
         multi_results.test_results = test_results_list
-        try:
-            for single_input in inputs:
-                try:
+        if not check_program or not check_program.strip():
+            exec_result = ExecutionResult()
+            exec_result.sandbox_result = "Solution was empty"
+            exec_result.program_status = ProgramStatus.kFailed
+            multi_results.compilation_result = exec_result
+            result.append(multi_results)
+        else:
+            try:
+                for single_input in inputs:
                     exec_result = ExecutionResult()
                     test_results_list.append(exec_result)
                     input_stream = io.BytesIO(single_input.encode())
                     input_stream.seek(0)
-                    with swallow_io(input_stream=input_stream) as (stdout_stream, stderr_stream):
-                        with time_limit(timeout):
-                            exec(check_program, exec_globals)
-                    exec_result.program_status = ProgramStatus.kSuccess
-                    captured_output = stdout_stream.getvalue().strip()
-                    exec_result.stderr = stderr_stream.getvalue()
-                    exec_result.stdout = captured_output
-                except TimeoutException:
-                    exec_result.program_status = ProgramStatus.kTimeout
-                    exec_result.program_status = ProgramStatus.kFailed
-                except BaseException:
-                    lines = traceback.format_exc().splitlines()
-                    filtered_trace = '\n'.join(lines[3:])
-                    exec_result.sandbox_result = filtered_trace
-                    exec_result.program_status = ProgramStatus.kFailed
+                    try:
+                        with swallow_io(input_stream=input_stream) as (stdout_stream, stderr_stream):
+                            with time_limit(timeout):
+                                if snoop:
+                                    trace = run_generated_code(check_program)
+                                    exec_result.trace = trace
+                                else:
+                                    exec(check_program, exec_globals)
+                        exec_result.program_status = ProgramStatus.kSuccess
+                        captured_output = stdout_stream.getvalue().strip()
+                        exec_result.stderr = stderr_stream.getvalue()
+                        exec_result.stdout = captured_output
 
-        finally:
-            result.append(multi_results)
-            # Needed for cleaning up.
-            shutil.rmtree = rmtree
-            os.rmdir = rmdir
-            os.chdir = chdir
+                    except TimeoutException:
+                        exec_result.program_status = ProgramStatus.kTimeout
+                        exec_result.program_status = ProgramStatus.kFailed
+                    except BaseException:
+                        lines = traceback.format_exc().splitlines()[3:]
+                        filtered_trace = [line for line in lines if not
+                        any(substring in line for substring in tracer.filter_out_lines)]
+                        filtered_trace = '\n'.join(filtered_trace)
+                        exec_result.sandbox_result = filtered_trace
+                        exec_result.program_status = ProgramStatus.kFailed
+
+            finally:
+                result.append(multi_results)
+                # Needed for cleaning up.
+                shutil.rmtree = rmtree
+                os.rmdir = rmdir
+                os.chdir = chdir
 
 
 def compare_func(a, b):
@@ -149,7 +150,7 @@ def compare_func(a, b):
         a = a.strip()
     if b:
         b = b.strip()
-    return a==b
+    return a == b
 
 
 def calculate_tests_pass_fail(multi_tests_results: MultiTestResult, expected_results: List[str]):
@@ -242,7 +243,7 @@ def chdir(root):
     if root == ".":
         yield
         return
-    #cwd = os.getcwd()
+    # cwd = os.getcwd()
     os.chdir(root)
     try:
         yield
@@ -251,7 +252,6 @@ def chdir(root):
     finally:
         pass
     #    os.chdir(cwd)
-
 
 
 def reliability_guard(maximum_memory_bytes=None):
@@ -332,8 +332,6 @@ def reliability_guard(maximum_memory_bytes=None):
     sys.modules["resource"] = None
     sys.modules["psutil"] = None
     sys.modules["tkinter"] = None
-
-
 
 
 def run_tester():

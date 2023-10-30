@@ -3,7 +3,6 @@ import asyncio
 import click as click
 
 from alpha_codium.gen.coding_competitor import solve_and_test
-
 from alpha_codium.gen.gen_loop import solve_and_evaluate_dataset
 from alpha_codium.gen.generators import SimplePrompt
 from alpha_codium.log import get_logger

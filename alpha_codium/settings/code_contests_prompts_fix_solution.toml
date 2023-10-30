@@ -79,6 +79,13 @@ Error message:
 {{ error_str }}
 '
 
+{%- if trace_str %}
+Trace from execution:
+'
+{{ trace_str }}
+'
+{% endif %}
+
 
 Output YAML:
 ```yaml

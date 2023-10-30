@@ -32,3 +32,4 @@ code_contests_tester==0.1.3
 aiolimiter
 Jinja2
 tqdm
+pysnooper
