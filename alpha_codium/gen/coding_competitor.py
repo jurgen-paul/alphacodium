@@ -174,7 +174,8 @@ class CodeContestsCompetitor:
                         trace_str += f"trace:\n{self.render_trace(t.trace)}\n" \
                                      f"====================\n====================\n"
 
-                        logger.debug(f"trace_str:\n{trace_str}")
+                        if get_settings().code_tester.calc_trace:
+                            logger.debug(f"trace_str:\n{trace_str}")
 
                         # is_all_passed_public = actual_output == expected_output
                         is_all_passed_public = is_all_passed_public and t.passed
