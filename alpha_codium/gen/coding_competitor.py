@@ -144,6 +144,7 @@ class CodeContestsCompetitor:
                                                      test_inputs=problem['public_tests']['input'],
                                                      test_outputs=problem['public_tests']['output'], )
 
+                # analyze the tests results
                 if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
                     logger.error("timeout. reverting to last solution")
                     counter += 1
@@ -269,13 +270,14 @@ class CodeContestsCompetitor:
         if not trace_data:
             return ''
 
-        max_trace_length = get_settings().code_tester.get("max_trace_length")
+        max_trace_lines = get_settings().code_tester.get("max_trace_lines")
         trace_lines = trace_data.split("\n")
-        if max_trace_length is not None and 0 < max_trace_length < len(trace_lines):
-            half_lines = int(max_trace_length / 2)
+        if max_trace_lines is not None and 0 < max_trace_lines < len(trace_lines):
+            logger.debug(f"clipping trace from {len(trace_lines)} to {max_trace_lines}")
+            half_lines = int(max_trace_lines / 2)
             trace_lines = (
                     trace_lines[:half_lines] +
-                    [f".... {len(trace_lines) - max_trace_length} omitted lines ...."] +
+                    [f".... {len(trace_lines) - max_trace_lines} omitted lines ...."] +
                     trace_lines[-half_lines:]
             )
         joined_lines = "\n".join(trace_lines)

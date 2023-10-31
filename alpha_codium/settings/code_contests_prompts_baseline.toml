@@ -54,8 +54,7 @@ In the third query we can do nothing to obtain a good string.
 The solution you provide must be vaid python 3 code.
 
 
-reading the input is done using the input() method.
-
+The code should read the input using the 'input()' method.
 The output should be printed without additional words using the print() method.
 
 **Example solution**:
