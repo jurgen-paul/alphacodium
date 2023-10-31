@@ -1,5 +1,7 @@
 import pysnooper
 
+from alpha_codium.config_loader import get_settings
+
 filter_out_lines = ["Starting var:",
                     "exec(",
                     "Source path:",
@@ -14,7 +16,7 @@ snooper_kwargs = {
     'color': False,
     'relative_time': True,
     'normalize': True,
-    'depth': 10
+    'depth': get_settings().code_tester.trace_depth
 }
 
 snooper_kwargs_string = ", ".join(f"{key}={value}" for key, value in snooper_kwargs.items())
