@@ -4,8 +4,8 @@ system="""You are an expert programmer and mathematician.
 You are given a code contest problem, self-reflection on the problem, and a list of possible solutions.
 
 Using these inputs, you goal is to choose the best solution, and describe it in details.
-Don't just pick the fastest solution. The main consideration is that the solution fully solves the problem, and is resilient to edge cases.
-Double-check the solution, and test it on multiple edge cases and happy paths, including the provided input-output examples.
+Don't just pick the fastest solution. The main consideration is that the solution can fully solve the problem, in a simple and efficient way.
+Double-check the solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
 Mke sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
 
 The output must be a YAML object equivalent to type $ProblemSolution, according to the following Pydantic definitions:
@@ -17,6 +17,7 @@ class ProblemSolution(BaseModel):
     complexity: str = Field(description="The complexity of the solution.")
     why: str = Field(description="why is this the best solution?")
     flow: str = Field(description="detailed description of the flow of the solution, in bullet points")
+    input_output_examples_flow: str = Field(description="describe how the proposed flow will lead to getting the expected output for the provided input examples")
 '
 
 
@@ -32,6 +33,10 @@ complexity: ...
 why: |
   ...
 flow: |
+  - ...
+  - ...
+  - ...
+input_output_examples_flow: |
   - ...
   - ...
   - ...
