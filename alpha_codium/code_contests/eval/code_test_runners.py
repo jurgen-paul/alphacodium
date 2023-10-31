@@ -211,7 +211,7 @@ def eval_solution(evaluation_test_type: str = "private_tests",
             tests_outputs=test_outputs,
             timeout=10,
         )
-        #test_runner.print_test_results(results, test_inputs)
+        test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
         print("example doesn't have inputs or outputs")
