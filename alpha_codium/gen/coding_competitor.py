@@ -180,7 +180,7 @@ class CodeContestsCompetitor:
                         is_valid_output = is_valid_output and t.actual_output
 
                 if is_all_passed_public:
-                    logger.info(f"Passed public tests after {counter} attempts")
+                    logger.info(f"Passed public tests after {counter+1} attempts")
                     break
 
                 counter += 1
@@ -199,6 +199,8 @@ class CodeContestsCompetitor:
 
                 # try to fix the solution
                 problem['error_str'] = error_str
+                if error_str:
+                    logger.debug (f"error string:\n{error_str}")
                 if get_settings().code_tester.use_trace:
                     problem['trace_str'] = trace_str
                 else:
@@ -314,7 +316,8 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
 if __name__ == "__main__":
         solve_and_test(dataset_name="deepmind/code_contests", split_name="valid",
-                       problem_name="1560_F1. Nearest Beautiful Number (easy version)",
-                       evaluation_test_type="private_tests")
+                       #problem_name="1560_F1. Nearest Beautiful Number (easy version)",
+                       problem_name="1548_D1. Gregor and the Odd Cows (Easy)",
+                       evaluation_test_type="public_tests")
 
 

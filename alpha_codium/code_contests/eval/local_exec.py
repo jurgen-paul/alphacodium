@@ -15,7 +15,7 @@ from enum import Enum
 from typing import List
 
 from alpha_codium.code_contests.eval import tracer
-from alpha_codium.code_contests.eval.tracer import run_generated_code
+from alpha_codium.code_contests.eval.tracer import clean_trace, trace_code
 
 
 class ProgramStatus(Enum):
@@ -78,7 +78,6 @@ def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True, 
         multi_result = result[0]
         exec_result = ExecutionResult(program_status=ProgramStatus.kSuccess)
         multi_result.compilation_result = exec_result
-    print("finished task")
     return multi_result
 
 
@@ -113,29 +112,34 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, sno
                     test_results_list.append(exec_result)
                     input_stream = io.BytesIO(single_input.encode())
                     input_stream.seek(0)
+                    tracing = io.StringIO()
+                    tracing.seek(0)
                     try:
                         with swallow_io(input_stream=input_stream) as (stdout_stream, stderr_stream):
                             with time_limit(timeout):
                                 if snoop:
-                                    trace = run_generated_code(check_program)
-                                    exec_result.trace = trace
+                                    trace_code(check_program, tracing)
                                 else:
                                     exec(check_program, exec_globals)
                         exec_result.program_status = ProgramStatus.kSuccess
+                    except TimeoutException:
+                        exec_result.program_status = ProgramStatus.kTimeout
+                    except BaseException:
+                        clean_exception = True
+                        filtered_trace = traceback.format_exc()
+                        if clean_exception:
+                            filtered_trace = filtered_trace.splitlines()
+                            filtered_trace = filtered_trace [min(len(filtered_trace)-2, 3):]
+                            filtered_trace = [line for line in filtered_trace if not
+                            any(substring in line for substring in tracer.filter_out_lines)]
+                            filtered_trace = '\n'.join(filtered_trace)
+                        exec_result.sandbox_result = filtered_trace
+                        exec_result.program_status = ProgramStatus.kFailed
+                    finally:
                         captured_output = stdout_stream.getvalue().strip()
                         exec_result.stderr = stderr_stream.getvalue()
                         exec_result.stdout = captured_output
-
-                    except TimeoutException:
-                        exec_result.program_status = ProgramStatus.kTimeout
-                        exec_result.program_status = ProgramStatus.kFailed
-                    except BaseException:
-                        lines = traceback.format_exc().splitlines()[3:]
-                        filtered_trace = [line for line in lines if not
-                        any(substring in line for substring in tracer.filter_out_lines)]
-                        filtered_trace = '\n'.join(filtered_trace)
-                        exec_result.sandbox_result = filtered_trace
-                        exec_result.program_status = ProgramStatus.kFailed
+                        exec_result.trace = clean_trace(tracing.getvalue())
 
             finally:
                 result.append(multi_results)
@@ -143,6 +147,28 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, sno
                 shutil.rmtree = rmtree
                 os.rmdir = rmdir
                 os.chdir = chdir
+
+
+def execute_inner(check_program, single_input, snoop, timeout, input_stream,  globals, tracing=None):
+    input_stream = io.BytesIO(single_input.encode())
+    input_stream.seek(0)
+
+    with swallow_io(input_stream=input_stream) as (stdout_stream, stderr_stream):
+        with time_limit(timeout):
+            if snoop:
+                trace_code(check_program, globals, tracing)
+            else:
+                exec(check_program, globals, {})
+
+
+    std_output = stdout_stream.getvalue().strip()
+    str_error = stderr_stream.getvalue()
+    if tracing:
+        trace = tracing.getvalue().strip()
+        trace = clean_trace(trace)
+    else:
+        trace = ''
+    return std_output, str_error, trace
 
 
 def compare_func(a, b):
@@ -219,24 +245,6 @@ def create_tempdir():
 
 class TimeoutException(Exception):
     pass
-
-
-class WriteOnlyStringIO(io.StringIO):
-    """StringIO that throws an exception when it's read from"""
-
-    def read(self, *args, **kwargs):
-        raise OSError
-
-    def readline(self, *args, **kwargs):
-        raise OSError
-
-    def readlines(self, *args, **kwargs):
-        raise OSError
-
-    def readable(self, *args, **kwargs):
-        """Returns True if the IO object can be read."""
-        return False
-
 
 @contextlib.contextmanager
 def chdir(root):
@@ -334,20 +342,120 @@ def reliability_guard(maximum_memory_bytes=None):
     sys.modules["tkinter"] = None
 
 
-def run_tester():
-    try:
-        check_program = "x = input()\nprint(x)\n"
-        input = "hello\n"
-        input_stream = io.BytesIO(input.encode())
-        input_stream.seek(0)
-        with swallow_io(input_stream=input_stream) as (stdout_stream, stderr_stream):
+problem_2 = {"code" : """
 
-            exec(check_program, {})
-        print("passed")
-        print(stdout_stream.getvalue())
-    except Exception as e:
-        print(e)
+def main():
+    def orientation(p, q, r):
+        # Calculate the orientation of three points (p, q, r)
+        # Returns 0 if they are collinear, 1 if they make a left turn, -1 if they make a right turn
+        val = (q[1] - p[1]) * (r[0] - q[0]) - (q[0] - p[0]) * (r[1] - q[1])
+        if val == 0:
+            return 0
+        elif val > 0:
+            return 1
+        else:
+            return -1
+    
+    def convex_hull(points):
+        # Find the convex hull of a set of points
+        n = len(points)
+        if n < 3:
+            return []
+    
+        # Find the leftmost point
+        leftmost = min(points, key=lambda p: p[0])
+    
+        hull = []
+        p = leftmost
+        q = None
+    
+        while True:
+            hull.append(p)
+            q = (p[0] + 1, p[1])  # Initialize q to a point outside the hull
+            for r in points:
+                if r == p:
+                    continue
+                if q is None or orientation(p, q, r) == -1:
+                    q = r
+            p = q
+            if p == leftmost:
+                break
+    
+        return hull
+    
+    def area(polygon):
+        # Calculate the area of a polygon using the Shoelace formula
+        n = len(polygon)
+        if n < 3:
+            return 0
+    
+        area = 0
+        for i in range(n):
+            j = (i + 1) % n
+            area += polygon[i][0] * polygon[j][1] - polygon[j][0] * polygon[i][1]
+    
+        return abs(area) / 2
+    
+    def count_enclosed_cows(polygon):
+        # Count the number of cows enclosed within a polygon
+        n = len(polygon)
+        if n < 3:
+            return 0
+    
+        count = 0
+        for i in range(n):
+            j = (i + 1) % n
+            count += (polygon[i][0] + polygon[j][0]) * (polygon[i][1] - polygon[j][1])
+    
+        return abs(count) // 2
+    
+    def count_interesting_fences(n, fence_posts):
+        # Count the number of interesting fences
+        count = 0
+    
+        for i in range(n):
+            for j in range(i + 1, n):
+                for k in range(j + 1, n):
+                    points = [fence_posts[i], fence_posts[j], fence_posts[k]]
+                    hull = convex_hull(points)
+                    if len(hull) >= 3:
+                        if count_enclosed_cows(hull) % 2 == 1 and area(hull) % 1 == 0:
+                            count += 1
+    
+        return count
+    
+    
+    n = int(input())
+    fence_posts = []
+    for _ in range(n):
+        x, y = map(int, input().split())
+        fence_posts.append((x, y))
+    
+    result = count_interesting_fences(n, fence_posts)
+    print(result)
+        
+main()
+"""
+,
+"input": '5\n0 0\n2 16\n30 14\n4 6\n2 10\n'}
+
+problem_1 = {"code":"x = input()\nprint(x)\n", "input":"hello\n"}
+
+
+problem_3_code = """
+def my_func(val):
+    for i in range(val):
+        print(i)
+
+x = int(input())
+my_func(x)
+"""
+problem_3 = {"code": problem_3_code, "input": '4\n'}
+
 
 
 if __name__ == '__main__':
-    run_tester()
+    res1, res2, res3 = execute_inner(problem_3['code'], problem_3['input'], snoop=True, timeout=10, exec_globals={})
+    print(res1)
+    print(res2)
+    print(res3)
