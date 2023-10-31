@@ -30,4 +30,4 @@ tester_type="local" # local, code_contests
 sandbox=false
 calc_trace=true
 use_trace=false
-max_trace_length=50
+max_trace_lines=50
