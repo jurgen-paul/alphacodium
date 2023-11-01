@@ -2,8 +2,11 @@ import ast
 import inspect
 import io
 import math
+import os
 import sys
+import tempfile
 from contextlib import contextmanager
+from functools import partial
 from typing import Callable, List
 
 import pytest as pytest
@@ -37,16 +40,23 @@ class SandboxCaseContainer:
     def __init__(self, f: Callable):
         self.f = f
 
-    def execute_as_string(self, input: str):
-        return self.execute_as_str_inner([input], trace=False)
+    def execute_as_string(self, input: str, sandbox=False):
+        return self.execute_as_str_inner([input], trace=False, sandbox=sandbox)
 
-    def execute_as_string_with_tracing(self, input: str):
-        return self.execute_as_str_inner([input], trace=True)
+    def execute_as_string_with_tracing(self, input: str, sandbox=False):
+        return self.execute_as_str_inner([input], trace=True, sandbox=sandbox)
 
-    def execute_as_str_inner(self, inputs: List[str], trace=False):
+    def execute_as_str_inner(self, inputs: List[str], trace=False, sandbox=False):
         check_program = self.get_body()
-        result = execute_candidate_code(candidate=check_program, inputs=inputs, test_id=self.f.__name__,
-                                        timeout=timeout, sandbox=False, snoop=trace)
+        f = partial(execute_candidate_code, candidate=check_program, inputs=inputs, test_id=self.f.__name__,
+                    timeout=timeout, sandbox=sandbox, snoop=trace)
+        if sandbox:
+            with tempfile.TemporaryDirectory() as temp_dir:
+                os.chdir(temp_dir)
+                result = f()
+        else:
+            result = f()
+
         return result
 
     def get_body(self):
@@ -135,11 +145,18 @@ test_data = [
 
 run_types = ['regular', 'regular_with_tracing', 'as_string', 'as_string_with_tracing']
 
-test_cases = [(*test, run_type) for test in test_data for run_type in run_types]
+
+def data_id(test_case):
+    f, input_, output_ = test_case
+    return f"{f.__name__}-{hash(str(input_) + str(output_))}"
+
+sandbox_ids=["not-sandboxed", "sandboxed"]
 
 
-@pytest.mark.parametrize("func, input, expected, run_type", test_cases)
-def test_happy_paths(monkeypatch, func, input, expected, run_type):
+@pytest.mark.parametrize("run_type", run_types)
+@pytest.mark.parametrize("sandbox", [False, True], ids=sandbox_ids)
+@pytest.mark.parametrize("func, input, expected", test_data, ids=[data_id(case) for case in test_data])
+def test_happy_paths(monkeypatch, func, input, expected, run_type, sandbox):
     def assert_passed_and_output(expected, result: MultiTestResult):
         assert len(result.test_results) == 1
         my_result = result.test_results[0]
@@ -160,11 +177,11 @@ def test_happy_paths(monkeypatch, func, input, expected, run_type):
             assert expected == result
 
     elif run_type == 'as_string':
-        res = my_case.execute_as_string(input)
+        res = my_case.execute_as_string(input, sandbox=sandbox)
         assert_passed_and_output(expected, res)
 
     elif run_type == 'as_string_with_tracing':
-        res = my_case.execute_as_string_with_tracing(input)
+        res = my_case.execute_as_string_with_tracing(input, sandbox=sandbox)
         assert_passed_and_output(expected, res)
 
 
@@ -174,11 +191,15 @@ test_exception_data = [
     (bad_import_solution, '1', ProgramStatus.kFailed, "NameError: name 'math' is not defined"),
 ]
 
-error_test_cases = [(*test, run_type) for test in test_exception_data for run_type in run_types]
+def exception_data_id(test_case):
+    f, input_, status, _ = test_case
+    return f"{f.__name__}-{str(status)}-{hash(input_)}"
 
-
-@pytest.mark.parametrize("func, input, status, error_string, run_type", error_test_cases)
-def test_runtime_issues(monkeypatch, func, input, status, error_string, run_type):
+@pytest.mark.parametrize("run_type", run_types)
+@pytest.mark.parametrize("sandbox", [False, True], ids=sandbox_ids)
+@pytest.mark.parametrize("func, input, status, error_string", test_exception_data,
+                         ids=[exception_data_id(case) for case in test_exception_data])
+def test_runtime_issues(monkeypatch, func, input, status, error_string, run_type, sandbox):
     def assert_status_and_error(result: MultiTestResult, status, err):
         assert len(result.test_results) == 1
         my_result = result.test_results[0]
