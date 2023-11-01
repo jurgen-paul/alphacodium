@@ -26,10 +26,10 @@ self_description: |
 possible_solutions:
 - description: |
     ...
-  labels:
-  - binary search
+  labels
   - ...
-  complexity: O(n)
+  - ...
+  complexity:
     ...
 ```
 """

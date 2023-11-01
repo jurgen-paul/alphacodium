@@ -102,32 +102,45 @@ class LocalPythonTestsRunner(PythonTestsRunner):
 
     @staticmethod
     def remove_if_main(script: str):
-        if not script:
-            return script
-        try:
-            tree = ast.parse(script)
-            # Find the if __name__ == '__main__' condition and extract its body
-            main_body = []
-            other_nodes = []
-            for node in tree.body:
-                if (isinstance(node, ast.If) and
-                        isinstance(node.test, ast.Compare) and
-                        isinstance(node.test.left, ast.Name) and
-                        node.test.left.id == '__name__' and
-                        isinstance(node.test.ops[0], ast.Eq) and
-                        isinstance(node.test.comparators[0], ast.Str) and
-                        node.test.comparators[0].s == '__main__'):
-                    main_body.extend(node.body)
-                else:
-                    other_nodes.append(node)
+        new_content = script
+        if 'if __name__ ==' in script:
+            result_lines = script.split('\n')
+            start_dedent = False
+            for i, line in enumerate(result_lines):
+                if 'if __name__ ==' in line:
+                    start_dedent = True
+                    result_lines[i] = ''
+                if start_dedent:
+                    result_lines[i] = result_lines[i][4:]
+            new_content = '\n'.join(result_lines)
 
-            # Construct a new module without the condition, appending the body of the if __name__ block
-            new_tree = ast.Module(body=other_nodes + main_body, type_ignores=[])
-
-            # Convert the new AST back to code
-            new_content = ast.unparse(new_tree)
-        except Exception as e:
-            raise ValueError("Input is not a legal Python program") from e
+        ## nope - ast removes code comments. we dont want that
+        # if not script:
+        #     return script
+        # try:
+        #     tree = ast.parse(script)
+        #     # Find the if __name__ == '__main__' condition and extract its body
+        #     main_body = []
+        #     other_nodes = []
+        #     for node in tree.body:
+        #         if (isinstance(node, ast.If) and
+        #                 isinstance(node.test, ast.Compare) and
+        #                 isinstance(node.test.left, ast.Name) and
+        #                 node.test.left.id == '__name__' and
+        #                 isinstance(node.test.ops[0], ast.Eq) and
+        #                 isinstance(node.test.comparators[0], ast.Str) and
+        #                 node.test.comparators[0].s == '__main__'):
+        #             main_body.extend(node.body)
+        #         else:
+        #             other_nodes.append(node)
+        #
+        #     # Construct a new module without the condition, appending the body of the if __name__ block
+        #     new_tree = ast.Module(body=other_nodes + main_body, type_ignores=[])
+        #
+        #     # Convert the new AST back to code
+        #     new_content = ast.unparse(new_tree)
+        # except Exception as e:
+        #     raise ValueError("Input is not a legal Python program") from e
         return new_content
 
     def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10, snoop=None):
@@ -213,7 +226,7 @@ def eval_solution(evaluation_test_type: str = "private_tests",
             tests_outputs=test_outputs,
             timeout=10,
         )
-        #test_runner.print_test_results(results, test_inputs)
+        test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
         logger.error("example doesn't have inputs or outputs")
