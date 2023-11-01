@@ -12,7 +12,9 @@ from alpha_codium.code_contests.eval.local_exec import (
     execute_candidate_code,
 )
 from alpha_codium.config_loader import get_settings
+from alpha_codium.log import get_logger
 
+logger = get_logger(__name__)
 
 class PythonTestsRunner(abc.ABC):
     test_program = "x=input()\nprint(x)"
@@ -46,15 +48,15 @@ class PythonTestsRunner(abc.ABC):
 
     def print_test_results(self, result: MultiTestResult, test_inputs: List[str] = None):
         if result.compilation_result:
-            print(
+            logger.info(
                 f"compilation results:{result.compilation_result.program_status if result.compilation_result else ''}")
-            print(result.compilation_result.sandbox_result)
-            print(result.compilation_result.stderr)
+            logger.info(result.compilation_result.sandbox_result)
+            logger.info(result.compilation_result.stderr)
 
         for i, test_res in enumerate(result.test_results):
-            print(f"input:\n{test_inputs[i]}")
-            print(f"expected output:\n{test_res.expected_output}")
-            print(f"code output:\n{test_res.actual_output}")
+            logger.info(f"input:\n{test_inputs[i]}")
+            logger.info(f"expected output:\n{test_res.expected_output}")
+            logger.info(f"code output:\n{test_res.actual_output}")
             details = f"passed={test_res.passed}"
             if not test_res.passed:
                 error = ""
@@ -67,8 +69,8 @@ class PythonTestsRunner(abc.ABC):
             if test_res.program_status == ProgramStatus.kTimeout:
                 details = f"runtime of {test_res.execution_duration} exceeded allowed runtime"
             if test_res.trace:
-                print(f"trace:\n{test_res.trace or 'Not available'}")
-            print(
+                logger.info(f"trace:\n{test_res.trace or 'Not available'}")
+            logger.info(
                 f"test-{i} :: status={test_res.program_status}, {details}"
 
             )
@@ -145,7 +147,7 @@ class LocalPythonTestsRunner(PythonTestsRunner):
         try:
             candidate = LocalPythonTestsRunner.remove_if_main(candidate)
         except: # noqa
-            print(
+            logger.info(
                 "candidate program is not a valid Python program. Will attempt to run it anyway and collect as failure")
 
         to_snoop = snoop if snoop is not None else self.calc_trace
@@ -227,7 +229,7 @@ def eval_solution(evaluation_test_type: str = "private_tests",
         test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
-        print("example doesn't have inputs or outputs")
+        logger.error("example doesn't have inputs or outputs")
         return test_inputs, []
 
 
