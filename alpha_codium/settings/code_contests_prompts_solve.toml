@@ -45,7 +45,7 @@ self reflection:
 
 propose solution:
 '
-{{ response_best_solution }}
+{{ s_best_solution }}
 '
 
 answer:

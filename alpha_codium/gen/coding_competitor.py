@@ -13,6 +13,7 @@ from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
+from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
@@ -87,28 +88,14 @@ class CodeContestsCompetitor:
             # choose best solution
             problem = await run_choose_best_solution(self, problem)
 
-
-            # solve
-            logger.info("--solve stage--")
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
-            if use_recording:
-                response_solve = np.load(recording_path + 'solve.npy', allow_pickle=True).tolist()
-                logger.info("Using recording")
-                logger.debug(f"response_solve:\n{response_solve}")
-            else:
-                response_solve, _ = await retry_with_fallback_models(f)
-                if do_recording:
-                    np.save(recording_path + 'solve.npy', response_solve)
-            response_solve = response_solve.rstrip("` \n")
-            problem['best_solution_code'] = response_solve
-            recent_solution = response_solve
+            # initial solve
+            problem = await run_initial_solve(self, problem)
 
             # evaluate public tests
             logger.info("--iterate on public tests stage--")
             is_all_passed_public = False
             counter = 0
             max_allowed_counter = 5
-            problem['recent_solution'] = problem['last_solution_code'] = problem['best_solution_code']
 
             while not is_all_passed_public:
 
