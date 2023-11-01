@@ -17,7 +17,7 @@ secret_provider="google_cloud_storage"
 cli_mode=false
 
 [solve]
-use_baseline = true
+use_baseline = false
 do_recording = false
 use_recording = false
 

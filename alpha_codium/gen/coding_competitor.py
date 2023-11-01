@@ -12,6 +12,7 @@ from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_baseline import run_baseline
+from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -69,30 +70,18 @@ class CodeContestsCompetitor:
             logger.info(f"recording_path: {recording_path}\ndo_record: {do_recording}\nuse_record: {use_recording}")
             if do_recording:
                 os.makedirs(recording_path, exist_ok=True)
+            problem["recording_path"] = recording_path
+        else:
+            problem["recording_path"] = ''
+        problem["do_recording"] = do_recording
+        problem["use_recording"] = use_recording
+
 
         if use_baseline:
             recent_solution = await run_baseline(self, problem)
         else:
-            # reflect
-            logger.info("--reflection stage--")
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
-            if use_recording:
-                response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
-                logger.info("Using recording")
-                logger.debug(f"response_reflect:\n{response_reflect}")
-            else:
-                response_reflect, _ = await retry_with_fallback_models(f)
-                if do_recording:
-                    np.save(recording_path + 'reflect.npy', response_reflect)
-            response_reflect = response_reflect.rstrip("` \n")
-            try:
-                response_reflect_yaml = yaml.safe_load(response_reflect)
-            except yaml.YAMLError:
-                response_reflect = self.postprocess_response(response_reflect) # try to include only the yaml part
-                response_reflect_yaml = yaml.safe_load(response_reflect)
-            problem['response_reflect'] = response_reflect
-            problem['self_description'] = response_reflect_yaml['self_description']
-            problem['possible_solutions'] = response_reflect_yaml['possible_solutions']
+            # self-reflect
+            problem = await run_self_reflect(self, problem)
 
             # choose best solution
             logger.info("--choose best solution stage--")
