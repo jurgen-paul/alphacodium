@@ -83,7 +83,7 @@ Error message:
 '
 
 {%- if trace_str %}
-Trace from execution:
+This is the trace we got when running the 'solution code'. You can use it analyze what went wrong:
 '
 {{ trace_str }}
 '

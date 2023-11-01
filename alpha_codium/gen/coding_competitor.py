@@ -83,42 +83,48 @@ class CodeContestsCompetitor:
 
             # evaluate public tests
             logger.info("--iterate on public tests stage--")
-            all_passed = False
-            counter = 0
-            max_allowed_counter = 5
-            test_inputs = problem['public_tests']['input']
-            test_outputs = problem['public_tests']['output']
-            while not all_passed:
-                # run the solution on the tests
-                problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
-                    = run_tests(self, problem, counter, test_inputs, test_outputs)
+            test_inputs_all = problem['public_tests']['input']
+            test_outputs_all = problem['public_tests']['output']
+            for test_inputs,test_outputs in zip(test_inputs_all, test_outputs_all):
+                logger.info(f"test_inputs:\n{test_inputs}")
+                if not isinstance(test_inputs,list):
+                    test_inputs = [test_inputs]
+                    test_outputs = [test_outputs]
+                all_passed = False
+                counter = 0
+                max_allowed_counter = 3
 
-                # analyze the tests results
-                counter += 1
-                if all_passed:
-                    logger.info(f"Passed public tests after {counter} attempts")
-                    break
-                elif tests_timeout:
-                    logger.error("timeout (no output). reverting to last solution")
-                    problem['code_recent_solution'] = problem['code_last_solution']
-                    continue
-                elif counter > max_allowed_counter:
-                    logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
-                    break
-                elif not non_empty_output:
-                    logging.info("Failed to pass public tests. actual_output is empty")
-                    recent_solution = problem['last_solution_code']
-                    continue
-                else:
-                    # tests run. save the last solution
-                    problem['code_prev_solution'] = problem['code_recent_solution']
+                while not all_passed:
+                    # run the solution on the tests
+                    problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
+                        = run_tests(self, problem, counter, test_inputs, test_outputs)
 
-                # run 'fix code from tests failure' stage
-                problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+                    # analyze the tests results
+                    counter += 1
+                    if all_passed:
+                        logger.info(f"Passed public tests after {counter} attempts")
+                        break
+                    elif tests_timeout:
+                        logger.error("timeout (no output). reverting to last solution")
+                        problem['code_recent_solution'] = problem['code_last_solution']
+                        continue
+                    elif counter > max_allowed_counter:
+                        logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                        break
+                    elif not non_empty_output:
+                        logging.info("Failed to pass public tests. actual_output is empty")
+                        problem['recent_solution'] = problem['last_solution_code']
+                        continue
+                    else:
+                        # tests run. save the last solution
+                        problem['code_prev_solution'] = problem['code_recent_solution']
 
-            if not all_passed:
-                logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
-                exit(-1)
+                    # run 'fix code from tests failure' stage
+                    problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+
+                if not all_passed:
+                    logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
+                    exit(-1)
 
         return problem['code_recent_solution']
 
