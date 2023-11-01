@@ -3,7 +3,7 @@ temperature = 0.6
 system="""You are an expert programmer and mathematician.
 
 you are given a code contest problem, and a Python code solution.
-However, when running the input-output example tests, the code failed to produce the expected outputs. You are asked to fix the code solution.
+However, when running the input-output example tests, the code failed to produce the expected outputs. You are asked to generate a fixed version of the code solution, that will pass all the tests.
 
 guidelines:
 - The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
@@ -27,7 +27,7 @@ class FixedSolution(BaseModel):
     failed_tests: List[int] = Field(description="list the input-output tests that failed. use the format [{input: .., expected_output: .., code_output: ..}, ...]")
     what_went_wrong: str = Field(description="Explanation shortly, in words, why the code produced the wrong outputs. Be specific about the wrong tests, and which part of the code caused the wrong output")
     what_needs_to_be_fixed: str = Field(description="describe shortly the required fixes to the code. Address specifically how will it fix the failed input-output pairs")
-    new_solution_code: str = Field(description="A new solution code, that fixes the wrong test, and maintains the correct test.")
+    fixed_code: str = Field(description="A fixed version of the code solution. It must be different from the original code solution, and pass all the tests.")
 '
 
 Example YAML output:
@@ -40,10 +40,10 @@ what_went_wrong: |-
   ...
 what_needs_to_be_fixed: |-
   ...
-new_solution_code: |-
+fixed_code: |-
   ...
 
-The 'new_solution_code' yaml output must follow this structure:
+The 'fixed_code' yaml output must follow this structure:
 '
 def f1(...):
     ...
@@ -57,7 +57,8 @@ def f2(...):
 if __name__ == "__main__":
     ...
 '
-The code should read the input using the 'input()' method.
+
+The 'fixed_code' should read the input using the 'input()' method.
 The output should be printed without additional words using the 'print()' method.
 
 ```
@@ -68,21 +69,27 @@ problem name: '{{name}}'
 
 problem description:
 '
-{{description}}
+{{ description|trim }}
 '
 
+self reflection on the problem:
+'
+{{ self_description|trim }}
+'
 
-solution code:
+A solution code generated for the problem, that failed to pass all the tests:
 '
-{{ code_recent_solution }}'
+{{ code_recent_solution|trim }}
 '
 
-Error message:
+Error message when running the 'solution code':
 '
-{{ error_str }}
+{{ error_str|trim }}
 '
 
 {%- if trace_str %}
+
+
 This is the trace we got when running the 'solution code'. You can use it analyze what went wrong:
 '
 {{ trace_str }}

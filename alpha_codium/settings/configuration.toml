@@ -1,6 +1,6 @@
 [config]
 model="gpt-4"
-#model = "gpt-3.5-turbo"
+#model = "gpt-3.5-turbo-16k"
 requests_per_minute=60
 fallback_models =[]
 #fallback_models=["gpt-3.5-turbo-16k"]
@@ -18,7 +18,7 @@ cli_mode=false
 
 [solve]
 use_baseline = false
-do_recording = false
+do_recording = true
 use_recording = true
 
 [etl]
@@ -27,8 +27,8 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [code_tester]
 tester_type="local" # local, code_contests
-sandbox=false
-calc_trace=true
-use_trace=true
-max_trace_lines=40
+sandbox=true
+calc_trace=false
+use_trace=false
+max_trace_lines=50
 trace_depth=4

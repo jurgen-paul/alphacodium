@@ -1,3 +1,4 @@
+import difflib
 import functools
 import logging
 import numpy as np
@@ -24,9 +25,15 @@ async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
         response_fixed_code, _ = await retry_with_fallback_models(f)
         try:
+            response_fixed_code = response_fixed_code.rstrip("` \n")
             response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
-            recent_solution = response_fixed_code_yaml['new_solution_code']
+            recent_solution = response_fixed_code_yaml['fixed_code']
             problem['code_recent_solution'] = recent_solution
+            diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
+                                        recent_solution.splitlines(keepends=True))
+            patch = ''.join(diff)
+            logger.info(f"diff:\n{patch}")
+
             # result = remove_if_main(result)
         except yaml.YAMLError:
             logger.error(f"Failed to parse yaml:\n{response_fixed_code}")
