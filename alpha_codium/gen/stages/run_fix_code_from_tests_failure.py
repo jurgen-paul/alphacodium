@@ -29,7 +29,7 @@ async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
             problem['recent_solution'] = recent_solution
             # result = remove_if_main(result)
         except yaml.YAMLError:
-            print(f"Failed to parse yaml: {response_fixed_code}")
+            logger.error(f"Failed to parse yaml:\n{response_fixed_code}")
             # result = response_fixed_code
     except Exception as e:
         logging.error(f"Error: {e}")

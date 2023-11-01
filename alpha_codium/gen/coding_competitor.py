@@ -133,7 +133,7 @@ class CodeContestsCompetitor:
             half_lines = int(max_trace_lines / 2)
             trace_lines = (
                     trace_lines[:half_lines] +
-                    [f".... {len(trace_lines) - max_trace_lines} omitted lines ...."] +
+                    [f"\n.... {len(trace_lines) - max_trace_lines} omitted lines ....\n"] +
                     trace_lines[-half_lines:]
             )
         joined_lines = "\n".join(trace_lines)
