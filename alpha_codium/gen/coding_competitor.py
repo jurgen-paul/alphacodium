@@ -13,9 +13,11 @@ from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
+from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.gen.stages.run_tests import run_tests
+from alpha_codium.gen.stages.utils import set_configurations
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -64,24 +66,11 @@ class CodeContestsCompetitor:
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
         # configurations
-        problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
-        use_baseline = get_settings().get("solve.use_baseline", False)
-        do_recording = get_settings().get("solve.do_recording", False)
-        use_recording = get_settings().get("solve.use_recording", False)
-        if use_recording or do_recording:
-            recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
-            logger.info(f"recording_path: {recording_path}\ndo_record: {do_recording}\nuse_record: {use_recording}")
-            if do_recording:
-                os.makedirs(recording_path, exist_ok=True)
-            problem["recording_path"] = recording_path
-        else:
-            problem["recording_path"] = ''
-        problem["do_recording"] = do_recording
-        problem["use_recording"] = use_recording
+        problem = set_configurations(problem)
 
 
-        if use_baseline:
-            recent_solution = await run_baseline(self, problem)
+        if get_settings().get("solve.use_baseline", False):
+            problem['code_recent_solution'] = await run_baseline(self, problem)
         else:
             # self-reflect
             problem = await run_self_reflect(self, problem)
@@ -94,21 +83,19 @@ class CodeContestsCompetitor:
 
             # evaluate public tests
             logger.info("--iterate on public tests stage--")
-            is_all_passed_public = False
+            all_passed = False
             counter = 0
             max_allowed_counter = 5
             test_inputs = problem['public_tests']['input']
             test_outputs = problem['public_tests']['output']
-
-            while not is_all_passed_public:
+            while not all_passed:
                 # run the solution on the tests
                 problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
 
                 # analyze the tests results
                 counter += 1
-
-                if is_all_passed_public:
+                if all_passed:
                     logger.info(f"Passed public tests after {counter} attempts")
                     break
                 elif tests_timeout:
@@ -126,75 +113,14 @@ class CodeContestsCompetitor:
                     # tests run. save the last solution
                     problem['code_prev_solution'] = problem['code_recent_solution']
 
-                # try to fix the solution
-                problem['error_str'] = error_str
-                if error_str:
-                    logger.debug (f"error string:\n{error_str}")
-                if get_settings().code_tester.use_trace:
-                    problem['trace_str'] = trace_str
-                else:
-                    problem['trace_str'] = ''
-                problem['possible_test_error'] = ''
-                f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
-                response_fixed_code, _ = await retry_with_fallback_models(f)
-                try:
-                    response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
-                    recent_solution = response_fixed_code_yaml['new_solution_code']
-                    problem['recent_solution'] = recent_solution
-                    # result = remove_if_main(result)
-                except yaml.YAMLError:
-                    print(f"Failed to parse yaml: {response_fixed_code}")
-                    # result = response_fixed_code
+                # run 'fix code from tests failure' stage
+                problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
 
-            if not is_all_passed_public:
+            if not all_passed:
                 logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
                 exit(-1)
 
-            # # evaluate AI-generated tests
-            # max_ai_tests = 10
-            # for i, test_case in enumerate(problem['more_test_cases']):
-            #     if i > max_ai_tests:
-            #         break
-            #     print(f"evaluating AI tests, test case remaining {len(problem['more_test_cases'])-i}")
-            #     test_inputs, results = eval_solution(example=problem,
-            #                                  prediction= remove_if_main(result),
-            #                                  test_inputs=[test_case['input']],
-            #                                  test_outputs=[test_case['output']],)
-            #     if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
-            #         print(f"timeout - took more than 3 seconds to run")
-            #         print(f"test input: {test_case['input']}")
-            #         print(f"expected output: {test_case['output']}")
-            #         actual_output = 'timeout - took more than 3 seconds to run'
-            #         expected_output = test_case['output']
-            #         # is_passed_AI = False
-            #         is_passed_AI = True # For now, we don't care about runtime
-            #         break
-            #     else:
-            #         actual_output = results.test_results[0].actual_output
-            #         expected_output = results.test_results[0].expected_output
-            #         is_passed_AI = results.test_results[0].passed
-            #
-            #     if not is_passed_AI:
-            #         problem['test_inputs'] = test_inputs
-            #         problem['expected_output'] = expected_output
-            #         problem['actual_output'] = actual_output
-            #         problem['possible_test_error'] = 'true'
-            #         if not actual_output:
-            #             logging.info(f"Failed to generate. actual_output is empty")
-            #             break
-            #         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
-            #         response_fixed_code, _ = await retry_with_fallback_models(f)
-            #         try:
-            #             response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
-            #             result = response_fixed_code_yaml['improved_code']
-            #             # result = remove_if_main(result)
-            #         except:
-            #             logging.info(f"Failed to parse yaml: {response_fixed_code}")
-            #             # result = response_fixed_code
-
-
-        # remove the if __name__ == '__main__' part. python eval fails to generate output with it
-        return recent_solution
+        return problem['code_recent_solution']
 
     def render_trace(self, trace_data):
         if not trace_data:

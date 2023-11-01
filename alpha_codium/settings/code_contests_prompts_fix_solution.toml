@@ -74,7 +74,7 @@ problem description:
 
 solution code:
 '
-{{ recent_solution }}'
+{{ code_recent_solution }}'
 '
 
 Error message:
