@@ -15,6 +15,7 @@ from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
+from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -96,70 +97,31 @@ class CodeContestsCompetitor:
             is_all_passed_public = False
             counter = 0
             max_allowed_counter = 5
+            test_inputs = problem['public_tests']['input']
+            test_outputs = problem['public_tests']['output']
 
             while not is_all_passed_public:
-
-                # run the solution on the public tests
-                logging.info(f"evaluating public tests. attempt {counter}")
-                test_inputs, results = eval_solution(example=problem,
-                                                     prediction=recent_solution,
-                                                     test_inputs=problem['public_tests']['input'],
-                                                     test_outputs=problem['public_tests']['output'], )
+                # run the solution on the tests
+                problem, all_passed, non_empty_output, error_str, trace_str, timeout \
+                    = run_tests(self, problem, counter, test_inputs, test_outputs)
 
                 # analyze the tests results
-                if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
-                    logger.error("timeout. reverting to last solution")
-                    counter += 1
-                    recent_solution = problem['last_solution_code']
-                    if counter > max_allowed_counter:
-                        logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
-                        break
-                    continue
-                elif str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
-                    logger.error("failed to run solution")
-                    error_str = results.test_results[0].sandbox_result
-                    trace_str = f"trace information:\n{self.render_trace(results.test_results[0].trace)}\n\n"
-                    is_all_passed_public = False
-                    is_valid_output = True
-                else:
-                    # build the error string
-                    error_str = ""
-                    trace_str = ""
-                    is_all_passed_public = True
-                    is_valid_output = True
-                    for i, t in enumerate(results.test_results):
-                        error_str += f"test input:\n{test_inputs[i]}\n" \
-                                     f"expected output:\n{t.expected_output}\n" \
-                                     f"code output:\n{t.actual_output}\n" \
-                                     f"====================\n====================\n"
-
-                        trace_str += f"trace:\n{self.render_trace(t.trace)}\n" \
-                                     f"====================\n====================\n"
-
-                        if get_settings().code_tester.calc_trace:
-                            logger.debug(f"trace_str:\n{trace_str}")
-
-                        # is_all_passed_public = actual_output == expected_output
-                        is_all_passed_public = is_all_passed_public and t.passed
-                        is_valid_output = is_valid_output and t.actual_output
-
+                counter += 1
                 if is_all_passed_public:
-                    logger.info(f"Passed public tests after {counter+1} attempts")
+                    logger.info(f"Passed public tests after {counter} attempts")
                     break
 
-                counter += 1
                 if counter > max_allowed_counter:
                     logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                     break
 
-                if not is_valid_output:
+                if not non_empty_output:
                     logging.info("Failed to pass public tests. actual_output is empty")
                     recent_solution = problem['last_solution_code']
-                    counter += 1
                     continue
                 else:
                     # tests run. save the last solution
-                    problem['last_solution_code'] = recent_solution
+                    problem['code_prev_solution'] = problem['code_recent_solution']
 
                 # try to fix the solution
                 problem['error_str'] = error_str
