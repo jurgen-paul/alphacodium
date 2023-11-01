@@ -31,7 +31,7 @@ async def run_self_reflect(self, problem):
             response_reflect_yaml = yaml.safe_load(response_reflect)
         problem['response_reflect'] = response_reflect
         problem['self_description'] = response_reflect_yaml['self_description']
-        problem['possible_solutions'] = response_reflect_yaml['possible_solutions']
+        problem['s_possible_solutions'] = response_reflect_yaml['possible_solutions']
         return problem
     except Exception as e:
         logging.error(f"Error: {e}")

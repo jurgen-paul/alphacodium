@@ -12,6 +12,7 @@ from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_baseline import run_baseline
+from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
@@ -84,20 +85,8 @@ class CodeContestsCompetitor:
             problem = await run_self_reflect(self, problem)
 
             # choose best solution
-            logger.info("--choose best solution stage--")
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_choose_best_solution")
-            if use_recording:
-                response_best_solution = np.load(recording_path + 'best_solution.npy', allow_pickle=True)\
-                                                .tolist()
-                logger.info("Using recording")
-                logger.debug(f"response_best_solution:\n{response_best_solution}")
-            else:
-                response_best_solution, _ = await retry_with_fallback_models(f)
-                if do_recording:
-                    np.save(recording_path + 'best_solution.npy', response_best_solution)
-            response_best_solution = response_best_solution.rstrip("` \n")
-            problem['response_best_solution'] = response_best_solution
-            response_best_solution_yaml = yaml.safe_load(response_best_solution) # noqa
+            problem = await run_choose_best_solution(self, problem)
+
 
             # solve
             logger.info("--solve stage--")

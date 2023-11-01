@@ -60,7 +60,7 @@ self reflection:
 
 possible solutions:
 '
-{{ possible_solutions }}
+{{ s_possible_solutions }}
 '
 
 answer:
