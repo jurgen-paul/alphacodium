@@ -102,20 +102,23 @@ class CodeContestsCompetitor:
 
             while not is_all_passed_public:
                 # run the solution on the tests
-                problem, all_passed, non_empty_output, error_str, trace_str, timeout \
+                problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
 
                 # analyze the tests results
                 counter += 1
+
                 if is_all_passed_public:
                     logger.info(f"Passed public tests after {counter} attempts")
                     break
-
-                if counter > max_allowed_counter:
+                elif tests_timeout:
+                    logger.error("timeout (no output). reverting to last solution")
+                    problem['code_recent_solution'] = problem['code_last_solution']
+                    continue
+                elif counter > max_allowed_counter:
                     logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
                     break
-
-                if not non_empty_output:
+                elif not non_empty_output:
                     logging.info("Failed to pass public tests. actual_output is empty")
                     recent_solution = problem['last_solution_code']
                     continue

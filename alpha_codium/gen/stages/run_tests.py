@@ -24,11 +24,9 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
         error_str = trace_str = ""
         all_passed = True
         non_empty_output = True
-        timeout = False
+        tests_timeout = False
         if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
-            logger.error("timeout. reverting to last solution")
-            problem['code_recent_solution'] = problem['code_last_solution']
-            timeout = True
+            tests_timeout = True
         elif str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
             logger.error("failed to run solution")
             error_str = results.test_results[0].sandbox_result
@@ -57,7 +55,7 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
                 # is_all_passed_public = actual_output == expected_output
                 all_passed = all_passed and t.passed
                 non_empty_output = non_empty_output and t.actual_output
-        return problem, all_passed, non_empty_output, error_str, trace_str, timeout
+        return problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout
     except Exception as e:
         logging.error(f"Error: {e}")
         exit(-1)
