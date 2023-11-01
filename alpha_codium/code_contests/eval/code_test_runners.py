@@ -68,8 +68,8 @@ class PythonTestsRunner(abc.ABC):
                 details = f"{details}. {error}"
             if test_res.program_status == ProgramStatus.kTimeout:
                 details = f"runtime of {test_res.execution_duration} exceeded allowed runtime"
-            if test_res.trace:
-                logger.info(f"trace:\n{test_res.trace or 'Not available'}")
+            # if test_res.trace:
+            #     logger.info(f"trace:\n{test_res.trace or 'Not available'}")
             logger.info(
                 f"test-{i} :: status={test_res.program_status}, {details}"
 
