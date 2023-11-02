@@ -4,7 +4,7 @@ system="""You are an expert programmer and mathematician.
 You are given a code contest problem, self-reflection on the problem, and a list of possible solutions.
 
 Using these inputs, you goal is to choose the best solution, and describe it in details.
-Don't just pick the fastest solution. The main consideration is that the solution can fully solve the problem, in a simple and efficient way.
+Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way.
 Double-check the solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
 Mke sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
 
