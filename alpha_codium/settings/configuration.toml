@@ -19,7 +19,7 @@ cli_mode=false
 [solve]
 use_baseline = false
 do_recording = true
-use_recording = true
+use_recording = false
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"

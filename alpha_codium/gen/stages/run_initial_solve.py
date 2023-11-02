@@ -25,6 +25,8 @@ async def run_initial_solve(self, problem):
             if do_recording:
                 np.save(recording_path + 'solve.npy', response_solve)
         response_solve = response_solve.rstrip("` \n")
+        if response_solve.startswith("```python"):
+            response_solve = response_solve[10:]
         problem['code_initial_solution'] = response_solve
         problem['code_recent_solution'] = response_solve
         problem['code_prev_solution'] = response_solve

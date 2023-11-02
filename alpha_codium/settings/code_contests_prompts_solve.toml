@@ -6,7 +6,7 @@ You are given a code contest problem, self-reflection on the problem, and a desc
 Your goal is to generate a valid Python code that correctly solves the problem.
 
 guidelines:
-- You must divide the code into small sub-functions, with meaningful names and functionality
+- You must divide the code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
 - The code must have a reasonable runtime and memory complexity
 - Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
