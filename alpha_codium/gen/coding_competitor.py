@@ -85,15 +85,23 @@ class CodeContestsCompetitor:
             logger.info("--iterate on public tests stage--")
             test_inputs_all = problem['public_tests']['input']
             test_outputs_all = problem['public_tests']['output']
-            for test_inputs,test_outputs in zip(test_inputs_all, test_outputs_all):
+            load_final_code_solution = problem.get('load_final_code_solution', False)
+            do_recording = problem.get('do_recording', False)
+            recording_path = problem.get('recording_path', '')
+            if load_final_code_solution and not do_recording:
+                problem['code_recent_solution'] = np.load(recording_path + 'code_recent_solution.npy', allow_pickle=True) \
+                    .tolist()
+                logger.info("Using recording")
+                logger.debug(f"code_recent_solution:\n{problem['code_recent_solution']}")
+
+            for test_inputs, test_outputs in zip(test_inputs_all, test_outputs_all):
                 logger.info(f"test_inputs:\n{test_inputs}")
-                if not isinstance(test_inputs,list):
+                if not isinstance(test_inputs, list):
                     test_inputs = [test_inputs]
                     test_outputs = [test_outputs]
-                all_passed = False
                 counter = 0
                 max_allowed_counter = 3
-
+                all_passed = False
                 while not all_passed:
                     # run the solution on the tests
                     problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
@@ -101,6 +109,7 @@ class CodeContestsCompetitor:
 
                     # analyze the tests results
                     counter += 1
+                    logger.info(f"counter: {counter}")
                     if all_passed:
                         logger.info(f"Passed public tests after {counter} attempts")
                         break
@@ -126,6 +135,11 @@ class CodeContestsCompetitor:
                     logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
                     exit(-1)
 
+            # if we reached here, we passed the public tests
+            logger.info("Passed public tests")
+            if do_recording:
+                np.save(recording_path + 'code_recent_solution.npy', problem['code_recent_solution'])
+
         return problem['code_recent_solution']
 
     def render_trace(self, trace_data):
@@ -148,8 +162,7 @@ class CodeContestsCompetitor:
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
         prediction = asyncio.run(self.run(problem=problem))
-        logger.info("testing solution on private tests")
-        logger.info(f"prediction:\n{prediction}")
+        logger.info(f"testing solution on private tests with prediction:\n{prediction}")
         return prediction
 
 
@@ -173,6 +186,16 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     if evaluation_test_type:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
 
+    test_passed = 0
+    test_failed = 0
+    for test in test_results[1].test_results:
+        if not test.passed:
+            test_failed += 1
+        else:
+            test_passed += 1
+    logger.info("=====================================")
+    logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
+    logger.info("=====================================")
     return solution, test_results
 
 
