@@ -14,32 +14,16 @@ logger = get_logger(__name__)
 
 async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
     try:
-        problem['error_str'] = error_str
-        if error_str:
-            logger.debug(f"error string:\n{error_str}")
-        if get_settings().code_tester.use_trace:
-            problem['trace_str'] = trace_str
-        else:
-            problem['trace_str'] = ''
-        problem['possible_test_error'] = ''
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_fix_solution")
         response_fixed_code, _ = await retry_with_fallback_models(f)
         try:
             response_fixed_code = response_fixed_code.rstrip("'` \n") # remove trailing spaces and newlines from yaml response
-            response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
+            if response_fixed_code.startswith("```python"):
+                response_fixed_code = response_fixed_code[10:]
 
-            # remove the ```python from the beginning of the code
-            try:
-                recent_solution = response_fixed_code_yaml['fixed_code'].rstrip("` \n")
-            except Exception as e:
-                logger.error(f"Failed to parse yaml:\n{response_fixed_code}")
-                exit(-1)
-            if recent_solution.startswith("```python"):
-                recent_solution = recent_solution[10:]
-
-            problem['code_recent_solution'] = recent_solution
+            problem['code_recent_solution'] = response_fixed_code
             diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
-                                        recent_solution.splitlines(keepends=True))
+                                        response_fixed_code.splitlines(keepends=True))
             patch = ''.join(diff)
             problem['diff_patch'] = patch
             problem['diff_that_didnt_help'] = ''

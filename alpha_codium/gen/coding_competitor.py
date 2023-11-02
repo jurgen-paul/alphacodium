@@ -11,6 +11,7 @@ from jinja2 import Environment, StrictUndefined
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
+from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
 from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
@@ -19,7 +20,6 @@ from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.gen.stages.utils import set_configurations
 from alpha_codium.llm.ai_handler import AiHandler
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -138,6 +138,9 @@ class CodeContestsCompetitor:
                         problem['code_prev_solution'] = problem['code_recent_solution']
 
                     # run 'fix code from tests failure' stage
+
+                    problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
+
                     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
 
                 if not all_passed:
