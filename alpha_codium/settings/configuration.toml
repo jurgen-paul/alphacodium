@@ -33,3 +33,4 @@ calc_trace=true
 use_trace=true
 max_trace_lines=50
 trace_depth=4
+delta=0.0001
