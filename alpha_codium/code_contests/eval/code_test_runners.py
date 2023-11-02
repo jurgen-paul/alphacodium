@@ -228,7 +228,7 @@ def eval_solution(evaluation_test_type: str = "private_tests",
         test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
-        logger.error("example doesn't have inputs or outputs")
+        logger.error(f"example '{example['name']}', type: '{evaluation_test_type}' doesn't have tests")
         return test_inputs, []
 
 
