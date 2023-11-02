@@ -111,8 +111,8 @@ class CodeContestsCompetitor:
 
                     # if last fix didn't change anything, revert to last solution, and add the patch to prompt
                     if last_error_str == error_str:
-                        logger.error("error string did not change. reverting to last solution")
-                        problem['code_recent_solution'] = problem['code_prev_solution']
+                        logger.error("error string did not change.")
+                        # problem['code_recent_solution'] = problem['code_prev_solution']
                         problem['diff_that_didnt_help'] = self.clip_string(problem['diff_patch'], get_settings().code_tester.get("max_trace_lines"))
                     last_error_str = error_str
 

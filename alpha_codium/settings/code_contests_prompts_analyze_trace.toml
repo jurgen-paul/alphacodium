@@ -11,6 +11,7 @@ Your goal is to analyze the trace, find the bug in the code solution, and propos
 {%- else %}
 
 Your goal is to analyze the code and the error, find the bug in the code solution, and propose a fix to the code solution.
+Offer a fix that will keep the solution robust and work for other input examples as well.
 {%- endif %}
 
 
@@ -64,7 +65,7 @@ Error message when running the 'solution code':
 {%- if trace_str %}
 
 
-This is the trace we got when running the 'solution code'. You can use it analyze what went wrong:
+This is the trace we got when running the solution code with 'pysnooper'. You can use it analyze what went wrong:
 '
 {{ trace_str }}
 '
