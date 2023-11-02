@@ -31,8 +31,9 @@ async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
             # remove the ```python from the beginning of the code
             try:
                 recent_solution = response_fixed_code_yaml['fixed_code'].rstrip("` \n")
-            except KeyError:
-                aaa=3
+            except Exception as e:
+                logger.error(f"Failed to parse yaml:\n{response_fixed_code}")
+                exit(-1)
             if recent_solution.startswith("```python"):
                 recent_solution = recent_solution[10:]
 
