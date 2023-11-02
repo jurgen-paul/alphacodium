@@ -29,7 +29,10 @@ async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
             response_fixed_code_yaml = yaml.safe_load(response_fixed_code)
 
             # remove the ```python from the beginning of the code
-            recent_solution = response_fixed_code_yaml['fixed_code'].rstrip("` \n")
+            try:
+                recent_solution = response_fixed_code_yaml['fixed_code'].rstrip("` \n")
+            except KeyError:
+                aaa=3
             if recent_solution.startswith("```python"):
                 recent_solution = recent_solution[10:]
 
@@ -37,6 +40,8 @@ async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
             diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
                                         recent_solution.splitlines(keepends=True))
             patch = ''.join(diff)
+            problem['diff_patch'] = patch
+            problem['diff_that_didnt_help'] = ''
             logger.info(f"diff:\n{patch}")
 
             # result = remove_if_main(result)

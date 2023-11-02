@@ -100,12 +100,21 @@ class CodeContestsCompetitor:
                     test_inputs = [test_inputs]
                     test_outputs = [test_outputs]
                 counter = 0
-                max_allowed_counter = 3
+                max_allowed_counter = 4
                 all_passed = False
+                last_error_str = None
+                problem['diff_that_didnt_help'] = ''
                 while not all_passed:
                     # run the solution on the tests
                     problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
                         = run_tests(self, problem, counter, test_inputs, test_outputs)
+
+                    # if last fix didn't change anything, revert to last solution, and add the patch to prompt
+                    if last_error_str == error_str:
+                        logger.error("error string did not change. reverting to last solution")
+                        problem['code_recent_solution'] = problem['code_prev_solution']
+                        problem['diff_that_didnt_help'] = self.clip_string(problem['diff_patch'], get_settings().code_tester.get("max_trace_lines"))
+                    last_error_str = error_str
 
                     # analyze the tests results
                     counter += 1
@@ -142,22 +151,26 @@ class CodeContestsCompetitor:
 
         return problem['code_recent_solution']
 
+    def clip_string(self, s: str, max_lines: int = None):
+        lines = s.split("\n")
+        if max_lines is not None and 0 < max_lines < len(lines):
+            logger.debug(f"clipping string from {len(lines)} to {max_lines}")
+            half_lines = int(max_lines / 2)
+            lines = (
+                    lines[:half_lines] +
+                    [f"\n.... {len(lines) - max_lines} omitted lines ....\n"] +
+                    lines[-half_lines:]
+            )
+            return "\n".join(lines)
+        else:
+            return s
     def render_trace(self, trace_data):
         if not trace_data:
             return ''
 
         max_trace_lines = get_settings().code_tester.get("max_trace_lines")
-        trace_lines = trace_data.split("\n")
-        if max_trace_lines is not None and 0 < max_trace_lines < len(trace_lines):
-            logger.debug(f"clipping trace from {len(trace_lines)} to {max_trace_lines}")
-            half_lines = int(max_trace_lines / 2)
-            trace_lines = (
-                    trace_lines[:half_lines] +
-                    [f"\n.... {len(trace_lines) - max_trace_lines} omitted lines ....\n"] +
-                    trace_lines[-half_lines:]
-            )
-        joined_lines = "\n".join(trace_lines)
-        return joined_lines
+        trace_data = self.clip_string(trace_data, max_trace_lines)
+        return trace_data
 
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}

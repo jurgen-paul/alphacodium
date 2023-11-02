@@ -18,8 +18,8 @@ cli_mode=false
 
 [solve]
 use_baseline = false
-do_recording = true
-use_recording = false
+do_recording = false
+use_recording = true
 load_final_code_solution = false
 
 [etl]

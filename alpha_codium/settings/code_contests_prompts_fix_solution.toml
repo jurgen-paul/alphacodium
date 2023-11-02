@@ -24,8 +24,9 @@ The output must be a YAML object equivalent to type $FixedSolution, according to
 '
 class FixedSolution(BaseModel):
     failed_tests: List[int] = Field(description="list the input-output tests that failed. use the format [{input: .., expected_output: .., code_output: ..}, ...]")
-    what_went_wrong: str = Field(description="Explanation shortly, in words, which code lines caused the wrong output, and what was the mistake.")
-    fixed_code: str = Field(description="A fixed version of the code solution.")
+    what_went_wrong: str = Field(description="Explanation shortly, in words, what was the problem with the code solution, and how do you recommend to fix it. Be as specific as possible.")
+    input_output_fixed_flow: str = Field(description="describe  how the proposed fixed flow will lead to getting the expected output for the provided input example. Be as specific as possible.
+    fixed_code: str = Field(description="A fixed version of the code solution, that follows the proposed fixed flow.")
 '
 
 Example YAML output:
@@ -34,8 +35,12 @@ failed_tests: |-
   ...
 what_went_wrong: |-
   ...
+input_output_fixed_flow: |-
+  ...
 fixed_code: |-
   ...
+```
+Each YAML output MUST be after a newline, indented, with block scalar indicator ('|-').
 
 
 The 'fixed_code' yaml output must follow this structure:
@@ -77,6 +82,7 @@ A solution code generated for the problem, that failed to pass all the tests:
 {{ code_recent_solution|trim }}
 '
 
+
 Error message when running the 'solution code':
 '
 {{ error_str|trim }}
@@ -91,6 +97,14 @@ This is the trace we got when running the 'solution code'. You can use it analyz
 '
 {% endif %}
 
+
+{%- if diff_that_didnt_help %}
+
+We tried to apply the following fix to the code, but the results were the same:
+'
+{{ diff_that_didnt_help }}
+'
+{% endif %}
 
 Output YAML:
 ```yaml
