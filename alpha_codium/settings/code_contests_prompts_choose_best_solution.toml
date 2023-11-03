@@ -26,8 +26,8 @@ possible solutions:
 '
 
 Using these inputs, you goal is to choose the best solution to the code contest problem.
-Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way. Prefer dynamic programming if possible.
-Be critical - the provided solutions may be wrong, or not fully solve the problem.
+Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way.
+Be critical - the provided solutions might be wrong, or not fully solve the problem.
 Double-check the best solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
 Mke sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
 

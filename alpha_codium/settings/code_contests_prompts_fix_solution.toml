@@ -1,12 +1,47 @@
 [code_contests_prompt_fix_solution]
 temperature = 0.6
-system="""You are an expert programmer and mathematician.
+system="""\
+"""
+user="""\
 
-you are given a code contest problem, and a Python code solution.
+you are given a code contest problem, self-reflection on the problem, and a possible Python code solution to the problem:
+
+problem description:
+'
+{{ description|trim }}
+'
+
+self reflection on the problem:
+'
+{{ self_description|trim }}
+'
+
+
+A possible solution code generated for the problem:
+'
+{{ code_recent_solution|trim }}
+'
+
+
 However, when running the input-output example test, the code failed to produce the expected output.
 Using the provided analysis, you need generate a fixed solution code, that will pass all the tests.
 
-guidelines:
+Error message when running the 'solution code':
+'
+{{ error_str|trim }}
+'
+
+what_went_wrong;
+'
+{{ what_went_wrong|trim }}
+'
+
+input_output_fixed_flow:
+'
+{{ input_output_fixed_flow|trim }}
+'
+
+guidelines for generating the fixed code:
 - The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
 - Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.
 - Make sure the new solution code generalizes to all possible input-output examples, and not only to the provided input-output examples.
@@ -29,41 +64,7 @@ if __name__ == "__main__":
 The code should read the input using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
 
-"""
-user="""\
-problem name: '{{name}}'
 
-
-problem description:
-'
-{{ description|trim }}
-'
-
-self reflection on the problem:
-'
-{{ self_description|trim }}
-'
-
-A solution code generated for the problem, that failed to get the expected output:
-'
-{{ code_recent_solution|trim }}
-'
-
-Error message when running the 'solution code':
-'
-{{ error_str|trim }}
-'
-
-what_went_wrong;
-'
-{{ what_went_wrong|trim }}
-'
-
-input_output_fixed_flow:
-'
-{{ input_output_fixed_flow|trim }}
-'
-
-answer:
+Answer:
 ```python
 """

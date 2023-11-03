@@ -1,8 +1,26 @@
 [code_contests_prompts_solve]
 temperature = 0.4
-system="""You are an expert Python programmer.
+system= """\
+"""
+user="""\
+You are given a code contest problem, self-reflection on the problem, and a proposed solution, in words
 
-You are given a code contest problem, self-reflection on the problem, and a description of the solution, in words.
+problem description:
+'
+{{description}}
+'
+
+self reflection:
+'
+{{ self_description }}
+'
+
+propose solution:
+'
+{{ s_best_solution }}
+'
+
+
 Your goal is to generate a valid Python code that correctly solves the problem.
 
 guidelines:
@@ -10,6 +28,7 @@ guidelines:
 - The code must have a reasonable runtime and memory complexity
 - Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
+- Add code comments to explain the code functionality, and the reasoning behind it.
 - The code needs to be self-contained, and executable as-is.
 - emphasis not accessing an index that is out of the range of a list
 
@@ -29,24 +48,6 @@ if __name__ == "__main__":
 ```
 The code should read the input using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
-
-"""
-user="""\
-problem description:
-'
-{{description}}
-'
-
-
-self reflection:
-'
-{{ self_description }}
-'
-
-propose solution:
-'
-{{ s_best_solution }}
-'
 
 answer:
 ```python
