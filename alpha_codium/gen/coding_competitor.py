@@ -192,6 +192,7 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
         logger.info(f"problem_name: {problem_name}")
     problem = data_provider.find_problem(ds=data_provider.dataset, problem_name=problem_name, split_name=split_name,
                                          evaluation_test_type=evaluation_test_type)
+    logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
 
     # solve problem
     solver = CodeContestsCompetitor()

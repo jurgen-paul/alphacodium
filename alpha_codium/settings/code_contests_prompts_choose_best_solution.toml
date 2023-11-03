@@ -36,7 +36,7 @@ The output must be a YAML object equivalent to type $ProblemSolution, according 
 class ProblemSolution(BaseModel):
     name: str = Field(description="The name of the best solution")
     content: str = Field(description="The content of the best solution")
-    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): brute force, binary search, dynamic programming, trees, greedy, combinatorics, dfs, graphs, constructive algorithms, math, data structures, geometry, number theory, ...")
+    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): brute force, binary search, dynamic programming, trees, greedy, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, ...")
     complexity: str = Field(description="The complexity of the solution.")
     why: str = Field(description="why is this the best solution?")
     flow: str = Field(description="detailed description of the flow of the solution, in bullet points")
