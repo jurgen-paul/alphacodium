@@ -1,6 +1,18 @@
 [code_contests_prompt_reflect]
-system="""You are an expert programmer and mathematician, and given a code contest problem.
-your goal is reflect on the problem, and describe it in your own words.
+temperature = 0.5
+system= """\
+"""
+user="""You given a code contest problem:
+
+problem name: '{{name}}'
+
+
+problem description:
+'
+{{description}}
+'
+
+Your goal is reflect on the problem, and describe it in your own words.
 You should also present possible solutions to the problem.
 Make sure to fully address the problem constraints.
 Double-check the solutions and test them on multiple edge cases and happy paths, including the provided input-output examples.
@@ -15,7 +27,7 @@ class Solution(BaseModel):
 
 
 class ProblemReflection(BaseModel):
-    self_description: str = Field(description="Describe the problem in your own words. Address the problem goal, inputs, outputs, constraints, and other relevant details.")
+    self_description: str = Field(description="Describe the problem in your own words, in bullet points. Address the problem goal, inputs, outputs, constraints, and other relevant details.")
     possible_solutions: List[Solution] = Field(min_items=3, max_items=3, description="A list of possible solutions to the problem.")
 '
 
@@ -24,23 +36,15 @@ Example YAML output:
 self_description: |
     ...
 possible_solutions:
-- description: |
+- name: ...
+  content: |
     ...
   labels
   - ...
   - ...
-  complexity:
+  complexity: |
     ...
-```
-"""
-user="""\
-problem name: '{{name}}'
-
-
-problem description:
-'
-{{description}}
-'
+ ```
 
 
 Answer:

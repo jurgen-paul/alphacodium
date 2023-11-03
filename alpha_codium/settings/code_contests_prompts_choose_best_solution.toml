@@ -1,11 +1,34 @@
 [code_contests_prompts_choose_best_solution]
-system="""You are an expert programmer and mathematician.
+temperature = 0.5
+system = """\
+"""
 
+User="""\
 You are given a code contest problem, self-reflection on the problem, and a list of possible solutions.
 
-Using these inputs, you goal is to choose the best solution, and describe it in details.
-Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way.
-Double-check the solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
+problem name: '{{name|trim}}'
+
+
+problem description:
+'
+{{description|trim}}
+'
+
+
+self reflection:
+'
+{{ self_description|trim }}
+'
+
+possible solutions:
+'
+{{ s_possible_solutions_str|trim }}
+'
+
+Using these inputs, you goal is to choose the best solution to the code contest problem.
+Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way. Prefer dynamic programming if possible.
+Be critical - the provided solutions may be wrong, or not fully solve the problem.
+Double-check the best solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
 Mke sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
 
 The output must be a YAML object equivalent to type $ProblemSolution, according to the following Pydantic definitions:
@@ -13,7 +36,7 @@ The output must be a YAML object equivalent to type $ProblemSolution, according 
 class ProblemSolution(BaseModel):
     name: str = Field(description="The name of the best solution")
     content: str = Field(description="The content of the best solution")
-    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): brute force, binary search, dynamic programming, trees, greedy, combinatorics, dfs, graphs, constructive algorithms, math, data structures, geometry, number theory, ...")
     complexity: str = Field(description="The complexity of the solution.")
     why: str = Field(description="why is this the best solution?")
     flow: str = Field(description="detailed description of the flow of the solution, in bullet points")
@@ -41,28 +64,7 @@ input_output_examples_flow: |
   - ...
   - ...
 ```
-"""
-user="""\
-problem name: '{{name}}'
 
-
-problem description:
-'
-{{description}}
-'
-
-
-self reflection:
-'
-{{ self_description }}
-'
-
-
-possible solutions:
-'
-{{ s_possible_solutions }}
-'
-
-answer:
+Answer:
 ```yaml\
 """

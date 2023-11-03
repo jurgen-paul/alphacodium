@@ -32,6 +32,7 @@ async def run_self_reflect(self, problem):
         problem['response_reflect'] = response_reflect
         problem['self_description'] = response_reflect_yaml['self_description']
         problem['s_possible_solutions'] = response_reflect_yaml['possible_solutions']
+        problem['s_possible_solutions_str'] = response_reflect.split('possible_solutions:')[1]
         return problem
     except Exception as e:
         logging.error(f"Error: {e}")
