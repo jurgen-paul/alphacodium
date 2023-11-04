@@ -83,8 +83,85 @@ class CodeContestsCompetitor:
             # initial solve
             problem = await run_initial_solve(self, problem)
 
-            # initial solve
+            # generate ai tests
             problem = await run_generate_ai_tests(self, problem)
+
+
+            # evaluate public tests
+            logger.info("--iterate on public tests stage--")
+            test_inputs_all = problem['public_tests']['input']
+            test_outputs_all = problem['public_tests']['output']
+            load_final_code_solution = problem.get('load_final_code_solution', False)
+            do_recording = problem.get('do_recording', False)
+            recording_path = problem.get('recording_path', '')
+            if load_final_code_solution and not do_recording:
+                problem['code_recent_solution'] = np.load(recording_path + 'code_recent_solution.npy', allow_pickle=True) \
+                    .tolist()
+                logger.info("Using recording")
+                logger.debug(f"code_recent_solution:\n{problem['code_recent_solution']}")
+            all_passed = True
+            for test_inputs, test_outputs in zip(test_inputs_all, test_outputs_all):
+                # logger.info(f"test_inputs:\n{test_inputs}")
+                if not isinstance(test_inputs, list):
+                    test_inputs = [test_inputs]
+                    test_outputs = [test_outputs]
+                counter = 0
+                max_allowed_counter = 4
+                passed_test = False
+                last_error_str = None
+                problem['diff_that_didnt_help'] = ''
+                while not passed_test:
+                    # run the solution on the tests
+                    problem, passed_test, non_empty_output, error_str, trace_str, tests_timeout \
+                        = run_tests(self, problem, counter, test_inputs, test_outputs)
+
+                    # if last fix didn't change anything, revert to last solution, and add the patch to prompt
+                    if last_error_str == error_str:
+                        logger.error("error string did not change.")
+                        # problem['code_recent_solution'] = problem['code_prev_solution']
+                        problem['diff_that_didnt_help'] = self.clip_string(problem['diff_patch'], get_settings().code_tester.get("max_trace_lines"))
+                    last_error_str = error_str
+
+                    # analyze the tests results
+                    counter += 1
+                    logger.info(f"counter: {counter}")
+                    if passed_test:
+                        logger.info(f"Passed public tests after {counter} attempts")
+                        break
+                    elif tests_timeout:
+                        logger.error("timeout (no output). reverting to last solution")
+                        problem['code_recent_solution'] = problem['code_last_solution']
+                        continue
+                    elif counter > max_allowed_counter:
+                        logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
+                        break
+                    elif not non_empty_output:
+                        logging.info("Failed to pass public tests. actual_output is empty")
+                        problem['recent_solution'] = problem['last_solution_code']
+                        continue
+                    else:
+                        # tests run. save the last solution
+                        problem['code_prev_solution'] = problem['code_recent_solution']
+
+                    # run 'fix code from tests failure' stage
+                    problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
+
+                    problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+
+                all_passed = all_passed and passed_test
+                # if not all_passed:
+                #     logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
+                #     exit(-1)
+
+            # if we reached here, we passed the public tests
+            logger.info("=====================================")
+            logger.info(f"passed public tests status: {all_passed}")
+            logger.info("=====================================")
+            if do_recording:
+                try:
+                    np.save(recording_path + 'code_recent_solution.npy', problem['code_recent_solution'])
+                except:
+                    logger.error(f"Failed to save recording")
 
             # evaluate ai tests
             passed_tests_input_list =[]
@@ -130,80 +207,6 @@ class CodeContestsCompetitor:
                             logger.error(f"Fix broke prev passed tests. reverting to last solution")
                             problem['code_recent_solution'] = last_code_solution
 
-            aaa = 4
-
-            # evaluate public tests
-            logger.info("--iterate on public tests stage--")
-            test_inputs_all = problem['public_tests']['input']
-            test_outputs_all = problem['public_tests']['output']
-            load_final_code_solution = problem.get('load_final_code_solution', False)
-            do_recording = problem.get('do_recording', False)
-            recording_path = problem.get('recording_path', '')
-            if load_final_code_solution and not do_recording:
-                problem['code_recent_solution'] = np.load(recording_path + 'code_recent_solution.npy', allow_pickle=True) \
-                    .tolist()
-                logger.info("Using recording")
-                logger.debug(f"code_recent_solution:\n{problem['code_recent_solution']}")
-
-            for test_inputs, test_outputs in zip(test_inputs_all, test_outputs_all):
-                # logger.info(f"test_inputs:\n{test_inputs}")
-                if not isinstance(test_inputs, list):
-                    test_inputs = [test_inputs]
-                    test_outputs = [test_outputs]
-                counter = 0
-                max_allowed_counter = 4
-                all_passed = False
-                last_error_str = None
-                problem['diff_that_didnt_help'] = ''
-                while not all_passed:
-                    # run the solution on the tests
-                    problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
-                        = run_tests(self, problem, counter, test_inputs, test_outputs)
-
-                    # if last fix didn't change anything, revert to last solution, and add the patch to prompt
-                    if last_error_str == error_str:
-                        logger.error("error string did not change.")
-                        # problem['code_recent_solution'] = problem['code_prev_solution']
-                        problem['diff_that_didnt_help'] = self.clip_string(problem['diff_patch'], get_settings().code_tester.get("max_trace_lines"))
-                    last_error_str = error_str
-
-                    # analyze the tests results
-                    counter += 1
-                    logger.info(f"counter: {counter}")
-                    if all_passed:
-                        logger.info(f"Passed public tests after {counter} attempts")
-                        break
-                    elif tests_timeout:
-                        logger.error("timeout (no output). reverting to last solution")
-                        problem['code_recent_solution'] = problem['code_last_solution']
-                        continue
-                    elif counter > max_allowed_counter:
-                        logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts")
-                        break
-                    elif not non_empty_output:
-                        logging.info("Failed to pass public tests. actual_output is empty")
-                        problem['recent_solution'] = problem['last_solution_code']
-                        continue
-                    else:
-                        # tests run. save the last solution
-                        problem['code_prev_solution'] = problem['code_recent_solution']
-
-                    # run 'fix code from tests failure' stage
-                    problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
-
-                    problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
-
-                if not all_passed:
-                    logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
-                    exit(-1)
-
-            # if we reached here, we passed the public tests
-            logger.info("Passed public tests")
-            if do_recording:
-                try:
-                    np.save(recording_path + 'code_recent_solution.npy', problem['code_recent_solution'])
-                except:
-                    logger.error(f"Failed to save recording")
 
         return problem['code_recent_solution']
 

@@ -20,7 +20,7 @@ self reflection:
 {{ self_description|trim }}
 '
 
-Your task is to generate 10 input-output examples for the problem.
+Your task is to generate 5 input-output examples for the problem.
 They should be sorted by difficulty, from easiest to hardest.
 It is essential that all the outputs are correct. Double check them, and validate they match the problem description and constraints.
 
