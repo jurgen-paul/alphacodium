@@ -150,7 +150,10 @@ class CodeContestsCompetitor:
             # if we reached here, we passed the public tests
             logger.info("Passed public tests")
             if do_recording:
-                np.save(recording_path + 'code_recent_solution.npy', problem['code_recent_solution'])
+                try:
+                    np.save(recording_path + 'code_recent_solution.npy', problem['code_recent_solution'])
+                except:
+                    logger.error(f"Failed to save recording")
 
         return problem['code_recent_solution']
 

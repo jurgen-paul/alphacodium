@@ -28,7 +28,6 @@ guidelines:
 - The code must have a reasonable runtime and memory complexity
 - Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
-- Add code comments to explain the code functionality, and the reasoning behind it.
 - The code needs to be self-contained, and executable as-is.
 - emphasis not accessing an index that is out of the range of a list
 
