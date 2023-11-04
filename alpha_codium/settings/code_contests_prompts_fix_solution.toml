@@ -17,7 +17,7 @@ self reflection on the problem:
 '
 
 
-A possible solution code generated for the problem:
+A solution code generated for the problem:
 '
 {{ code_recent_solution|trim }}
 '
@@ -31,7 +31,7 @@ Error message when running the 'solution code':
 {{ error_str|trim }}
 '
 
-what_went_wrong;
+what_went_wrong:
 '
 {{ what_went_wrong|trim }}
 '

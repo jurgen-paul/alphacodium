@@ -1,18 +1,52 @@
 [code_contests_prompt_analyze_trace]
 temperature = 0.6
-system="""You are an expert programmer and mathematician.
+system = """\
+"""
+user="""\
+You are given a code contest problem, self-reflection on the problem, and a Python code solution.
 
-you are given a code contest problem, and a Python code solution.
-However, when running the input example with the code, it failed to produce the expected output.
+problem description:
+'
+{{ description|trim }}
+'
+
+self-reflection on the problem:
+'
+{{ self_description|trim }}
+'
+
+A solution code that was generated for the problem:
+'
+{{ code_recent_solution|trim }}
+'
+
+
+However, when running the following input example, the code failed to produce the expected output:
+'
+{{ error_str|trim }}
+'
+
+
 {%- if trace_str %}
 
-You are also given a trace of the code execution, describing the flow of the code, and the values of the variables at each step.
-Your goal is to analyze the trace, find the bug in the code solution, and propose a fix to the code solution.
-{%- else %}
-
-Your goal is to analyze the code and the error, find the bug in the code solution, and propose a fix to the code solution.
-Offer a fix that will keep the solution robust and work for other input examples as well.
+You are also given a 'pysnooper' trace of the code execution, describing the flow of the code, and the values of the code variables at each step.
+'
+{{ trace_str }}
+'
 {%- endif %}
+
+
+{%- if diff_that_didnt_help %}
+
+We tried previously to apply the following patch fix to the code, but the output remained the same:
+'
+{{ diff_that_didnt_help }}
+'
+{% endif %}
+
+
+Your goal is to analyze the code and the error, find the problem in the code, and propose a fix so the code will pass the input example.
+Offer a fix that will keep the solution robust, and work for all other input examples as well.
 
 
 The output must be a YAML object equivalent to type $FixedSolution, according to the following Pydantic definitions:
@@ -35,51 +69,6 @@ input_output_fixed_flow: |-
 Each YAML output MUST be after a newline, indented, with block scalar indicator ('|-').
 
 
-```
-"""
-user="""\
-problem name: '{{name}}'
-
-
-problem description:
-'
-{{ description|trim }}
-'
-
-self reflection on the problem:
-'
-{{ self_description|trim }}
-'
-
-A solution code generated for the problem, that failed to get the expected output:
-'
-{{ code_recent_solution|trim }}
-'
-
-
-Error message when running the 'solution code':
-'
-{{ error_str|trim }}
-'
-
-{%- if trace_str %}
-
-
-This is the trace we got when running the solution code with 'pysnooper'. You can use it analyze what went wrong:
-'
-{{ trace_str }}
-'
-{% endif %}
-
-
-{%- if diff_that_didnt_help %}
-
-We tried to apply the following fix to the code, but the results were the same:
-'
-{{ diff_that_didnt_help }}
-'
-{% endif %}
-
-Output YAML:
+Answer:
 ```yaml
 """

@@ -3,14 +3,14 @@ temperature = 0.4
 system= """\
 """
 user="""\
-You are given a code contest problem, self-reflection on the problem, and a proposed solution, in words
+You are given a code contest problem, self-reflection on the problem, and a proposed solution:
 
 problem description:
 '
 {{description}}
 '
 
-self reflection:
+self-reflection:
 '
 {{ self_description }}
 '
