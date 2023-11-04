@@ -1,9 +1,10 @@
 import asyncio
+import copy
 import functools
 import logging
 import os
 import re
-
+import copy
 import numpy as np
 import yaml
 from jinja2 import Environment, StrictUndefined
@@ -86,6 +87,8 @@ class CodeContestsCompetitor:
             problem = await run_generate_ai_tests(self, problem)
 
             # evaluate ai tests
+            passed_tests_input_list =[]
+            passed_tests_output_list = []
             for test in problem['problem_ai_tests']:
                 test_inputs = test['input']
                 test_outputs = test['output']
@@ -97,16 +100,36 @@ class CodeContestsCompetitor:
                 problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
 
+                if all_passed:
+                    passed_tests_input_list.append(test_inputs[0])
+                    passed_tests_output_list.append(test_outputs[0])
+
                 if not all_passed:
                     logger.error(f"Failed to pass ai tests. trying to fix code")
                     problem['diff_that_didnt_help'] = ''
                     problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
 
+                    last_code_solution = copy.deepcopy(problem['code_recent_solution'])
                     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
 
                     problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
                         = run_tests(self, problem, counter, test_inputs, test_outputs)
-            exit(-1)
+
+                    if not all_passed:
+                        logger.error(f"Failed to pass ai tests after trying to fix code. reverting to last solution")
+                        problem['code_recent_solution'] = last_code_solution
+                    else:
+                        # running passed tests again to make sure we didn't break anything
+                        problem, all_passed_prev, non_empty_output, error_str, trace_str, tests_timeout \
+                            = run_tests(self, problem, counter, passed_tests_input_list, passed_tests_output_list)
+                        if all_passed_prev or passed_tests_input_list == []:
+                            logger.info(f"Passed all ai tests after trying to fix code. using new solution")
+                            passed_tests_input_list.append(test_inputs[0])
+                            passed_tests_output_list.append(test_outputs[0])
+                        else:
+                            logger.error(f"Fix broke prev passed tests. reverting to last solution")
+                            problem['code_recent_solution'] = last_code_solution
+
             aaa = 4
 
             # evaluate public tests

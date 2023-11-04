@@ -28,6 +28,11 @@ async def run_generate_ai_tests(self, problem):
         if response_problem_tests.startswith("```yaml"):
             response_problem_tests = response_problem_tests[8:]
         problem['problem_ai_tests'] = yaml.safe_load(response_problem_tests)['tests']
+
+        # adding public tests to the beginning of the list
+        for public_input, public_output in zip(problem['public_tests']['input'],
+                                               problem['public_tests']['output']):
+            problem['problem_ai_tests'].insert(0, {'input': public_input, 'output': public_output})
         return problem
     except Exception as e:
         logging.error(f"Error: {e}")
