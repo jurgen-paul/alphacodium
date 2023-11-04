@@ -20,7 +20,7 @@ self reflection:
 {{ self_description|trim }}
 '
 
-Your task is to generate 5 input-output examples for the problem.
+Your task is to generate five input-output examples for the problem.
 They should be sorted by difficulty, from easiest to hardest.
 It is essential that all the outputs are correct. Double check them, and validate they match the problem description and constraints.
 
@@ -31,7 +31,7 @@ class Test(BaseModel):
     output: str
 
 class ProblemTests(BaseModel):
-    tests: List[Test] = Field(min_items=5, max_items=10)
+    tests: List[Test] = Field(min_items=5, max_items=5)
 '
 
 
