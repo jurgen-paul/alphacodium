@@ -15,6 +15,7 @@ from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_f
 from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
+from alpha_codium.gen.stages.run_generate_ai_test import run_generate_ai_tests
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.gen.stages.run_tests import run_tests
@@ -81,6 +82,33 @@ class CodeContestsCompetitor:
             # initial solve
             problem = await run_initial_solve(self, problem)
 
+            # initial solve
+            problem = await run_generate_ai_tests(self, problem)
+
+            # evaluate ai tests
+            for test in problem['problem_ai_tests']:
+                test_inputs = test['input']
+                test_outputs = test['output']
+                if not isinstance(test_inputs, list):
+                    test_inputs = [test_inputs]
+                    test_outputs = [test_outputs]
+                counter = 0
+                # run the solution on the tests
+                problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
+                    = run_tests(self, problem, counter, test_inputs, test_outputs)
+
+                if not all_passed:
+                    logger.error(f"Failed to pass ai tests. trying to fix code")
+                    problem['diff_that_didnt_help'] = ''
+                    problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
+
+                    problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+
+                    problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
+                        = run_tests(self, problem, counter, test_inputs, test_outputs)
+            exit(-1)
+            aaa = 4
+
             # evaluate public tests
             logger.info("--iterate on public tests stage--")
             test_inputs_all = problem['public_tests']['input']
@@ -95,7 +123,7 @@ class CodeContestsCompetitor:
                 logger.debug(f"code_recent_solution:\n{problem['code_recent_solution']}")
 
             for test_inputs, test_outputs in zip(test_inputs_all, test_outputs_all):
-                logger.info(f"test_inputs:\n{test_inputs}")
+                # logger.info(f"test_inputs:\n{test_inputs}")
                 if not isinstance(test_inputs, list):
                     test_inputs = [test_inputs]
                     test_outputs = [test_outputs]
@@ -138,7 +166,6 @@ class CodeContestsCompetitor:
                         problem['code_prev_solution'] = problem['code_recent_solution']
 
                     # run 'fix code from tests failure' stage
-
                     problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
 
                     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
