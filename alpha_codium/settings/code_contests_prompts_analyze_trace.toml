@@ -38,9 +38,9 @@ You are also given a 'pysnooper' trace of the code execution, describing the flo
 
 {%- if diff_that_didnt_help %}
 
-We tried previously to apply the following patch fix to the code, but the output remained the same:
+We tried previously to apply the following diff patch fix to the code, but the output remained the same:
 '
-{{ diff_that_didnt_help }}
+{{ diff_that_didnt_help|trim }}
 '
 {% endif %}
 
