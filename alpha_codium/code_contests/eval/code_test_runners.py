@@ -266,14 +266,14 @@ class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
             PythonTestsRunner.test_outputs,
             self.compare_func,
         )
-        #super().print_test_results(result)
-        print(result)
-    
+        internal_results = self.cpp_to_python_results(result)
+        passed = internal_results.test_results[0].stdout == PythonTestsRunner.test_outputs
+        print(f"interpreter test {'did not' if not passed else ''} pass")
+
+
     def cpp_to_python_results(self, cpp_results):
 
         def cpp_exec_result_to_python(cpp_result):
-            print(cpp_result)
-            dir(cpp_result)
             python_result = ExecutionResult(
                 program_status=ProgramStatus[f"k{str(cpp_result.program_status.name)}"],
                 program_hash=cpp_result.program_hash,
