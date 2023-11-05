@@ -18,8 +18,8 @@ cli_mode=false
 
 [solve]
 use_baseline = false
-do_recording = false
-use_recording = true
+do_recording = true
+use_recording = false
 load_final_code_solution = false
 
 [etl]
@@ -34,4 +34,4 @@ use_trace=false
 max_trace_lines=50
 trace_depth=4
 delta=0.0001
-prefer_dynamic_programming=true
+#prefer_dynamic_programming=true

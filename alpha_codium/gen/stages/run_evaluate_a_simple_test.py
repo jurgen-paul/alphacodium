@@ -13,7 +13,7 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-async def run_simple_test(self, problem):
+async def run_evaluate_a_simple_test(self, problem):
     try:
         logger.info("--run simple test stage--")
         use_recording =problem.get('use_recording', False)
@@ -38,9 +38,9 @@ async def run_simple_test(self, problem):
             while not passed_simple_test:
                 counter += 1
                 if counter > MAX_COUNTER:
-                    logger.error(f"Failed to pass simple tests after {counter - 1} attempts. exiting")
+                    logger.error(f"Failed to pass simple test after {counter - 1} attempts. exiting")
                     break
-                logger.error(f"Failed to pass simple tests. trying to fix code")
+                logger.error(f"Failed to pass simple test. trying to fix code")
                 problem['diff_that_didnt_help'] = ''
                 problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
 
@@ -50,6 +50,7 @@ async def run_simple_test(self, problem):
                     = run_tests(self, problem, counter, test_input, test_output)
 
             if not passed_simple_test:
+                logger.error('Reverting to initial solution')
                 problem['code_recent_solution'] = last_code_solution
 
             if do_recording:
