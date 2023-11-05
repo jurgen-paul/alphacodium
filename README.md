@@ -95,7 +95,7 @@ Can run on any machine which has Python.
 You can also control whether the runs are sandboxed (best effort) or not by setting `sandbox=true` in the configuration. 
 
 ### `code_contests`
-This is a Python binding for code_contests` C++ library and sadbox for code execution.
+This is a Python binding for code_contests` C++ library and sandbox for code execution.
 
 It's execution results will be more reliable in comparison to the `local` option (some discrepancies already found between the two)
 
@@ -109,3 +109,28 @@ Due to the `code_contests` dependency on C++, there are a few quirks:
 4. Make sure it's `bin` is in `/usr/bin/python3.11` and it's lib is in `/usr/lib64/` and `/usr/lib64/python3.11`
 
 We will likely improve this sitaution later on and achieve more flexibility.
+
+
+
+Instructions
+
+1. Start an Amazon Linux 2023 machine (add your ssh keys, choose m5.xlarge or larger)
+2. SSH into the machine
+3. Run following commands (one by one)
+```
+   sudo yum install openssl-devel bzip2-devel libffi-devel
+   sudo dnf install python3.11
+   curl -O https://bootstrap.pypa.io/get-pip.py
+   python3 get-pip.py --user
+   git clone git@github.com:Codium-ai/alphaCodium.git
+   git checkout assaf/cc_eval
+   cd alphaCodium/
+   python3 -m pip install virtualenv
+   virtualenv venv
+   source venv/bin//activate
+   python --version
+   pip install -e .
+   huggingface-cli login
+   # possibly change the paths in the configuration.toml to point to the right places if running on different type of machine
+   gencode eval pass_at_k --dataset_name test_101 --split_name train --evaluation_test_type private_tests --sample_rate 0.01
+```
