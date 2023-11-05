@@ -221,7 +221,8 @@ class CodeContestsCompetitor:
 
             if not is_all_passed_public:
                 logger.error(f"Failed to pass public tests after {max_allowed_counter} attempts. exiting")
-                exit(-1)
+                if get_settings().get("solve.terminate_on_failure", False):
+                    exit(-1)
 
             # # evaluate AI-generated tests
             # max_ai_tests = 10
@@ -265,9 +266,7 @@ class CodeContestsCompetitor:
             #             logging.info(f"Failed to parse yaml: {response_fixed_code}")
             #             # result = response_fixed_code
 
-
-        # remove the if __name__ == '__main__' part. python eval fails to generate output with it
-        return recent_solution
+        return recent_solution, is_all_passed_public
 
     def render_trace(self, trace_data):
         if not trace_data:
@@ -288,10 +287,10 @@ class CodeContestsCompetitor:
 
     def solve_problem(self, example):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
-        prediction = asyncio.run(self.run(problem=problem))
+        prediction, passed_all_public = asyncio.run(self.run(problem=problem))
         logger.info("testing solution on private tests")
         logger.info(f"prediction:\n{prediction}")
-        return prediction
+        return prediction, passed_all_public
 
 
 def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_test_type=None, problem_number=None):
@@ -307,11 +306,11 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
     # solve problem
     solver = CodeContestsCompetitor()
-    solution = solver.solve_problem(problem)
+    solution, passed_all_public = solver.solve_problem(problem)
 
     # test solution
     test_results = None
-    if evaluation_test_type:
+    if evaluation_test_type and passed_all_public:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
 
     return solution, test_results

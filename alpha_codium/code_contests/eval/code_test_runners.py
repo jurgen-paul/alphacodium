@@ -1,9 +1,11 @@
 import abc
-import ast
 import traceback
 from abc import abstractmethod
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from collections import Counter, defaultdict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from typing import List, Optional
+
+import tqdm
 
 from alpha_codium.code_contests.eval.local_exec import (
     MultiTestResult,
@@ -15,6 +17,7 @@ from alpha_codium.config_loader import get_settings
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
+
 
 class PythonTestsRunner(abc.ABC):
     test_program = "x=input()\nprint(x)"
@@ -45,6 +48,32 @@ class PythonTestsRunner(abc.ABC):
     @abstractmethod
     def create_executor(self):
         pass
+
+    @staticmethod
+    def remove_if_main(script: str):
+        new_content = script
+        if 'if __name__ ==' in script:
+            result_lines = script.split('\n')
+            start_dedent = False
+            for i, line in enumerate(result_lines):
+                if 'if __name__ ==' in line:
+                    start_dedent = True
+                    result_lines[i] = ''
+                if start_dedent:
+                    result_lines[i] = result_lines[i][4:]
+            new_content = '\n'.join(result_lines)
+        return new_content
+
+    @staticmethod
+    def flatten_result_list_by_index(results_list):
+        result = {}
+        for task_name, candidate_results_list in results_list.items():
+            max_index = max(candidate_results_list, key=lambda x: x[0])[0] + 1
+            result_list = [None] * max_index
+            for index, value in candidate_results_list:
+                result_list[index] = value
+            result[task_name] = result_list
+        return result
 
     def print_test_results(self, result: MultiTestResult, test_inputs: List[str] = None):
         if result.compilation_result:
@@ -83,6 +112,60 @@ class PythonTestsRunner(abc.ABC):
             #     "====================================================================="
             # )
 
+    def bulk_test(self, num_workers, predictions, references):
+        executor_cls, kw = self.create_executor()
+        kw['max_workers'] = num_workers
+        with executor_cls(**kw) as executor:
+            futures = []
+            completion_id = Counter()
+            n_samples = 0
+            results = defaultdict(list)
+            inputs = defaultdict(dict)
+            for prediction, reference in zip(predictions, references):
+                task_name = prediction["task_name"]
+                candidates = prediction["solution_candidates"]
+                if not candidates:
+                    print(f"skipping {task_name} - no solutions provided")
+                    continue
+                tests_inputs = reference["tests_inputs"]
+                tests_outputs = reference["tests_outputs"]
+                if not tests_inputs:
+                    print(f"ERROR: {task_name} - no inputs")
+                    continue
+                if not tests_outputs:
+                    print(f"ERROR: {task_name} - no outputs")
+                    continue
+                print(f"submitting task {task_name} with {len(candidates)}")
+                print(f"test inputs: {tests_inputs}")
+                print(f"test outputs: {tests_outputs}")
+                inputs[task_name]["tests_inputs"] = tests_inputs
+                inputs[task_name]["tests_outputs"] = tests_inputs
+                inputs[task_name]["candidates"] = []
+                for candidate_id, candidate in enumerate(candidates):
+                    print(f"\tsubmitting candidate {candidate_id}")
+                    inputs[task_name]["candidates"].append(candidate)
+                    args = (
+                        task_name,
+                        candidate_id,
+                        candidate,
+                        tests_inputs,
+                        tests_outputs,
+                    )
+                    future = executor.submit(self.run_tests, *args)
+                    futures.append(future)
+                    completion_id[task_name] += 1
+                    n_samples += 1
+
+            pbar = tqdm.tqdm(total=len(futures), desc="Processing tasks", ncols=100)  # create a progress bar
+            for future in as_completed(futures):
+                task_id, candidate_id, test_result = future.result()
+                print(task_id)
+                results[task_id].append((candidate_id, test_result))
+                pbar.update(1)  # update the progress bar by one step
+            pbar.close()
+            flattened_results = self.flatten_result_list_by_index(results)
+        return inputs, flattened_results
+
 
 class LocalPythonTestsRunner(PythonTestsRunner):
 
@@ -90,6 +173,7 @@ class LocalPythonTestsRunner(PythonTestsRunner):
         super().__init__()
         self.sandbox = get_settings().code_tester.sandbox
         self.calc_trace = get_settings().code_tester.calc_trace
+
     def test_interpreter(self):
         _, _, result = self.run_tests(0, "test interpreter", PythonTestsRunner.test_program,
                                       PythonTestsRunner.test_inputs, PythonTestsRunner.test_outputs, snoop=True)
@@ -99,20 +183,6 @@ class LocalPythonTestsRunner(PythonTestsRunner):
     def prepare_script(script: str):
         script = LocalPythonTestsRunner.remove_if_main(script)
         return script
-
-    @staticmethod
-    def remove_if_main(script: str):
-        new_content = script
-        if 'if __name__ ==' in script:
-            result_lines = script.split('\n')
-            start_dedent = False
-            for i, line in enumerate(result_lines):
-                if 'if __name__ ==' in line:
-                    start_dedent = True
-                    result_lines[i] = ''
-                if start_dedent:
-                    result_lines[i] = result_lines[i][4:]
-            new_content = '\n'.join(result_lines)
 
         ## nope - ast removes code comments. we dont want that
         # if not script:
@@ -141,12 +211,12 @@ class LocalPythonTestsRunner(PythonTestsRunner):
         #     new_content = ast.unparse(new_tree)
         # except Exception as e:
         #     raise ValueError("Input is not a legal Python program") from e
-        return new_content
+
 
     def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10, snoop=None):
         try:
-            candidate = LocalPythonTestsRunner.remove_if_main(candidate)
-        except: # noqa
+            candidate = PythonTestsRunner.remove_if_main(candidate)
+        except:  # noqa
             logger.info(
                 "candidate program is not a valid Python program. Will attempt to run it anyway and collect as failure")
 
@@ -163,10 +233,11 @@ class LocalPythonTestsRunner(PythonTestsRunner):
 class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
     def __init__(
             self,
-            path_to_python_bin: str = "/usr/bin/python3.11",
-            path_to_python_lib: List[str] = ["/usr/lib64", "/usr/lib64/python3.11"],  # noqa: B006
-            num_threads: int = 4,  # noqa: B006
-            stop_on_first_failure: bool = True
+            path_to_python_bin: str = get_settings().get("code_contests_tester.path_to_python_bin"),
+            path_to_python_lib: List[str] = get_settings().get("code_contests_tester.path_to_python_lib"),
+            num_threads: int = get_settings().get("code_contests_tester.num_threads"),
+            stop_on_first_failure: bool = get_settings().get("code_contests_tester.stop_on_first_failure"),
+            timeout: int = get_settings().get("code_contests_tester.timeout")
     ):
 
         try:
@@ -196,11 +267,13 @@ class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
         )
         super().print_test_results(result)
 
-    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs):
-        result = self.tester.test(
+    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10, snoop=None):
+        multi_result = self.tester.test(
             candidate, test_inputs, self.options, tests_outputs, self.compare_func
         )
-        return test_id, candidate_id, result
+
+        tests_results = calculate_tests_pass_fail(multi_result, expected_results=tests_outputs)
+        return test_id, candidate_id, tests_results
 
     def create_executor(self):
         return ThreadPoolExecutor, {}

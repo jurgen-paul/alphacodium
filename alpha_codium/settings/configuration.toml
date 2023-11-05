@@ -20,6 +20,7 @@ cli_mode=false
 use_baselines=false
 do_recording = false
 use_recording = false
+terminate_on_failure = false
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
@@ -27,8 +28,18 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [code_tester]
 tester_type="local" # local, code_contests
-sandbox=false
+sandbox=true
 calc_trace=true
 use_trace=false
 max_trace_length=100
 trace_depth=4
+
+
+[code_contests_tester]
+num_threads = 4
+stop_on_first_failure = false
+timeout = 10
+path_to_python_bin = "/usr/local/bin/python"#"/usr/local/python3.11/bin/python" #"/usr/bin/python3.11",
+path_to_python_lib = ["/usr/local/lib","/usr/local/lib/python3.9"] #["/usr/local/python3.11/lib"]
+
+

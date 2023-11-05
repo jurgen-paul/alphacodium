@@ -30,3 +30,4 @@ aiolimiter
 Jinja2
 tqdm
 pysnooper
+loguru

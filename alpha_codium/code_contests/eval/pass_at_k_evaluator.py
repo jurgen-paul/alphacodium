@@ -12,11 +12,10 @@ def calculate_metrics(ds, k_values=[1, 10, 100]):  # noqa: B006
         os.path.dirname(os.path.abspath(__file__)), "code_contests_metric.py"
     )
     metric = load_metric(metric_path, config_name=get_settings().code_tester.tester_type, module_type="metric")
-    pass_at_k, _ = metric.compute(
+    pass_at_k, inputs, result = metric.compute(
         predictions=ds["predictions"], references=ds["references"], k=k_values
     )
-
-    print(pass_at_k)
+    return pass_at_k, inputs, result
 
 
 def evaluate_code_contest_dataset(
@@ -35,8 +34,8 @@ def evaluate_code_contest_dataset(
                                                                      evaluation_test_type=evaluation_test_type,
                                                                      task_name_column=task_name_column,
                                                                      path_to_solutions_column=path_to_solutions_column)
-    result = calculate_metrics(ds, k_values=k_values)
-    print(result)
+    pass_at_k, inputs, result = calculate_metrics(ds, k_values=k_values)
+    print(pass_at_k)
 
 
 if __name__ == "__main__":
