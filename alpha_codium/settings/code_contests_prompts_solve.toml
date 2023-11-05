@@ -29,7 +29,7 @@ guidelines:
 - Always double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
-- Note that Python is a zero-indexed language, and the first element in a list is indexed by 0. Make sure to address this in your code.
+- Note that Python is a zero-indexed language. However, the problem description might use one-indexed values. Make sure to address this issue.
 
 The code output must follow this structure:
 ````
