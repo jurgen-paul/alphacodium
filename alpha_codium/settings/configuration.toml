@@ -16,6 +16,7 @@ number_of_ai_tests=6
 revert_to_last_solution_on_failure=true
 disable_recording_public_tests=false
 max_counter_public_tests=3
+disable_ai_tests_fix = false
 
 
 [etl]

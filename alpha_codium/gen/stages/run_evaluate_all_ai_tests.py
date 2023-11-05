@@ -45,6 +45,9 @@ async def run_evaluate_all_ai_tests(self, problem):
                     problem['passed_tests']['outputs'] += test_outputs
 
             else:
+                if get_settings().solve.disable_recording_public_tests:
+                    logger.error(f"Failed to pass ai tests. moving on")
+                    continue
                 logger.error(f"Failed to pass ai tests. trying to fix code")
                 last_code_solution = copy.deepcopy(problem['code_recent_solution'])
 
