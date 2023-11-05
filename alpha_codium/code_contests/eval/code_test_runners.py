@@ -8,6 +8,7 @@ from typing import List, Optional
 import tqdm
 
 from alpha_codium.code_contests.eval.local_exec import (
+    ExecutionResult,
     MultiTestResult,
     ProgramStatus,
     calculate_tests_pass_fail,
@@ -258,22 +259,49 @@ class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
         self.test_interpreter()
 
     def test_interpreter(self):
-        result = self.tester.test(
+        result=self.tester.test(
             PythonTestsRunner.test_program,
             PythonTestsRunner.test_inputs,
             self.options,
             PythonTestsRunner.test_outputs,
             self.compare_func,
         )
-        super().print_test_results(result)
+        #super().print_test_results(result)
+        print(result)
+    
+    def cpp_to_python_results(self, cpp_results):
+
+        def cpp_exec_result_to_python(cpp_result):
+            print(cpp_result)
+            dir(cpp_result)
+            python_result = ExecutionResult(
+                program_status=ProgramStatus[f"k{str(cpp_result.program_status.name)}"],
+                program_hash=cpp_result.program_hash,
+                stdout=cpp_result.stdout,
+                stderr=cpp_result.stderr,
+                #execution_duration=cpp_result.execution_duration,
+                sandbox_result=cpp_result.sandbox_result,
+                passed=cpp_result.passed,
+                trace=None  # This field does not exist in the C++ class; set a default or derive as needed
+            )
+            return python_result
+        if cpp_results.compilation_result:
+            compilation_result = cpp_exec_result_to_python(cpp_results.compilation_result)
+
+        if cpp_results.test_results:
+            test_results = [cpp_exec_result_to_python(item) for item in cpp_results.test_results]
+
+        return MultiTestResult(test_results=test_results, compilation_result=compilation_result)
 
     def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10, snoop=None):
         multi_result = self.tester.test(
             candidate, test_inputs, self.options, tests_outputs, self.compare_func
         )
 
-        tests_results = calculate_tests_pass_fail(multi_result, expected_results=tests_outputs)
+        internal_results = self.cpp_to_python_results(multi_result)
+        tests_results = calculate_tests_pass_fail(internal_results, expected_results=tests_outputs)
         return test_id, candidate_id, tests_results
+
 
     def create_executor(self):
         return ThreadPoolExecutor, {}

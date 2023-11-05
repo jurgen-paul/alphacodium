@@ -27,7 +27,7 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 #private_dataset_cache_dir='/Users/talrid/Desktop/code_contest_dataset'
 
 [code_tester]
-tester_type="local" # local, code_contests
+tester_type="code_contests" # local, code_contests
 sandbox=true
 calc_trace=true
 use_trace=false
@@ -39,7 +39,8 @@ trace_depth=4
 num_threads = 4
 stop_on_first_failure = false
 timeout = 10
-path_to_python_bin = "/usr/local/bin/python"#"/usr/local/python3.11/bin/python" #"/usr/bin/python3.11",
-path_to_python_lib = ["/usr/local/lib","/usr/local/lib/python3.9"] #["/usr/local/python3.11/lib"]
+path_to_python_bin = "/usr/bin/python3.11"
+path_to_python_lib = ["/usr/lib64", "/usr/lib64/python3.11"]
+
 
 
