@@ -37,7 +37,7 @@ class ProblemSolution(BaseModel):
     complexity: str = Field(description="The complexity of the solution.")
     why: str = Field(description="why is this the best solution?")
     flow: str = Field(description="detailed description of the flow of the solution, in bullet points")
-    input_output_examples_flow: str = Field(description="describe how the proposed flow will lead to getting the expected output for the provided input examples")
+    input_output_examples_flow: str = Field(description="describe in details how the proposed flow will lead to getting the expected output for the provided input examples")
 '
 
 
