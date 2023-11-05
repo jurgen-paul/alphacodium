@@ -28,6 +28,7 @@ async def run_generate_ai_tests(self, problem):
         if response_problem_tests.startswith("```yaml"):
             response_problem_tests = response_problem_tests[8:]
         problem['problem_ai_tests'] = yaml.safe_load(response_problem_tests)['tests']
+        problem['problem_ai_simple_test'] =  problem['problem_ai_tests'][0]
 
         # adding public tests to the beginning of the list
         for public_input, public_output in zip(problem['public_tests']['input'],

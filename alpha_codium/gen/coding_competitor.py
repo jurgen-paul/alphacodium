@@ -19,6 +19,7 @@ from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code
 from alpha_codium.gen.stages.run_generate_ai_test import run_generate_ai_tests
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
+from alpha_codium.gen.stages.run_simple_test import run_simple_test
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.gen.stages.utils import set_configurations
 from alpha_codium.llm.ai_handler import AiHandler
@@ -85,6 +86,9 @@ class CodeContestsCompetitor:
 
             # generate ai tests
             problem = await run_generate_ai_tests(self, problem)
+
+            # run simple test
+            problem = await run_simple_test(self, problem)
 
 
             # evaluate public tests
@@ -163,49 +167,49 @@ class CodeContestsCompetitor:
                 except:
                     logger.error(f"Failed to save recording")
 
-            # evaluate ai tests
-            passed_tests_input_list =[]
-            passed_tests_output_list = []
-            for test in problem['problem_ai_tests']:
-                test_inputs = test['input']
-                test_outputs = test['output']
-                if not isinstance(test_inputs, list):
-                    test_inputs = [test_inputs]
-                    test_outputs = [test_outputs]
-                counter = 0
-                # run the solution on the tests
-                problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
-                    = run_tests(self, problem, counter, test_inputs, test_outputs)
-
-                if all_passed:
-                    passed_tests_input_list.append(test_inputs[0])
-                    passed_tests_output_list.append(test_outputs[0])
-
-                if not all_passed:
-                    logger.error(f"Failed to pass ai tests. trying to fix code")
-                    problem['diff_that_didnt_help'] = ''
-                    problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
-
-                    last_code_solution = copy.deepcopy(problem['code_recent_solution'])
-                    problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
-
-                    problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
-                        = run_tests(self, problem, counter, test_inputs, test_outputs)
-
-                    if not all_passed:
-                        logger.error(f"Failed to pass ai tests after trying to fix code. reverting to last solution")
-                        problem['code_recent_solution'] = last_code_solution
-                    else:
-                        # running passed tests again to make sure we didn't break anything
-                        problem, all_passed_prev, non_empty_output, error_str, trace_str, tests_timeout \
-                            = run_tests(self, problem, counter, passed_tests_input_list, passed_tests_output_list)
-                        if all_passed_prev or passed_tests_input_list == []:
-                            logger.info(f"Passed all ai tests after trying to fix code. using new solution")
-                            passed_tests_input_list.append(test_inputs[0])
-                            passed_tests_output_list.append(test_outputs[0])
-                        else:
-                            logger.error(f"Fix broke prev passed tests. reverting to last solution")
-                            problem['code_recent_solution'] = last_code_solution
+            # # evaluate ai tests
+            # passed_tests_input_list =[]
+            # passed_tests_output_list = []
+            # for test in problem['problem_ai_tests']:
+            #     test_inputs = test['input']
+            #     test_outputs = test['output']
+            #     if not isinstance(test_inputs, list):
+            #         test_inputs = [test_inputs]
+            #         test_outputs = [test_outputs]
+            #     counter = 0
+            #     # run the solution on the tests
+            #     problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
+            #         = run_tests(self, problem, counter, test_inputs, test_outputs)
+            #
+            #     if all_passed:
+            #         passed_tests_input_list.append(test_inputs[0])
+            #         passed_tests_output_list.append(test_outputs[0])
+            #
+            #     if not all_passed:
+            #         logger.error(f"Failed to pass ai tests. trying to fix code")
+            #         problem['diff_that_didnt_help'] = ''
+            #         problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
+            #
+            #         last_code_solution = copy.deepcopy(problem['code_recent_solution'])
+            #         problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+            #
+            #         problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout \
+            #             = run_tests(self, problem, counter, test_inputs, test_outputs)
+            #
+            #         if not all_passed:
+            #             logger.error(f"Failed to pass ai tests after trying to fix code. reverting to last solution")
+            #             problem['code_recent_solution'] = last_code_solution
+            #         else:
+            #             # running passed tests again to make sure we didn't break anything
+            #             problem, all_passed_prev, non_empty_output, error_str, trace_str, tests_timeout \
+            #                 = run_tests(self, problem, counter, passed_tests_input_list, passed_tests_output_list)
+            #             if all_passed_prev or passed_tests_input_list == []:
+            #                 logger.info(f"Passed all ai tests after trying to fix code. using new solution")
+            #                 passed_tests_input_list.append(test_inputs[0])
+            #                 passed_tests_output_list.append(test_outputs[0])
+            #             else:
+            #                 logger.error(f"Fix broke prev passed tests. reverting to last solution")
+            #                 problem['code_recent_solution'] = last_code_solution
 
 
         return problem['code_recent_solution']
