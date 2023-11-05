@@ -23,4 +23,9 @@ def set_configurations(problem):
     problem["do_recording"] = do_recording
     problem["use_recording"] = use_recording
     problem['number_of_ai_tests'] = get_settings().get("solve.number_of_ai_tests", 6)
+
+    # initialize passed tests field
+    problem['passed_tests'] = {}
+    problem['passed_tests']['inputs'] = []
+    problem['passed_tests']['outputs'] = []
     return problem

@@ -24,6 +24,7 @@ async def run_evaluate_public_tests(self, problem):
         do_recording = problem.get('do_recording', False)
         recording_path = problem.get('recording_path', '')
         MAX_ALLOWED_COUNTER = get_settings().solve.get("max_counter_public_tests", 3)
+
         if use_recording:
             code_recent_solution = np.load(recording_path + 'problem_run_public_tests.npy', allow_pickle=True).tolist()
             problem['code_recent_solution'] = code_recent_solution
@@ -57,6 +58,9 @@ async def run_evaluate_public_tests(self, problem):
                     logger.info(f"counter: {counter}")
                     if passed_specific_test:
                         logger.info(f"Passed public tests after {counter-1} attempts")
+                        if test_inputs not in problem['passed_tests']['inputs']:
+                            problem['passed_tests']['inputs'] += test_inputs
+                            problem['passed_tests']['outputs'] += test_outputs
                         break
                     elif tests_timeout:
                         logger.error("timeout (no output). reverting to last solution")
@@ -86,6 +90,17 @@ async def run_evaluate_public_tests(self, problem):
 
                     # run 'fix_code_from_tests_failure' stage
                     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+
+                    # evaluate previous tests that passed. if they fail, revert to last solution
+                    if problem['passed_tests']['inputs']:
+                        problem, passed_prev_test, non_empty_output, error_str, trace_str, tests_timeout \
+                            = run_tests(self, problem, counter,
+                                        problem['passed_tests']['inputs'],
+                                        problem['passed_tests']['outputs'])
+                        if not passed_prev_test:
+                            logger.error(f"The fix broke prev passed tests. reverting to last solution")
+                            problem['code_recent_solution'] = last_code_solution
+                            continue
 
                 if not passed_specific_test and get_settings().solve.revert_to_last_solution_on_failure:
                     logger.error('Public test - reverting to initial solution')
