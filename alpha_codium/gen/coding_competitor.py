@@ -190,16 +190,19 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     if evaluation_test_type:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
 
-    test_passed = 0
-    test_failed = 0
-    for test in test_results[1].test_results:
-        if not test.passed:
-            test_failed += 1
-        else:
-            test_passed += 1
-    logger.info("=====================================")
-    logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
-    logger.info("=====================================")
+    if not problem['private_tests']:
+        logger.info("No private tests for this problem")
+    else:
+        test_passed = 0
+        test_failed = 0
+        for test in test_results[1].test_results:
+            if not test.passed:
+                test_failed += 1
+            else:
+                test_passed += 1
+        logger.info("=====================================")
+        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
+        logger.info("=====================================")
     return solution, test_results
 
 

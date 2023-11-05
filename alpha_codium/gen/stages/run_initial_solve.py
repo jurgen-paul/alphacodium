@@ -8,11 +8,11 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-async def run_initial_solve(self, problem):
+async def run_initial_solve(self, problem, enable_record=True):
     try:
         logger.info("--solve stage--")
-        use_recording =problem.get('use_recording', False)
-        do_recording = problem.get('do_recording', False)
+        use_recording =problem.get('use_recording', False) and enable_record
+        do_recording = problem.get('do_recording', False) and enable_record
         recording_path = problem.get('recording_path', '')
 
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")

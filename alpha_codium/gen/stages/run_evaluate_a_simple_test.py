@@ -7,6 +7,7 @@ import yaml
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
+from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -41,12 +42,14 @@ async def run_evaluate_a_simple_test(self, problem):
                 if counter > MAX_COUNTER:
                     logger.error(f"Failed to pass simple test after {counter - 1} attempts. exiting")
                     break
-                logger.error(f"Failed to pass simple test. trying to fix code")
-                problem['diff_that_didnt_help'] = ''
-                problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
 
-                problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
-
+                problem = await run_initial_solve(self, problem, enable_record=False)
+            #     logger.error(f"Failed to pass simple test. trying to fix code")
+            #     problem['diff_that_didnt_help'] = ''
+            #     problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
+            #
+            #     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+            #
                 problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout \
                     = run_tests(self, problem, counter, test_input, test_output)
 

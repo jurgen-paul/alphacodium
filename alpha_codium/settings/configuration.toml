@@ -1,6 +1,6 @@
 [config]
-model="gpt-4"
-#model = "gpt-3.5-turbo-16k"
+#model="gpt-4"
+model = "gpt-3.5-turbo-16k"
 requests_per_minute=60
 fallback_models =[]
 git_provider="github"
@@ -13,8 +13,9 @@ do_recording = true
 use_recording = false
 load_final_code_solution = false
 number_of_ai_tests=6
-revert_to_last_solution_on_failure=false
+revert_to_last_solution_on_failure=true
 disable_recording_public_tests=false
+max_counter_public_tests=3
 
 
 [etl]
