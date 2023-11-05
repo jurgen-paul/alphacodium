@@ -2,6 +2,8 @@ import functools
 import logging
 import numpy as np
 import yaml
+
+from alpha_codium.config_loader import get_settings
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
 
@@ -11,7 +13,7 @@ logger = get_logger(__name__)
 async def run_self_reflect(self, problem):
     try:
         logger.info("--reflection stage--")
-        use_recording =problem.get('use_recording', False)
+        use_recording = problem.get('use_recording', False)
         do_recording = problem.get('do_recording', False)
         recording_path = problem.get('recording_path', '')
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
@@ -33,6 +35,15 @@ async def run_self_reflect(self, problem):
         problem['self_description'] = response_reflect_yaml['self_description']
         problem['s_possible_solutions'] = response_reflect_yaml['possible_solutions']
         problem['s_possible_solutions_str'] = response_reflect.split('possible_solutions:')[1]
+
+        # enforce dynamic programming solution if it exists
+        if get_settings().code_tester.prefer_dynamic_programming:
+            for s in problem['s_possible_solutions']:
+                if 'dynamic' in s['name'].lower() and 'programming' in s['name'].lower():
+                    logger.info(f"Enforcing dynamic programming solution: {s['name']}")
+                    problem['s_possible_solutions'] = [s]
+                    problem['s_possible_solutions_str'] = s
+                    break
         return problem
     except Exception as e:
         logging.error(f"Error: {e}")
