@@ -37,12 +37,13 @@ async def run_evaluate_all_ai_tests(self, problem):
             problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout \
                 = run_tests(self, problem, counter, test_inputs, test_outputs)
 
+            # we passed without changing the code. Add the test to the passed tests list
             if test_passed:
                 if test_inputs not in problem['passed_tests']['inputs']:
                     problem['passed_tests']['inputs'] += test_inputs
                     problem['passed_tests']['outputs'] += test_outputs
 
-            if not test_passed:
+            else:
                 logger.error(f"Failed to pass ai tests. trying to fix code")
                 last_code_solution = copy.deepcopy(problem['code_recent_solution'])
 
@@ -71,8 +72,9 @@ async def run_evaluate_all_ai_tests(self, problem):
                             continue
 
                     logger.info(f"Passed all ai tests after trying to fix code. using new solution")
-                    problem['passed_tests']['inputs'] += test_inputs
-                    problem['passed_tests']['outputs'] += test_outputs
+                    if test_inputs not in problem['passed_tests']['inputs']:
+                        problem['passed_tests']['inputs'] += test_inputs
+                        problem['passed_tests']['outputs'] += test_outputs
 
 
 

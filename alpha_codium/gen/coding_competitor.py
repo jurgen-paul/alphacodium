@@ -15,6 +15,7 @@ from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
 from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
+from alpha_codium.gen.stages.run_evaluate_all_ai_tests import run_evaluate_all_ai_tests
 from alpha_codium.gen.stages.run_evaluate_public_tests import run_evaluate_public_tests
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_generate_ai_test import run_generate_ai_tests
@@ -90,8 +91,11 @@ class CodeContestsCompetitor:
             # run a simple test first
             problem = await run_evaluate_a_simple_test(self, problem)
 
-            # evaluate public tests
+            # evaluate on public tests
             problem = await run_evaluate_public_tests(self, problem)
+
+            # evaluate on ai tests
+            problem = await run_evaluate_all_ai_tests(self, problem)
 
         return problem['code_recent_solution']
 
