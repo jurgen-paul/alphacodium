@@ -15,7 +15,7 @@ self-reflection:
 {{ self_description }}
 '
 
-propose solution:
+proposed solution:
 '
 {{ s_best_solution }}
 '
@@ -26,7 +26,7 @@ Your goal is to generate a valid Python code that correctly solves the problem.
 guidelines:
 - You must divide the code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
 - The code must have a reasonable runtime and memory complexity
-- Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
+- Always double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 - emphasis not accessing an index that is out of the range of a list

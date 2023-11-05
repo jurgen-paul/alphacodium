@@ -46,7 +46,7 @@ guidelines for generating the fixed code:
 - Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.
 - Make sure the new solution code generalizes to all possible input-output examples, and not only to the provided input-output examples.
 - You must divide the new solution code into small sub-functions, with meaningful names and functionality
-- Add comments to relevant parts of the code, explaining what was fixed
+- If the change is small, try adding comments to relevant part, explaining what was fixed
 
 The code output must follow this structure:
 ````
