@@ -190,7 +190,7 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     if evaluation_test_type:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
 
-    if not problem['private_tests']:
+    if not problem['private_tests']['input']:
         logger.info("No private tests for this problem")
     else:
         test_passed = 0
