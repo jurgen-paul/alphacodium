@@ -22,4 +22,5 @@ def set_configurations(problem):
         problem["recording_path"] = ''
     problem["do_recording"] = do_recording
     problem["use_recording"] = use_recording
+    problem['number_of_ai_tests'] = get_settings().get("solve.number_of_ai_tests", 6)
     return problem

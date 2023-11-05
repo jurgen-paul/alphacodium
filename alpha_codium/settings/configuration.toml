@@ -1,26 +1,20 @@
 [config]
-#model="gpt-4"
-model = "gpt-3.5-turbo-16k"
+model="gpt-4"
+#model = "gpt-3.5-turbo-16k"
 requests_per_minute=60
 fallback_models =[]
-#fallback_models=["gpt-3.5-turbo-16k"]
 git_provider="github"
-publish_output=true
-publish_output_progress=true
 verbosity_level=0 # 0,1,2
-use_extra_bad_extensions=false
-use_repo_settings_file=true
 ai_timeout=180
-max_description_tokens = 500
-max_commits_tokens = 500
-secret_provider="google_cloud_storage"
-cli_mode=false
 
 [solve]
 use_baseline = false
 do_recording = true
 use_recording = false
 load_final_code_solution = false
+number_of_ai_tests=6
+revert_to_last_solution_on_failure=false
+
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"

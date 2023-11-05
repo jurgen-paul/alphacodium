@@ -43,6 +43,7 @@ async def run_evaluate_public_tests(self, problem):
                 problem['diff_that_didnt_help'] = ''
 
                 # loop to fix specific test
+                last_code_solution = copy.deepcopy(problem['code_recent_solution'])
                 while not passed_specific_test:
 
                     # run the solution on the tests
@@ -84,6 +85,9 @@ async def run_evaluate_public_tests(self, problem):
                     # run 'fix_code_from_tests_failure' stage
                     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
 
+                if not passed_specific_test and get_settings().solve.revert_to_last_solution_on_failure:
+                    logger.error('Public test - reverting to initial solution')
+                    problem['code_recent_solution'] = last_code_solution
                 all_passed_public = all_passed_public and passed_specific_test
 
             if do_recording:
