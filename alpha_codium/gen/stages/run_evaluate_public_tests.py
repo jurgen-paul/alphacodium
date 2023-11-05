@@ -18,7 +18,9 @@ async def run_evaluate_public_tests(self, problem):
     try:
         logger.info("--iterate on public tests stage--")
 
-        use_recording =problem.get('use_recording', False)
+        use_recording = problem.get('use_recording', False)
+        if get_settings().solve.disable_recording_public_tests:
+            use_recording = False
         do_recording = problem.get('do_recording', False)
         recording_path = problem.get('recording_path', '')
         MAX_ALLOWED_COUNTER = 4

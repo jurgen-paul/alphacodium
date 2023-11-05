@@ -33,15 +33,19 @@ Error message when running the 'solution code':
 '
 {{ error_str|trim }}
 '
+=====================================
 
-what_went_wrong:
+
+We analyzed the error message, and concluded that the following went wrong:
+
+what went wrong:
 '
 {{ what_went_wrong|trim }}
 '
 
-input_output_fixed_flow:
+failed_test_fixed_flow:
 '
-{{ input_output_fixed_flow|trim }}
+{{ failed_test_fixed_flow|trim }}
 '
 =====================================
 

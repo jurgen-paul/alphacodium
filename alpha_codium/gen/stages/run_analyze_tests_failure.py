@@ -27,7 +27,7 @@ async def run_analyze_test_failure(self, problem,error_str, trace_str, counter):
             response_analyze_failure_yaml = yaml.safe_load(response_analyze_failure)
             problem['response_analyze_failure'] = response_analyze_failure
             problem['what_went_wrong'] = response_analyze_failure_yaml['what_went_wrong']
-            problem['input_output_fixed_flow'] = response_analyze_failure_yaml['input_output_fixed_flow']
+            problem['failed_test_fixed_flow'] = response_analyze_failure_yaml['failed_test_fixed_flow']
         except yaml.YAMLError:
             logger.error(f"Failed to parse yaml:\n{response_analyze_failure}")
             # result = response_fixed_code

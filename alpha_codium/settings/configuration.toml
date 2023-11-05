@@ -14,6 +14,7 @@ use_recording = false
 load_final_code_solution = false
 number_of_ai_tests=6
 revert_to_last_solution_on_failure=false
+disable_recording_public_tests=false
 
 
 [etl]

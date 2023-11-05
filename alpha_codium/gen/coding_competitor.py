@@ -72,7 +72,6 @@ class CodeContestsCompetitor:
         # configurations
         problem = set_configurations(problem)
 
-
         if get_settings().get("solve.use_baseline", False):
             problem['code_recent_solution'] = await run_baseline(self, problem)
         else:
@@ -88,7 +87,7 @@ class CodeContestsCompetitor:
             # generate ai tests
             problem = await run_generate_ai_tests(self, problem)
 
-            # run a simple test
+            # run a simple test first
             problem = await run_evaluate_a_simple_test(self, problem)
 
             # evaluate public tests
