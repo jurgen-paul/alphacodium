@@ -107,6 +107,14 @@ async def run_evaluate_public_tests(self, problem):
                     problem['code_recent_solution'] = last_code_solution
                 all_passed_public = all_passed_public and passed_specific_test
 
+            if all_passed_public:
+                logger.info(f"==================")
+                logger.info(f"Passed all public tests")
+                logger.info(f"==================")
+            else:
+                logger.info(f"==================")
+                logger.info(f"Failed to pass all public tests")
+                logger.info(f"==================")
             if do_recording:
                 np.save(recording_path + 'problem_run_public_tests.npy', problem['code_recent_solution'])
 

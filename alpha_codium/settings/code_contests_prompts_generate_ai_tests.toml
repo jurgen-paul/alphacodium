@@ -25,7 +25,8 @@ possible solution:
 Your task is to generate {{ number_of_ai_tests }} additional input-output examples for the problem.
 They should be sorted by difficulty, from easiest to hardest.
 It is essential that all the inputs are valid, and the outputs are correct. Double check them, and validate they match the problem description and constraints.
-If you are not sure what should be the output for a given input, make the test easier.
+If relevant, the easiest test should be taken from one of the problem input examples.
+
 
 
 The output must be a YAML object equivalent to type $ProblemTests, according to the following Pydantic definitions:

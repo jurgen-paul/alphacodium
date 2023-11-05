@@ -40,6 +40,7 @@ async def run_evaluate_all_ai_tests(self, problem):
             # we passed without changing the code. Add the test to the passed tests list
             if test_passed:
                 if test_inputs not in problem['passed_tests']['inputs']:
+                    logger.info(f"Passed ai tests without code fixing. adding to passed tests list")
                     problem['passed_tests']['inputs'] += test_inputs
                     problem['passed_tests']['outputs'] += test_outputs
 
@@ -67,7 +68,7 @@ async def run_evaluate_all_ai_tests(self, problem):
                                         problem['passed_tests']['inputs'],
                                         problem['passed_tests']['outputs'])
                         if not all_passed_prev:
-                            logger.error(f"Fix broke prev passed tests. reverting to last solution")
+                            logger.error(f"The fix broke prev passed tests. reverting to last solution")
                             problem['code_recent_solution'] = last_code_solution
                             continue
 
