@@ -15,7 +15,7 @@ self-reflection on the problem:
 {{ self_description|trim }}
 '
 
-A solution code that was generated for the problem:
+A Python solution code that was generated for the problem:
 '
 {{ code_recent_solution|trim }}
 '
@@ -45,8 +45,8 @@ We tried previously to apply the following patch fix to the code, but the output
 {% endif %}
 
 
-Your goal is to analyze the code and the error, find the problem in the code, and propose a fix so the code will pass the input example.
-Offer a fix that will keep the solution robust, and work for all other input examples as well.
+Your goal is to analyze the code and the error, and propose a fix so the code will produce the expected output for the provided input example.
+The fix should keep the solution robust, and work for all other input examples as well.
 
 
 The output must be a YAML object equivalent to type $FixedSolution, according to the following Pydantic definitions:

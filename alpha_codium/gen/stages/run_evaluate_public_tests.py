@@ -73,7 +73,6 @@ async def run_evaluate_public_tests(self, problem):
                     # if last fix didn't change anything, add the diff patch to prompt
                     if (not passed_specific_test) and (last_error_str == error_str):
                         logger.error("error string did not change.")
-                        # problem['code_recent_solution'] = problem['code_prev_solution']
                         problem['diff_that_didnt_help'] = self.clip_string(problem['diff_patch'], get_settings().code_tester.get("max_trace_lines"))
                     else:
                         problem['diff_that_didnt_help'] = ''

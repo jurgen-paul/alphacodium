@@ -6,9 +6,6 @@ system = """\
 User="""\
 You are given a code contest problem, self-reflection on the problem, and a list of possible solutions.
 
-problem name: '{{name|trim}}'
-
-
 problem description:
 '
 {{description|trim}}
