@@ -25,7 +25,7 @@ notebook
 black
 evaluate
 click
-code_contests_tester==0.1.5
+code_contests_tester==0.1.6
 aiolimiter
 Jinja2
 tqdm

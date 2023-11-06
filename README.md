@@ -163,3 +163,57 @@ cd /app
 * Now you can run the tests inside the docker
 
 
+## Generating solutions to a dataset
+
+The process includes s
+
+* Selecting the problems you want to let the competitor solve and storing them in a dataset
+
+* Running a generation loop on the dataset (async) where the competitor will return 0-n solutions to each item
+
+* Preparing the results for evaluation - transforming the solutions to a dataset where the schema is:
+
+  * Predictions
+    - task_name
+    - candidates
+  * References
+    * Test inputs
+    * Test outputs
+  
+After this dataset is ready, you can store it in disk using `.save_to_disk(path)`
+
+This code can be found in `gen_loop.py`
+
+
+```python
+cc = CodeContestDataProvider(dataset_location="deepmind/code_contests")
+ds = cc.dataset['valid']
+sub_ds = ds.filter(lambda example: example['name'] == "1548_D1. Gregor and the Odd Cows (Easy)")
+solutions = asyncio.run(generate_candidate_solutions(sub_ds))
+evaluation_set = cc.prepare_for_evaluation(
+    predictions=solutions, source_of_truth=ds, evaluation_test_type="private_tests"
+)
+print(f"saving the output dataset to {output_path}")
+evaluation_set.save_to_disk(output_path)
+
+
+```
+
+
+## Evaluating solutions at scale
+
+Given a dataset of solutions in the schema described above, evaluate it.
+
+This is done using the `gen_loop.py` module, e.g.:
+
+```pass_at_k, inputs, evaluation_results = calculate_metrics(evaluation_set)```
+
+the result includes
+
+1. `pass@k` for multiple provided k values, as well as evaluation results.
+
+2. The tests per task
+
+3. The run results per candidate  (multi test results)
+
+
