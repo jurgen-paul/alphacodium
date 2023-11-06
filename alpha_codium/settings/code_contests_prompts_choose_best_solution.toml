@@ -24,7 +24,6 @@ possible solutions:
 
 Using these inputs, you goal is to choose the best solution to the code contest problem.
 Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way.
-Be critical - the provided solutions might be wrong, or not fully solve the problem. For example, greedy solutions might be efficient, but not fully solve the problem. If so, you should choose a different solution.
 Double-check the best solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
 Mke sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
 
@@ -33,7 +32,7 @@ The output must be a YAML object equivalent to type $ProblemSolution, according 
 class ProblemSolution(BaseModel):
     name: str = Field(description="The name of the best solution")
     content: str = Field(description="The content of the best solution")
-    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): brute force, binary search, dynamic programming, trees, greedy, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, ...")
+    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, two pointers,...")
     complexity: str = Field(description="The complexity of the solution.")
     why: str = Field(description="why is this the best solution?")
     flow: str = Field(description="detailed description of the flow of the solution, in bullet points")

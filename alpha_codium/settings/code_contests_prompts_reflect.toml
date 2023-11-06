@@ -15,20 +15,20 @@ problem description:
 Your goal is reflect on the problem, and describe it in your own words.
 You should also present possible solutions to the problem.
 Make sure to fully address the problem constraints.
-Double-check the solutions and test them on multiple edge cases and happy paths, including the provided input-output examples.
+Double-check the solutions and test them on multiple edge cases and happy paths, including the provided input-output examples. Avoid simple greedy or brute force solutions.
 
 The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:
 '
 class Solution(BaseModel):
     name: str = Field(description="The name of the solution.")
     content: str = Field(description="A description of the solution.")
-    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, two pointers ..."")
     complexity: str = Field(description="The complexity of the solution.")
 
 
 class ProblemReflection(BaseModel):
     self_description: str = Field(description="Describe the problem in your own words, in bullet points. Address the problem goal, inputs, outputs, constraints, and other relevant details.")
-    possible_solutions: List[Solution] = Field(min_items=3, max_items=3, description="A list of possible solutions to the problem.")
+    possible_solutions: List[Solution] = Field(min_items=2, max_items=3, description="A list of possible solutions to the problem.")
 '
 
 Example YAML output:

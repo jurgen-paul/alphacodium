@@ -40,7 +40,7 @@ async def run_evaluate_a_simple_test(self, problem):
             while not passed_simple_test:
                 counter += 1
                 if counter > MAX_COUNTER:
-                    logger.error(f"Failed to pass simple test after {counter - 1} attempts. exiting")
+                    logger.error(f"Failed to pass simple test after {counter - 1} attempts. exiting the stage")
                     break
 
                 problem = await run_initial_solve(self, problem, enable_record=False)
