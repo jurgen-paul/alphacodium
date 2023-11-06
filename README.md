@@ -150,7 +150,7 @@ The reason is that Mac (especially with Arm processor) is unable to emulate the 
 * From the root of the code, run:
 
 ```
-docker run --security-opt seccomp=unconfined --privileged --cap-add=SYS_ADMIN --platform linux/amd64 \
+docker run -it --security-opt seccomp=unconfined --privileged --cap-add=SYS_ADMIN --platform linux/amd64 \
 -v ${PWD}:/app -v ${HOME}/.cache/huggingface:/root/.cache/huggingface \
 597530458568.dkr.ecr.us-east-1.amazonaws.com/alphacode/code_contests:latest \
 /bin/bash
