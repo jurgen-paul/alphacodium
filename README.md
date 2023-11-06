@@ -28,6 +28,11 @@ The evaluation itself requires running the code in an interpreter, in a sandboxe
 Deepmind provided in the `code_contests` repo, a C++ based framework for managing candidate execution against inputs and outputs.
 This tool was wrapped in a [python package](https://pypi.org/project/code-contests-tester/0.1.3/) to make it more usable within a development environment.
 
+There are also local test execution scripts to accelerate development.
+
+See more further down.
+
+
 ## CLI
 
 The project includes a cli tool for running common development tasks.
@@ -67,13 +72,18 @@ for example, try:
 ```gencode gen solve_problem --dataset_name deepmind/code_contests --split_name valid --problem_name "1560_F1. Nearest Beautiful Number (easy version)" --evaluation_test_type private_tests```
 
 
-`solve_and_evaluate_set` - specify a dataset, split, sample etc. and the code will generate solutions for all the problems in the dataset, and calulate `pass@k`
+`solve_set` - specify a dataset, split, sample etc. and the code will generate solutions for all the problems in the dataset and store them in the target dataset
 
 ### eval
-Example command: `gencode eval pass_at_k --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
 
-This command takes a dataset name (can be a dataset stored locally) and evaluates the  one of it's split of the dataset against specified test types that accompany the problems.
+`eval_cc_solutions` - evaluate a solution from the actual code contests datasets
+
+Example command: `gencode eval eval_cc_solutions --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
+
+This command takes a dataset name (can be a dataset stored locally) and evaluates the solutions against specified test types that accompany the problems.
 The result is a `pass@k` metric
+
+`eval_gen_solutions` - takes a dataset name of solutions and a dataset name of ground truth and calculates pass@k
 
 
 ## installation
@@ -101,29 +111,23 @@ It's execution results will be more reliable in comparison to the `local` option
 
 **Note**:
 
-Due to the `code_contests` dependency on C++, there are a few quirks:
+Due to the `code_contests` dependency on C++ which is not multi-platform, there are a few quirks:
 
 1. Support only Python 3.9
-2. Run only on a linux box  (**Tested on AWS Linux 2023 only**)
-3. You need to also have a Python3.11 installed (but **not** for your virtual environment) - this is the interpreter used to run your Python tests.
-4. Make sure it's `bin` is in `/usr/bin/python3.11` and it's lib is in `/usr/lib64/` and `/usr/lib64/python3.11`
-
-We will likely improve this sitaution later on and achieve more flexibility.
+2. Run only on a linux
 
 
-
-#### Running on amazon Linux 23
+#### Running on Amazon Linux 2023 AMI
 
 1. Start an Amazon Linux 2023 machine (add your ssh keys, choose m5.xlarge or larger)
 2. SSH into the machine
 3. Run following commands (one by one)
+
 ```
    sudo yum install openssl-devel bzip2-devel libffi-devel
-   sudo dnf install python3.11
    curl -O https://bootstrap.pypa.io/get-pip.py
    python3 get-pip.py --user
    git clone git@github.com:Codium-ai/alphaCodium.git
-   git checkout assaf/cc_eval
    cd alphaCodium/
    python3 -m pip install virtualenv
    virtualenv venv
@@ -131,7 +135,7 @@ We will likely improve this sitaution later on and achieve more flexibility.
    python --version
    pip install -e .
    huggingface-cli login
-   # possibly change the paths in the configuration.toml to point to the right places if running on different type of machine
+   # possibly change the paths to the python interpreter 
    gencode eval pass_at_k --dataset_name test_101 --split_name train --evaluation_test_type private_tests --sample_rate 0.01
 ```
 
@@ -139,10 +143,9 @@ We will likely improve this sitaution later on and achieve more flexibility.
 
 **Note**: 
 
-You still need to run the docker from a linux machine!
+Unfortunately the docker still needs to run on a Linux machine!
 
-The reason is that Mac (especially with Arm chip) is unable to emulate the underlying OS accurately enought to support the Google sandbox.
-
+The reason is that Mac (especially with Arm processor) is unable to emulate the underlying OS accurately enough to support the Google sandbox.
 
 * From the root of the code, run:
 
@@ -158,14 +161,17 @@ docker run --security-opt seccomp=unconfined --privileged --cap-add=SYS_ADMIN --
 ```
 cd /app
 
+pip install -e .
+
 ```
 
 * Now you can run the tests inside the docker
 
+## Common tasks
 
-## Generating solutions to a dataset
+### Generating solutions to a dataset
 
-The process includes s
+The process includes :
 
 * Selecting the problems you want to let the competitor solve and storing them in a dataset
 
@@ -182,25 +188,11 @@ The process includes s
   
 After this dataset is ready, you can store it in disk using `.save_to_disk(path)`
 
-This code can be found in `gen_loop.py`
+See `gencode gen solve_set`
 
 
-```python
-cc = CodeContestDataProvider(dataset_location="deepmind/code_contests")
-ds = cc.dataset['valid']
-sub_ds = ds.filter(lambda example: example['name'] == "1548_D1. Gregor and the Odd Cows (Easy)")
-solutions = asyncio.run(generate_candidate_solutions(sub_ds))
-evaluation_set = cc.prepare_for_evaluation(
-    predictions=solutions, source_of_truth=ds, evaluation_test_type="private_tests"
-)
-print(f"saving the output dataset to {output_path}")
-evaluation_set.save_to_disk(output_path)
 
-
-```
-
-
-## Evaluating solutions at scale
+### Evaluating solutions at scale
 
 Given a dataset of solutions in the schema described above, evaluate it.
 
@@ -216,4 +208,4 @@ the result includes
 
 3. The run results per candidate  (multi test results)
 
-
+See `gencode eval eval_gen_solutions`

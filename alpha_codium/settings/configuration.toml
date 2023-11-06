@@ -17,10 +17,11 @@ secret_provider="google_cloud_storage"
 cli_mode=false
 
 [solve]
-use_baselines=false
+use_baselines=true
 do_recording = false
 use_recording = false
 terminate_on_failure = false
+max_allowed_counter = 1 # number of iterations to pass public tests
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"

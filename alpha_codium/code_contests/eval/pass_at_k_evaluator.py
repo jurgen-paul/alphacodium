@@ -38,5 +38,16 @@ def evaluate_code_contest_dataset(
     print(pass_at_k)
 
 
+def evaluate_gen_dataset(evaluation_test_type, ground_truth_dataset, ground_truth_split, k_values, solution_dataset):
+    evaluation_set = CodeContestDataProvider(dataset_location=solution_dataset)
+    gt_set = CodeContestDataProvider(dataset_location=ground_truth_dataset).dataset
+    if ground_truth_split:
+        gt_set = gt_set[ground_truth_split]
+    prepared_solutions = evaluation_set.prepare_for_evaluation(evaluation_set.dataset, gt_set,
+                                                               evaluation_test_type=evaluation_test_type)
+    pass_at_k, inputs, evaluation_results = calculate_metrics(prepared_solutions, k_values)
+    print(pass_at_k)
+
+
 if __name__ == "__main__":
-    evaluate_code_contest_dataset("assaf_test", evaluation_test_type="private_tests", sample_rate=0.1)
+    evaluate_code_contest_dataset("assaf_test", evaluation_test_type="private_tests", sample_rate=0.05)

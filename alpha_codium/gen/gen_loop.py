@@ -32,19 +32,17 @@ async def generate_candidate_solutions(ds):
     return ds
 
 
-def solve_and_evaluate_dataset(dataset_name, split_name='valid',  sample_rate=0.1, evaluation_test_type=None):
-    logger.info('solve_and_evaluate_dataset')
+def solve_set(dataset_name, split_name='valid', sample_rate=0.1, output_dataset_name= None):
+    logger.info('solve_dataset')
+    base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
+    output_path = os.path.join(base_path, output_dataset_name)
     cc = CodeContestDataProvider(dataset_location=dataset_name)
-    ds = cc.dataset[split_name]
+    ds = cc.dataset[split_name] if split_name else cc.dataset
     ds = cc.sample(ds, sample_rate)
     predictions = asyncio.run(generate_candidate_solutions(ds))
-    evaluation_set = cc.prepare_for_evaluation(
-        predictions=predictions, source_of_truth=ds, evaluation_test_type=evaluation_test_type
-    )
-
-    if evaluation_test_type:
-        evaluation_results = calculate_metrics(evaluation_set)
-    return predictions, evaluation_results
+    if output_dataset_name:
+        predictions.save_to_disk(output_path)
+    return (f"Done. \nSolutions stored in {output_path}")
 
 
 if __name__ == "__main__":

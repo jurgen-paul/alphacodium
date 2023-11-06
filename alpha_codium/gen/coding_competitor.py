@@ -63,6 +63,7 @@ class CodeContestsCompetitor:
         use_baseline = get_settings().get("solve.use_baseline", False)
         do_recording = get_settings().get("solve.do_recording", False)
         use_recording = get_settings().get("solve.use_recording", False)
+        max_allowed_counter = get_settings().get("solve.max_allowed_counter", 5)
         if use_recording or do_recording:
             recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
             logger.info(f"recording_path: {recording_path}\ndo_record: {do_recording}\nuse_record: {use_recording}")
@@ -132,7 +133,6 @@ class CodeContestsCompetitor:
             logger.info("--iterate on public tests stage--")
             is_all_passed_public = False
             counter = 0
-            max_allowed_counter = 5
             problem['recent_solution'] = problem['last_solution_code'] = problem['best_solution_code']
 
             while not is_all_passed_public:
