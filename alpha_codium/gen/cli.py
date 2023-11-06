@@ -94,8 +94,8 @@ def solve_problem(dataset_name, split_name, problem_name, evaluation_test_type, 
     show_default=True,
     required=True,
 )
-def solve_set(dataset_name, split_name, sample_rate, output_dataset_name):
-    return gen_loop.solve_set(dataset_name, split_name=split_name, sample_rate=sample_rate,
+def solve_set(input_dataset, split_name, sample_rate, output_dataset_name):
+    return gen_loop.solve_set(input_dataset, split_name=split_name, sample_rate=sample_rate,
                               output_dataset_name=output_dataset_name)
 
 
