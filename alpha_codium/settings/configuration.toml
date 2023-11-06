@@ -39,8 +39,8 @@ trace_depth=4
 num_threads = 4
 stop_on_first_failure = false
 timeout = 10
-path_to_python_bin = "/usr/bin/python3.11"
-path_to_python_lib = ["/usr/lib64", "/usr/lib64/python3.11"]
+path_to_python_bin = "/usr/bin/python3.9"
+path_to_python_lib = ["/usr/lib", "/usr/lib/python3.9"]
 
 
 

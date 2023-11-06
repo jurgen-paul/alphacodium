@@ -1,14 +1,39 @@
+FROM ubuntu:22.04
 
-FROM python:3.9.12-slim
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN python --version
-RUN pip --version
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN  apt-get update && apt-get install -y \
+    clang \
+    curl \
+    git \
+    vim \
+    build-essential \
+    libffi-dev \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    software-properties-common \
+    vim
 
 
-COPY requirements.txt .
+RUN add-apt-repository ppa:deadsnakes/ppa -y
 
-RUN pip install -r requirements.txt
+RUN apt install python3.9-dev -y
 
-ENV PYTHON311BIN=/root/.pyenv/versions/3.11.0/bin/python
-ENV PYTHON311LIB=/root/.pyenv/versions/3.11.0/lib/python3.11
+RUN apt install -y python3-pip \
+    python3.9-distutils
+
+RUN python3.9 -m pip install --upgrade pip
+
+RUN python3.9 --version
+
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+RUN update-alternatives --set python /usr/bin/python3.9
+
+
 

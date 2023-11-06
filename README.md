@@ -112,7 +112,7 @@ We will likely improve this sitaution later on and achieve more flexibility.
 
 
 
-Instructions
+#### Running on amazon Linux 23
 
 1. Start an Amazon Linux 2023 machine (add your ssh keys, choose m5.xlarge or larger)
 2. SSH into the machine
@@ -134,3 +134,32 @@ Instructions
    # possibly change the paths in the configuration.toml to point to the right places if running on different type of machine
    gencode eval pass_at_k --dataset_name test_101 --split_name train --evaluation_test_type private_tests --sample_rate 0.01
 ```
+
+#### Running in docker
+
+**Note**: 
+
+You still need to run the docker from a linux machine!
+
+The reason is that Mac (especially with Arm chip) is unable to emulate the underlying OS accurately enought to support the Google sandbox.
+
+
+* From the root of the code, run:
+
+```
+docker run --security-opt seccomp=unconfined --privileged --cap-add=SYS_ADMIN --platform linux/amd64 \
+-v ${PWD}:/app -v ${HOME}/.cache/huggingface:/root/.cache/huggingface \
+597530458568.dkr.ecr.us-east-1.amazonaws.com/alphacode/code_contests:latest \
+/bin/bash
+
+```
+
+* Inside the docker, run:
+```
+cd /app
+
+```
+
+* Now you can run the tests inside the docker
+
+
