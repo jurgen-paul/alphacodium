@@ -47,11 +47,19 @@ async def run_evaluate_public_tests(self, problem):
 
                 # loop to fix specific test
                 last_code_solution = copy.deepcopy(problem['code_recent_solution'])
+                best_solution = copy.deepcopy(problem['code_recent_solution'])
+                best_d = float('inf')
                 while not passed_specific_test:
 
                     # run the solution on the tests
-                    problem, passed_specific_test, non_empty_output, error_str, trace_str, tests_timeout \
+                    problem, passed_specific_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                         = run_tests(self, problem, counter, test_inputs, test_outputs)
+
+                    if d_tot > -1 and d_tot < best_d:
+                        best_solution = copy.deepcopy(problem['code_recent_solution'])
+                        best_d = d_tot
+                        # logger.info(f"best_solution: {best_solution}")
+                        # logger.info(f"best_d: {best_d}")
 
                     # analyze the tests results
                     counter += 1
@@ -93,7 +101,7 @@ async def run_evaluate_public_tests(self, problem):
 
                     # evaluate previous tests that passed. if they fail, revert to last solution
                     if problem['passed_tests']['inputs']:
-                        problem, passed_prev_test, non_empty_output, error_str, trace_str, tests_timeout \
+                        problem, passed_prev_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                             = run_tests(self, problem, counter,
                                         problem['passed_tests']['inputs'],
                                         problem['passed_tests']['outputs'])

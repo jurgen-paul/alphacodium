@@ -29,13 +29,18 @@ async def run_evaluate_a_simple_test(self, problem):
             logger.debug(f"code_recent_solution:\n{code_recent_solution}")
         else:
             counter = 0
-            last_code_solution = copy.deepcopy(problem['code_recent_solution'])
             test_input = [problem['problem_ai_simple_test']['input']]
             test_output = [problem['problem_ai_simple_test']['output']]
 
+            best_solution = copy.deepcopy(problem['code_recent_solution'])
+            best_d = float('inf')
+
             # run the solution on the simple test
-            problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout \
+            problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                 = run_tests(self, problem, counter, test_input, test_output)
+            if d_tot > -1 and d_tot < best_d:
+                best_solution = copy.deepcopy(problem['code_recent_solution'])
+                best_d = d_tot
 
             while not passed_simple_test:
                 counter += 1
@@ -44,18 +49,17 @@ async def run_evaluate_a_simple_test(self, problem):
                     break
 
                 problem = await run_initial_solve(self, problem, enable_record=False)
-            #     logger.error(f"Failed to pass simple test. trying to fix code")
-            #     problem['diff_that_didnt_help'] = ''
-            #     problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
-            #
-            #     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
-            #
-                problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout \
+
+                problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                     = run_tests(self, problem, counter, test_input, test_output)
 
+                if d_tot > -1 and d_tot < best_d:
+                    best_solution = copy.deepcopy(problem['code_recent_solution'])
+                    best_d = d_tot
+
             if not passed_simple_test and get_settings().solve.revert_to_last_solution_on_failure:
-                logger.error('Reverting to initial solution')
-                problem['code_recent_solution'] = last_code_solution
+                logger.error(f'Reverting to best solution so far, d_tot: {best_d}')
+                problem['code_recent_solution'] = best_solution
 
             if do_recording:
                 np.save(recording_path + 'problem_run_simple_test.npy', problem['code_recent_solution'])

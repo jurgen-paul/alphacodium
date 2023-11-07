@@ -55,7 +55,19 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
                 # is_all_passed_public = actual_output == expected_output
                 all_passed = all_passed and t.passed
                 non_empty_output = non_empty_output and t.actual_output
-        return problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout
+
+        try:
+            d_tot = -1
+            if non_empty_output and not tests_timeout:
+                d_tot = 0
+                for i in range(len(test_outputs)):
+                    t1 = np.array(list(map(float, test_outputs[i].rstrip().split('\n'))))
+                    t2 = np.array(list(map(float, results.test_results[i].stdout.rstrip().split('\n'))))
+                    d_tot += np.sum(np.abs(t1 - t2))
+        except:
+            d_tot = -1
+
+        return problem, all_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot
     except Exception as e:
         logging.error(f"Error: {e}")
         exit(-1)

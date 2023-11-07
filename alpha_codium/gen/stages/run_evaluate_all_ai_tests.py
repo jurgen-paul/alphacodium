@@ -19,8 +19,6 @@ async def run_evaluate_all_ai_tests(self, problem):
         logger.info("--iterate on all ai tests stage--")
 
         use_recording = problem.get('use_recording', False)
-        if get_settings().solve.disable_recording_public_tests:
-            use_recording = False
         do_recording = problem.get('do_recording', False)
         recording_path = problem.get('recording_path', '')
 
@@ -34,7 +32,7 @@ async def run_evaluate_all_ai_tests(self, problem):
                 test_outputs = [test_outputs]
             counter = 0
             # run the solution on the tests
-            problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout \
+            problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                 = run_tests(self, problem, counter, test_inputs, test_outputs)
 
             # we passed without changing the code. Add the test to the passed tests list
@@ -45,9 +43,6 @@ async def run_evaluate_all_ai_tests(self, problem):
                     problem['passed_tests']['outputs'] += test_outputs
 
             else:
-                if get_settings().solve.disable_recording_public_tests:
-                    logger.error(f"Failed to pass ai tests. moving on")
-                    continue
                 logger.error(f"Failed to pass ai tests. trying to fix code")
                 last_code_solution = copy.deepcopy(problem['code_recent_solution'])
 
@@ -57,7 +52,7 @@ async def run_evaluate_all_ai_tests(self, problem):
                 # run 'fix_code_from_tests_failure' stage
                 problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
 
-                problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout \
+                problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
 
                 if not test_passed:
@@ -66,7 +61,7 @@ async def run_evaluate_all_ai_tests(self, problem):
                 else:
                     # running passed tests again to make sure we didn't break anything
                     if problem['passed_tests']['inputs']:
-                        problem, all_passed_prev, non_empty_output, error_str, trace_str, tests_timeout \
+                        problem, all_passed_prev, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                             = run_tests(self, problem, counter,
                                         problem['passed_tests']['inputs'],
                                         problem['passed_tests']['outputs'])
