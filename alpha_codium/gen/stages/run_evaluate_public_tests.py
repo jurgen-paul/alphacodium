@@ -55,11 +55,9 @@ async def run_evaluate_public_tests(self, problem):
                     problem, passed_specific_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                         = run_tests(self, problem, counter, test_inputs, test_outputs)
 
-                    if d_tot > -1 and d_tot < best_d:
+                    if -1 < d_tot < best_d:
                         best_solution = copy.deepcopy(problem['code_recent_solution'])
                         best_d = d_tot
-                        # logger.info(f"best_solution: {best_solution}")
-                        # logger.info(f"best_d: {best_d}")
 
                     # analyze the tests results
                     counter += 1
@@ -110,9 +108,13 @@ async def run_evaluate_public_tests(self, problem):
                             problem['code_recent_solution'] = last_code_solution
                             continue
 
-                if not passed_specific_test and get_settings().solve.revert_to_last_solution_on_failure:
-                    logger.error('Public test - reverting to initial solution')
-                    problem['code_recent_solution'] = last_code_solution
+                if not passed_specific_test:
+                    if problem['passed_tests']['inputs']:
+                        logger.error(f"Public test - reverting to initial solution, where {problem['passed_tests']['inputs']} passed")
+                        problem['code_recent_solution'] = last_code_solution
+                    else: # no solution passed so far.
+                        logger.error(f'Public test -  Reverting to best solution so far, d_tot: {best_d}')
+                        problem['code_recent_solution'] = best_solution
                 all_passed_public = all_passed_public and passed_specific_test
 
             if all_passed_public:

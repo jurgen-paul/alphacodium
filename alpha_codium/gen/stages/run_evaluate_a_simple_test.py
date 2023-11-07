@@ -38,7 +38,7 @@ async def run_evaluate_a_simple_test(self, problem):
             # run the solution on the simple test
             problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                 = run_tests(self, problem, counter, test_input, test_output)
-            if d_tot > -1 and d_tot < best_d:
+            if -1 < d_tot < best_d:
                 best_solution = copy.deepcopy(problem['code_recent_solution'])
                 best_d = d_tot
 
@@ -53,11 +53,11 @@ async def run_evaluate_a_simple_test(self, problem):
                 problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                     = run_tests(self, problem, counter, test_input, test_output)
 
-                if d_tot > -1 and d_tot < best_d:
+                if -1 < d_tot < best_d:
                     best_solution = copy.deepcopy(problem['code_recent_solution'])
                     best_d = d_tot
 
-            if not passed_simple_test and get_settings().solve.revert_to_last_solution_on_failure:
+            if not passed_simple_test:
                 logger.error(f'Reverting to best solution so far, d_tot: {best_d}')
                 problem['code_recent_solution'] = best_solution
 
