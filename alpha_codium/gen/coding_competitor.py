@@ -67,11 +67,11 @@ class CodeContestsCompetitor:
             response = matches[0]
         return response
 
-    async def run(self, problem):
+    async def run(self, problem, iteration=0):
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
         # configurations
-        problem = set_configurations(problem)
+        problem = set_configurations(problem, iteration)
 
         if get_settings().get("solve.use_baseline", False):
             problem['code_recent_solution'] = await run_baseline(self, problem)
@@ -120,9 +120,9 @@ class CodeContestsCompetitor:
         trace_data = self.clip_string(trace_data, max_trace_lines)
         return trace_data
 
-    def solve_problem(self, example):
+    def solve_problem(self, example, iteration=0):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
-        prediction = asyncio.run(self.run(problem=problem))
+        prediction = asyncio.run(self.run(problem=problem, iteration=iteration))
         logger.info(f"testing solution on private tests with prediction:\n{prediction}")
         return prediction
 

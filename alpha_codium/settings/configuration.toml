@@ -13,6 +13,10 @@ use_baseline = false
 do_recording = true
 use_recording = false
 
+[self_reflect]
+randomize_best_solution = false
+
+
 [public_tests]
 max_allowed_calls=6
 max_counter_public_tests=2

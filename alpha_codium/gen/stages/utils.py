@@ -6,9 +6,10 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-def set_configurations(problem):
+def set_configurations(problem, iteration=0):
     # configurations
     problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
+    problem['iteration'] = iteration
     do_recording = get_settings().get("solve.do_recording", False)
     use_recording = get_settings().get("solve.use_recording", False)
     if use_recording or do_recording:
