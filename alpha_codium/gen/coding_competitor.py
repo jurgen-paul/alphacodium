@@ -306,11 +306,11 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
     # solve problem
     solver = CodeContestsCompetitor()
-    solution, passed_all_public = solver.solve_problem(problem)
+    solution = solver.solve_problem(problem)
 
     # test solution
     test_results = None
-    if evaluation_test_type and passed_all_public:
+    if evaluation_test_type:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
 
     return solution, test_results

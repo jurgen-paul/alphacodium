@@ -21,9 +21,8 @@ async def generate_candidate_solutions(ds):
     competitor = CodeContestsCompetitor()
 
     async def prediction_wrapper(example):
-        result, passed_all_public = await competitor.run(example)
-        return {"task_name": example.get("name"), "solution_candidates": [result],
-                "public_test_results":[passed_all_public]}
+        result = await competitor.run(example)
+        return {"task_name": example.get("name"), "solution_candidates": [result]}
 
     # Collect all the tasks
     tasks = [prediction_wrapper(example) for example in ds]
