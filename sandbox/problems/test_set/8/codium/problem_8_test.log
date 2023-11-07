@@ -1,0 +1,1535 @@
+2023-11-02 08:58:02.718 | INFO     | alpha_codium.gen.coding_competitor:solve_and_test:163 - problem_name: 1575_I. Illusions of the Desert
+2023-11-02 08:58:02.723 | INFO     | alpha_codium.gen.coding_competitor:run:66 - Running code contests competitor, model gpt-4
+2023-11-02 08:58:02.724 | INFO     | alpha_codium.gen.stages.utils:set_configurations:16 - recording_path: ./code_contests/1575_I. Illusions of the Desert/gpt-4/
+do_record: True
+use_record: False
+2023-11-02 08:58:02.724 | INFO     | alpha_codium.gen.stages.run_self_reflect:run_self_reflect:13 - --reflection stage--
+2023-11-02 08:58:02.727 | INFO     | alpha_codium.llm.ai_handler:chat_completion:110 - -----------------
+2023-11-02 08:58:02.727 | INFO     | alpha_codium.llm.ai_handler:chat_completion:111 - Running inference ...
+2023-11-02 08:58:02.728 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:112 - system:
+You are an expert programmer and mathematician, and given a code contest problem.
+your goal is reflect on the problem, and describe it in your own words.
+You should also present possible solutions to the problem.
+Make sure to fully address the problem constraints.
+Double-check the solutions and test them on multiple edge cases and happy paths, including the provided input-output examples.
+
+The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:
+'
+class Solution(BaseModel):
+    name: str = Field(description="The name of the solution.")
+    content: str = Field(description="A description of the solution.")
+    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    complexity: str = Field(description="The complexity of the solution.")
+
+
+class ProblemReflection(BaseModel):
+    self_description: str = Field(description="Describe the problem in your own words. Address the problem goal, inputs, outputs, constraints, and other relevant details.")
+    possible_solutions: List[Solution] = Field(min_items=2, max_items=3, description="A list of possible solutions to the problem.")
+'
+
+Example YAML output:
+```yaml
+self_description: |
+    ...
+possible_solutions:
+- description: |
+    ...
+  labels
+  - ...
+  - ...
+  complexity:
+    ...
+```
+2023-11-02 08:58:02.728 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:113 - user:
+problem name: '1575_I. Illusions of the Desert'
+
+
+problem description:
+'
+Chanek Jones is back, helping his long-lost relative Indiana Jones, to find a secret treasure in a maze buried below a desert full of illusions.
+
+The map of the labyrinth forms a tree with n rooms numbered from 1 to n and n - 1 tunnels connecting them such that it is possible to travel between each pair of rooms through several tunnels.
+
+The i-th room (1 ≤ i ≤ n) has a_i illusion rate. To go from the x-th room to the y-th room, there must exist a tunnel between x and y, and it takes max(|a_x + a_y|, |a_x - a_y|) energy. |z| denotes the absolute value of z.
+
+To prevent grave robbers, the maze can change the illusion rate of any room in it. Chanek and Indiana would ask q queries.
+
+There are two types of queries to be done:
+
+  * 1\ u\ c — The illusion rate of the x-th room is changed to c (1 ≤ u ≤ n, 0 ≤ |c| ≤ 10^9). 
+  * 2\ u\ v — Chanek and Indiana ask you the minimum sum of energy needed to take the secret treasure at room v if they are initially at room u (1 ≤ u, v ≤ n). 
+
+
+
+Help them, so you can get a portion of the treasure!
+
+Input
+
+The first line contains two integers n and q (2 ≤ n ≤ 10^5, 1 ≤ q ≤ 10^5) — the number of rooms in the maze and the number of queries.
+
+The second line contains n integers a_1, a_2, …, a_n (0 ≤ |a_i| ≤ 10^9) — inital illusion rate of each room.
+
+The i-th of the next n-1 lines contains two integers s_i and t_i (1 ≤ s_i, t_i ≤ n), meaning there is a tunnel connecting s_i-th room and t_i-th room. The given edges form a tree.
+
+The next q lines contain the query as described. The given queries are valid.
+
+Output
+
+For each type 2 query, output a line containing an integer — the minimum sum of energy needed for Chanek and Indiana to take the secret treasure.
+
+Example
+
+Input
+
+
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+
+Output
+
+
+39
+32
+0
+
+Note
+
+<image>
+
+In the first query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|10 + 4|, |10 - 4|) = 14 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+In total, it takes 39 energy.
+
+In the second query, the illusion rate of the 1-st room changes from 10 to -3.
+
+In the third query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|-3 + 4|, |-3 - 4|) = 7 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+
+
+Now, it takes 32 energy.
+'
+
+
+Answer:
+```yaml
+2023-11-02 08:58:23.894 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:137 - response:
+self_description: |
+  The problem is about helping two characters, Chanek and Indiana, navigate through a maze that is represented as a tree with n rooms. Each room has an illusion rate, and the energy required to move from one room to another is determined by the absolute difference or sum of the illusion rates of the two rooms. The maze can change the illusion rate of any room. The goal is to answer a series of queries, which are either changing the illusion rate of a room or finding the minimum energy required to move from one room to another.
+
+possible_solutions:
+- name: "Segment Tree Solution"
+  content: |
+    The problem can be solved using a segment tree data structure. The segment tree is built based on the illusion rates of the rooms. For each query of type 2, we find the minimum and maximum illusion rates in the path from room u to room v using the segment tree. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found. For each query of type 1, we update the illusion rate of the specified room in the segment tree.
+  labels:
+  - "Segment Tree"
+  - "Tree Traversal"
+  complexity: "O(n log n) for building the segment tree, O(log n) for each query"
+
+- name: "Dynamic Programming Solution"
+  content: |
+    The problem can also be solved using dynamic programming. We first perform a depth-first search on the tree to calculate the minimum and maximum illusion rates for each room. Then, for each query of type 2, we find the minimum energy required by comparing the current room's illusion rate with the minimum and maximum illusion rates of the destination room. For each query of type 1, we update the illusion rate of the specified room and recalculate the minimum and maximum illusion rates for all rooms.
+  labels:
+  - "Dynamic Programming"
+  - "Depth-First Search"
+  complexity: "O(n) for the depth-first search, O(1) for each query of type 2, O(n) for each query of type 1"
+2023-11-02 08:58:23.895 | INFO     | alpha_codium.llm.ai_handler:chat_completion:138 - done
+2023-11-02 08:58:23.895 | INFO     | alpha_codium.llm.ai_handler:chat_completion:139 - -----------------
+2023-11-02 08:58:23.903 | INFO     | alpha_codium.gen.stages.run_choose_best_solution:run_choose_best_solution:13 - --choose best solution stage--
+2023-11-02 08:58:23.912 | INFO     | alpha_codium.llm.ai_handler:chat_completion:110 - -----------------
+2023-11-02 08:58:23.913 | INFO     | alpha_codium.llm.ai_handler:chat_completion:111 - Running inference ...
+2023-11-02 08:58:23.913 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:112 - system:
+You are an expert programmer and mathematician.
+
+You are given a code contest problem, self-reflection on the problem, and a list of possible solutions.
+
+Using these inputs, you goal is to choose the best solution, and describe it in details.
+Don't just pick the fastest solution. The main consideration is that the solution can fully solve the problem, in a simple and efficient way.
+Double-check the solution, and simulate running it on multiple edge cases and happy paths, including the provided input-output examples.
+Mke sure the best solution has a reasonable runtime. It should run in less than 3 second on a modern computer.
+
+The output must be a YAML object equivalent to type $ProblemSolution, according to the following Pydantic definitions:
+'
+class ProblemSolution(BaseModel):
+    name: str = Field(description="The name of the best solution")
+    content: str = Field(description="The content of the best solution")
+    labels: List[str] = Field(description="A list of labels for the solution [e.g. binary search, dynamic programming, tree traversal, greedy, ...]")
+    complexity: str = Field(description="The complexity of the solution.")
+    why: str = Field(description="why is this the best solution?")
+    flow: str = Field(description="detailed description of the flow of the solution, in bullet points")
+    input_output_examples_flow: str = Field(description="describe how the proposed flow will lead to getting the expected output for the provided input examples")
+'
+
+
+Example YAML output:
+```yaml
+name: ...
+content: |
+  ...
+labels:
+  - ...
+  - ...
+complexity: ...
+why: |
+  ...
+flow: |
+  - ...
+  - ...
+  - ...
+input_output_examples_flow: |
+  - ...
+  - ...
+  - ...
+```
+2023-11-02 08:58:23.913 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:113 - user:
+problem name: '1575_I. Illusions of the Desert'
+
+
+problem description:
+'
+Chanek Jones is back, helping his long-lost relative Indiana Jones, to find a secret treasure in a maze buried below a desert full of illusions.
+
+The map of the labyrinth forms a tree with n rooms numbered from 1 to n and n - 1 tunnels connecting them such that it is possible to travel between each pair of rooms through several tunnels.
+
+The i-th room (1 ≤ i ≤ n) has a_i illusion rate. To go from the x-th room to the y-th room, there must exist a tunnel between x and y, and it takes max(|a_x + a_y|, |a_x - a_y|) energy. |z| denotes the absolute value of z.
+
+To prevent grave robbers, the maze can change the illusion rate of any room in it. Chanek and Indiana would ask q queries.
+
+There are two types of queries to be done:
+
+  * 1\ u\ c — The illusion rate of the x-th room is changed to c (1 ≤ u ≤ n, 0 ≤ |c| ≤ 10^9). 
+  * 2\ u\ v — Chanek and Indiana ask you the minimum sum of energy needed to take the secret treasure at room v if they are initially at room u (1 ≤ u, v ≤ n). 
+
+
+
+Help them, so you can get a portion of the treasure!
+
+Input
+
+The first line contains two integers n and q (2 ≤ n ≤ 10^5, 1 ≤ q ≤ 10^5) — the number of rooms in the maze and the number of queries.
+
+The second line contains n integers a_1, a_2, …, a_n (0 ≤ |a_i| ≤ 10^9) — inital illusion rate of each room.
+
+The i-th of the next n-1 lines contains two integers s_i and t_i (1 ≤ s_i, t_i ≤ n), meaning there is a tunnel connecting s_i-th room and t_i-th room. The given edges form a tree.
+
+The next q lines contain the query as described. The given queries are valid.
+
+Output
+
+For each type 2 query, output a line containing an integer — the minimum sum of energy needed for Chanek and Indiana to take the secret treasure.
+
+Example
+
+Input
+
+
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+
+Output
+
+
+39
+32
+0
+
+Note
+
+<image>
+
+In the first query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|10 + 4|, |10 - 4|) = 14 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+In total, it takes 39 energy.
+
+In the second query, the illusion rate of the 1-st room changes from 10 to -3.
+
+In the third query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|-3 + 4|, |-3 - 4|) = 7 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+
+
+Now, it takes 32 energy.
+'
+
+
+self reflection:
+'
+The problem is about helping two characters, Chanek and Indiana, navigate through a maze that is represented as a tree with n rooms. Each room has an illusion rate, and the energy required to move from one room to another is determined by the absolute difference or sum of the illusion rates of the two rooms. The maze can change the illusion rate of any room. The goal is to answer a series of queries, which are either changing the illusion rate of a room or finding the minimum energy required to move from one room to another.
+
+'
+
+
+possible solutions:
+'
+[{'name': 'Segment Tree Solution', 'content': "The problem can be solved using a segment tree data structure. The segment tree is built based on the illusion rates of the rooms. For each query of type 2, we find the minimum and maximum illusion rates in the path from room u to room v using the segment tree. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found. For each query of type 1, we update the illusion rate of the specified room in the segment tree.\n", 'labels': ['Segment Tree', 'Tree Traversal'], 'complexity': 'O(n log n) for building the segment tree, O(log n) for each query'}, {'name': 'Dynamic Programming Solution', 'content': "The problem can also be solved using dynamic programming. We first perform a depth-first search on the tree to calculate the minimum and maximum illusion rates for each room. Then, for each query of type 2, we find the minimum energy required by comparing the current room's illusion rate with the minimum and maximum illusion rates of the destination room. For each query of type 1, we update the illusion rate of the specified room and recalculate the minimum and maximum illusion rates for all rooms.\n", 'labels': ['Dynamic Programming', 'Depth-First Search'], 'complexity': 'O(n) for the depth-first search, O(1) for each query of type 2, O(n) for each query of type 1'}]
+'
+
+answer:
+```yaml
+2023-11-02 08:58:43.682 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:137 - response:
+name: Segment Tree Solution
+content: |
+  The problem can be solved using a segment tree data structure. The segment tree is built based on the illusion rates of the rooms. For each query of type 2, we find the minimum and maximum illusion rates in the path from room u to room v using the segment tree. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found. For each query of type 1, we update the illusion rate of the specified room in the segment tree.
+labels:
+  - Segment Tree
+  - Tree Traversal
+complexity: O(n log n) for building the segment tree, O(log n) for each query
+why: |
+  This solution is the best because it provides a good balance between time complexity and space complexity. The segment tree allows us to efficiently find the minimum and maximum illusion rates in a given range, which is crucial for answering the queries. Furthermore, the segment tree can be updated efficiently, which is necessary for handling the queries of type 1.
+flow: |
+  - Build a segment tree based on the illusion rates of the rooms.
+  - For each query of type 2:
+    - Find the minimum and maximum illusion rates in the path from room u to room v using the segment tree.
+    - Calculate the minimum energy required as the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found.
+  - For each query of type 1, update the illusion rate of the specified room in the segment tree.
+input_output_examples_flow: |
+  - For the first query of type 2 in the example, the minimum and maximum illusion rates in the path from room 1 to room 2 are -9 and 10 respectively. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found, which is 39.
+  - For the query of type 1 in the example, the illusion rate of room 1 is updated to -3 in the segment tree.
+  - For the second query of type 2 in the example, the minimum and maximum illusion rates in the path from room 1 to room 2 are now -9 and 4 respectively. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found, which is 32.
+2023-11-02 08:58:43.683 | INFO     | alpha_codium.llm.ai_handler:chat_completion:138 - done
+2023-11-02 08:58:43.684 | INFO     | alpha_codium.llm.ai_handler:chat_completion:139 - -----------------
+2023-11-02 08:58:43.692 | INFO     | alpha_codium.gen.stages.run_initial_solve:run_initial_solve:13 - --solve stage--
+2023-11-02 08:58:43.700 | INFO     | alpha_codium.llm.ai_handler:chat_completion:110 - -----------------
+2023-11-02 08:58:43.700 | INFO     | alpha_codium.llm.ai_handler:chat_completion:111 - Running inference ...
+2023-11-02 08:58:43.700 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:112 - system:
+You are an expert Python programmer.
+
+You are given a code contest problem, self-reflection on the problem, and a description of the solution, in words.
+Your goal is to generate a valid Python code that correctly solves the problem.
+
+guidelines:
+- You must divide the code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
+- The code must have a reasonable runtime and memory complexity
+- Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
+- Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
+- The code needs to be self-contained, and executable as-is.
+- emphasis not accessing an index that is out of the range of a list
+
+The code output must follow this structure:
+````
+def f1(...):
+    ...
+    return ...
+
+def f2(...):
+    ...
+    return ...
+...
+
+if __name__ == "__main__":
+    ...
+```
+The code should read the input using the 'input()' method. Make sure to properly parse the input, according to the problem description.
+The output should be printed without additional words using the 'print()' method.
+
+2023-11-02 08:58:43.701 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:113 - user:
+problem description:
+'
+Chanek Jones is back, helping his long-lost relative Indiana Jones, to find a secret treasure in a maze buried below a desert full of illusions.
+
+The map of the labyrinth forms a tree with n rooms numbered from 1 to n and n - 1 tunnels connecting them such that it is possible to travel between each pair of rooms through several tunnels.
+
+The i-th room (1 ≤ i ≤ n) has a_i illusion rate. To go from the x-th room to the y-th room, there must exist a tunnel between x and y, and it takes max(|a_x + a_y|, |a_x - a_y|) energy. |z| denotes the absolute value of z.
+
+To prevent grave robbers, the maze can change the illusion rate of any room in it. Chanek and Indiana would ask q queries.
+
+There are two types of queries to be done:
+
+  * 1\ u\ c — The illusion rate of the x-th room is changed to c (1 ≤ u ≤ n, 0 ≤ |c| ≤ 10^9). 
+  * 2\ u\ v — Chanek and Indiana ask you the minimum sum of energy needed to take the secret treasure at room v if they are initially at room u (1 ≤ u, v ≤ n). 
+
+
+
+Help them, so you can get a portion of the treasure!
+
+Input
+
+The first line contains two integers n and q (2 ≤ n ≤ 10^5, 1 ≤ q ≤ 10^5) — the number of rooms in the maze and the number of queries.
+
+The second line contains n integers a_1, a_2, …, a_n (0 ≤ |a_i| ≤ 10^9) — inital illusion rate of each room.
+
+The i-th of the next n-1 lines contains two integers s_i and t_i (1 ≤ s_i, t_i ≤ n), meaning there is a tunnel connecting s_i-th room and t_i-th room. The given edges form a tree.
+
+The next q lines contain the query as described. The given queries are valid.
+
+Output
+
+For each type 2 query, output a line containing an integer — the minimum sum of energy needed for Chanek and Indiana to take the secret treasure.
+
+Example
+
+Input
+
+
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+
+Output
+
+
+39
+32
+0
+
+Note
+
+<image>
+
+In the first query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|10 + 4|, |10 - 4|) = 14 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+In total, it takes 39 energy.
+
+In the second query, the illusion rate of the 1-st room changes from 10 to -3.
+
+In the third query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|-3 + 4|, |-3 - 4|) = 7 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+
+
+Now, it takes 32 energy.
+'
+
+
+self reflection:
+'
+The problem is about helping two characters, Chanek and Indiana, navigate through a maze that is represented as a tree with n rooms. Each room has an illusion rate, and the energy required to move from one room to another is determined by the absolute difference or sum of the illusion rates of the two rooms. The maze can change the illusion rate of any room. The goal is to answer a series of queries, which are either changing the illusion rate of a room or finding the minimum energy required to move from one room to another.
+
+'
+
+propose solution:
+'
+name: Segment Tree Solution
+content: |
+  The problem can be solved using a segment tree data structure. The segment tree is built based on the illusion rates of the rooms. For each query of type 2, we find the minimum and maximum illusion rates in the path from room u to room v using the segment tree. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found. For each query of type 1, we update the illusion rate of the specified room in the segment tree.
+labels:
+  - Segment Tree
+  - Tree Traversal
+complexity: O(n log n) for building the segment tree, O(log n) for each query
+why: |
+  This solution is the best because it provides a good balance between time complexity and space complexity. The segment tree allows us to efficiently find the minimum and maximum illusion rates in a given range, which is crucial for answering the queries. Furthermore, the segment tree can be updated efficiently, which is necessary for handling the queries of type 1.
+flow: |
+  - Build a segment tree based on the illusion rates of the rooms.
+  - For each query of type 2:
+    - Find the minimum and maximum illusion rates in the path from room u to room v using the segment tree.
+    - Calculate the minimum energy required as the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found.
+  - For each query of type 1, update the illusion rate of the specified room in the segment tree.
+input_output_examples_flow: |
+  - For the first query of type 2 in the example, the minimum and maximum illusion rates in the path from room 1 to room 2 are -9 and 10 respectively. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found, which is 39.
+  - For the query of type 1 in the example, the illusion rate of room 1 is updated to -3 in the segment tree.
+  - For the second query of type 2 in the example, the minimum and maximum illusion rates in the path from room 1 to room 2 are now -9 and 4 respectively. The minimum energy required is then the maximum of the absolute difference between the current room's illusion rate and the minimum and maximum illusion rates found, which is 32.
+'
+
+answer:
+```python
+2023-11-02 08:59:20.747 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:137 - response:
+import sys
+from collections import defaultdict
+from heapq import *
+
+def read_input():
+    n, q = map(int, input().split())
+    a = list(map(int, input().split()))
+    edges = [list(map(int, input().split())) for _ in range(n-1)]
+    queries = [list(map(int, input().split())) for _ in range(q)]
+    return n, q, a, edges, queries
+
+def build_graph(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+    return graph
+
+def dfs(graph, parent, depth, u, p):
+    parent[u] = p
+    depth[u] = depth[p] + 1 if p != -1 else 0
+    for v in graph[u]:
+        if v == p:
+            continue
+        dfs(graph, parent, depth, v, u)
+
+def build_segment_tree(a, n):
+    segment_tree = [0] * (4*n)
+    build_segment_tree_util(a, segment_tree, 0, n-1, 0)
+    return segment_tree
+
+def build_segment_tree_util(a, segment_tree, low, high, pos):
+    if low == high:
+        segment_tree[pos] = a[low]
+        return
+    mid = (low + high) // 2
+    build_segment_tree_util(a, segment_tree, low, mid, 2*pos+1)
+    build_segment_tree_util(a, segment_tree, mid+1, high, 2*pos+2)
+    segment_tree[pos] = min(segment_tree[2*pos+1], segment_tree[2*pos+2])
+
+def update_segment_tree(segment_tree, n, i, val):
+    diff = val - a[i]
+    a[i] = val
+    update_segment_tree_util(segment_tree, 0, n-1, i, diff, 0)
+
+def update_segment_tree_util(segment_tree, low, high, i, diff, pos):
+    if i < low or i > high:
+        return
+    segment_tree[pos] += diff
+    if low != high:
+        mid = (low + high) // 2
+        update_segment_tree_util(segment_tree, low, mid, i, diff, 2*pos+1)
+        update_segment_tree_util(segment_tree, mid+1, high, i, diff, 2*pos+2)
+
+def min_query(segment_tree, n, l, r):
+    return min_query_util(segment_tree, 0, n-1, l, r, 0)
+
+def min_query_util(segment_tree, low, high, l, r, pos):
+    if l <= low and r >= high:
+        return segment_tree[pos]
+    if r < low or l > high:
+        return float('inf')
+    mid = (low + high) // 2
+    return min(min_query_util(segment_tree, low, mid, l, r, 2*pos+1),
+               min_query_util(segment_tree, mid+1, high, l, r, 2*pos+2))
+
+def solve_query(segment_tree, n, parent, depth, u, v):
+    lca = find_lca(parent, depth, u, v)
+    return min(min_query(segment_tree, n, lca, u),
+               min_query(segment_tree, n, lca, v))
+
+def find_lca(parent, depth, u, v):
+    if depth[u] < depth[v]:
+        u, v = v, u
+    while depth[u] > depth[v]:
+        u = parent[u]
+    while u != v:
+        u = parent[u]
+        v = parent[v]
+    return u
+
+if __name__ == "__main__":
+    n, q, a, edges, queries = read_input()
+    graph = build_graph(n, edges)
+    parent = [-1] * n
+    depth = [0] * n
+    dfs(graph, parent, depth, 0, -1)
+    segment_tree = build_segment_tree(a, n)
+    for query in queries:
+        if query[0] == 1:
+            update_segment_tree(segment_tree, n, query[1]-1, query[2])
+        else:
+            print(solve_query(segment_tree, n, parent, depth, query[1]-1, query[2]-1))
+2023-11-02 08:59:20.748 | INFO     | alpha_codium.llm.ai_handler:chat_completion:138 - done
+2023-11-02 08:59:20.748 | INFO     | alpha_codium.llm.ai_handler:chat_completion:139 - -----------------
+2023-11-02 08:59:20.749 | INFO     | alpha_codium.gen.coding_competitor:run:85 - --iterate on public tests stage--
+2023-11-02 08:59:20.750 | INFO     | alpha_codium.gen.coding_competitor:run:89 - test_inputs:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+2023-11-02 08:59:24.543 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:51 - compilation results:ProgramStatus.kSuccess
+2023-11-02 08:59:24.543 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:53 - 
+2023-11-02 08:59:24.543 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:54 - 
+2023-11-02 08:59:24.543 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:57 - input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+2023-11-02 08:59:24.543 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:58 - expected vs code output:
+39
+32
+0
+---
+-9
+-22
+2
+2023-11-02 08:59:24.543 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:72 - test-0 :: status=ProgramStatus.kSuccess, passed=False. 
+2023-11-02 08:59:24.544 | DEBUG    | alpha_codium.gen.stages.run_fix_code_from_tests_failure:run_fix_code_from_tests_failure:19 - error string:
+test input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+expected output:
+39
+32
+0
+code output:
+-9
+-22
+2
+====================
+====================
+
+2023-11-02 08:59:24.548 | INFO     | alpha_codium.llm.ai_handler:chat_completion:110 - -----------------
+2023-11-02 08:59:24.548 | INFO     | alpha_codium.llm.ai_handler:chat_completion:111 - Running inference ...
+2023-11-02 08:59:24.548 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:112 - system:
+You are an expert programmer and mathematician.
+
+you are given a code contest problem, and a Python code solution.
+However, when running the input-output example tests, the code failed to produce the expected outputs. You are asked to generate a fixed version of the code solution, that will pass all the tests.
+
+guidelines:
+- The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
+- Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.
+- If some outputs were true, make sure that the new solution code still produces the same outputs, and fixes only the wrong outputs.
+- Make sure the new solution code generalizes to all possible input-output examples, and not only to the provided input-output examples.
+- You must divide the new solution code into small sub-functions, with meaningful names and functionality
+
+The output must be a YAML object equivalent to type $FixedSolution, according to the following Pydantic definitions:
+'
+class FixedSolution(BaseModel):
+    failed_tests: List[int] = Field(description="list the input-output tests that failed. use the format [{input: .., expected_output: .., code_output: ..}, ...]")
+    what_went_wrong: str = Field(description="Explanation shortly, in words, which code lines caused the wrong output, and what was the mistake.")
+    fixed_code: str = Field(description="A fixed version of the code solution.")
+'
+
+Example YAML output:
+```yaml
+failed_tests: |-
+  ...
+what_went_wrong: |-
+  ...
+fixed_code: |-
+  ...
+
+
+The 'fixed_code' yaml output must follow this structure:
+'
+def f1(...):
+    ...
+    return ...
+
+def f2(...):
+    ...
+    return ...
+...
+
+if __name__ == "__main__":
+    ...
+'
+
+The 'fixed_code' should read the input using the 'input()' method.
+The output should be printed without additional words using the 'print()' method.
+
+```
+2023-11-02 08:59:24.548 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:113 - user:
+problem name: '1575_I. Illusions of the Desert'
+
+
+problem description:
+'
+Chanek Jones is back, helping his long-lost relative Indiana Jones, to find a secret treasure in a maze buried below a desert full of illusions.
+
+The map of the labyrinth forms a tree with n rooms numbered from 1 to n and n - 1 tunnels connecting them such that it is possible to travel between each pair of rooms through several tunnels.
+
+The i-th room (1 ≤ i ≤ n) has a_i illusion rate. To go from the x-th room to the y-th room, there must exist a tunnel between x and y, and it takes max(|a_x + a_y|, |a_x - a_y|) energy. |z| denotes the absolute value of z.
+
+To prevent grave robbers, the maze can change the illusion rate of any room in it. Chanek and Indiana would ask q queries.
+
+There are two types of queries to be done:
+
+  * 1\ u\ c — The illusion rate of the x-th room is changed to c (1 ≤ u ≤ n, 0 ≤ |c| ≤ 10^9). 
+  * 2\ u\ v — Chanek and Indiana ask you the minimum sum of energy needed to take the secret treasure at room v if they are initially at room u (1 ≤ u, v ≤ n). 
+
+
+
+Help them, so you can get a portion of the treasure!
+
+Input
+
+The first line contains two integers n and q (2 ≤ n ≤ 10^5, 1 ≤ q ≤ 10^5) — the number of rooms in the maze and the number of queries.
+
+The second line contains n integers a_1, a_2, …, a_n (0 ≤ |a_i| ≤ 10^9) — inital illusion rate of each room.
+
+The i-th of the next n-1 lines contains two integers s_i and t_i (1 ≤ s_i, t_i ≤ n), meaning there is a tunnel connecting s_i-th room and t_i-th room. The given edges form a tree.
+
+The next q lines contain the query as described. The given queries are valid.
+
+Output
+
+For each type 2 query, output a line containing an integer — the minimum sum of energy needed for Chanek and Indiana to take the secret treasure.
+
+Example
+
+Input
+
+
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+
+Output
+
+
+39
+32
+0
+
+Note
+
+<image>
+
+In the first query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|10 + 4|, |10 - 4|) = 14 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+In total, it takes 39 energy.
+
+In the second query, the illusion rate of the 1-st room changes from 10 to -3.
+
+In the third query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|-3 + 4|, |-3 - 4|) = 7 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+
+
+Now, it takes 32 energy.
+'
+
+self reflection on the problem:
+'
+The problem is about helping two characters, Chanek and Indiana, navigate through a maze that is represented as a tree with n rooms. Each room has an illusion rate, and the energy required to move from one room to another is determined by the absolute difference or sum of the illusion rates of the two rooms. The maze can change the illusion rate of any room. The goal is to answer a series of queries, which are either changing the illusion rate of a room or finding the minimum energy required to move from one room to another.
+'
+
+A solution code generated for the problem, that failed to pass all the tests:
+'
+import sys
+from collections import defaultdict
+from heapq import *
+
+def read_input():
+    n, q = map(int, input().split())
+    a = list(map(int, input().split()))
+    edges = [list(map(int, input().split())) for _ in range(n-1)]
+    queries = [list(map(int, input().split())) for _ in range(q)]
+    return n, q, a, edges, queries
+
+def build_graph(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+    return graph
+
+def dfs(graph, parent, depth, u, p):
+    parent[u] = p
+    depth[u] = depth[p] + 1 if p != -1 else 0
+    for v in graph[u]:
+        if v == p:
+            continue
+        dfs(graph, parent, depth, v, u)
+
+def build_segment_tree(a, n):
+    segment_tree = [0] * (4*n)
+    build_segment_tree_util(a, segment_tree, 0, n-1, 0)
+    return segment_tree
+
+def build_segment_tree_util(a, segment_tree, low, high, pos):
+    if low == high:
+        segment_tree[pos] = a[low]
+        return
+    mid = (low + high) // 2
+    build_segment_tree_util(a, segment_tree, low, mid, 2*pos+1)
+    build_segment_tree_util(a, segment_tree, mid+1, high, 2*pos+2)
+    segment_tree[pos] = min(segment_tree[2*pos+1], segment_tree[2*pos+2])
+
+def update_segment_tree(segment_tree, n, i, val):
+    diff = val - a[i]
+    a[i] = val
+    update_segment_tree_util(segment_tree, 0, n-1, i, diff, 0)
+
+def update_segment_tree_util(segment_tree, low, high, i, diff, pos):
+    if i < low or i > high:
+        return
+    segment_tree[pos] += diff
+    if low != high:
+        mid = (low + high) // 2
+        update_segment_tree_util(segment_tree, low, mid, i, diff, 2*pos+1)
+        update_segment_tree_util(segment_tree, mid+1, high, i, diff, 2*pos+2)
+
+def min_query(segment_tree, n, l, r):
+    return min_query_util(segment_tree, 0, n-1, l, r, 0)
+
+def min_query_util(segment_tree, low, high, l, r, pos):
+    if l <= low and r >= high:
+        return segment_tree[pos]
+    if r < low or l > high:
+        return float('inf')
+    mid = (low + high) // 2
+    return min(min_query_util(segment_tree, low, mid, l, r, 2*pos+1),
+               min_query_util(segment_tree, mid+1, high, l, r, 2*pos+2))
+
+def solve_query(segment_tree, n, parent, depth, u, v):
+    lca = find_lca(parent, depth, u, v)
+    return min(min_query(segment_tree, n, lca, u),
+               min_query(segment_tree, n, lca, v))
+
+def find_lca(parent, depth, u, v):
+    if depth[u] < depth[v]:
+        u, v = v, u
+    while depth[u] > depth[v]:
+        u = parent[u]
+    while u != v:
+        u = parent[u]
+        v = parent[v]
+    return u
+
+if __name__ == "__main__":
+    n, q, a, edges, queries = read_input()
+    graph = build_graph(n, edges)
+    parent = [-1] * n
+    depth = [0] * n
+    dfs(graph, parent, depth, 0, -1)
+    segment_tree = build_segment_tree(a, n)
+    for query in queries:
+        if query[0] == 1:
+            update_segment_tree(segment_tree, n, query[1]-1, query[2])
+        else:
+            print(solve_query(segment_tree, n, parent, depth, query[1]-1, query[2]-1))
+'
+
+Error message when running the 'solution code':
+'
+test input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+expected output:
+39
+32
+0
+code output:
+-9
+-22
+2
+====================
+====================
+'
+
+
+Output YAML:
+```yaml
+2023-11-02 08:59:56.693 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:137 - response:
+failed_tests: |-
+  - {input: '6 4\n10 -9 2 -1 4 -6\n1 5\n5 4\n5 6\n6 2\n6 3\n2 1 2\n1 1 -3\n2 1 2\n2 3 3\n', expected_output: '39\n32\n0\n', code_output: '-9\n-22\n2\n'}
+what_went_wrong: |-
+  The solution code is trying to solve the problem by building a segment tree and using it to answer the queries. However, the code is not correctly calculating the energy required to move from one room to another. The energy is calculated as the minimum illusion rate on the path from one room to another, but it should be the maximum of the absolute sum or difference of the illusion rates of the two rooms. Also, the code is not correctly handling the case when the illusion rate of a room is changed. It is updating the segment tree, but it is not updating the illusion rates stored in the array 'a'.
+fixed_code: |-
+  import sys
+  from collections import defaultdict
+  from heapq import *
+
+  def read_input():
+      n, q = map(int, input().split())
+      a = list(map(int, input().split()))
+      edges = [list(map(int, input().split())) for _ in range(n-1)]
+      queries = [list(map(int, input().split())) for _ in range(q)]
+      return n, q, a, edges, queries
+
+  def build_graph(n, edges):
+      graph = defaultdict(list)
+      for u, v in edges:
+          u -= 1
+          v -= 1
+          graph[u].append(v)
+          graph[v].append(u)
+      return graph
+
+  def dfs(graph, parent, depth, u, p):
+      parent[u] = p
+      depth[u] = depth[p] + 1 if p != -1 else 0
+      for v in graph[u]:
+          if v == p:
+              continue
+          dfs(graph, parent, depth, v, u)
+
+  def solve_query(a, parent, depth, u, v):
+      lca = find_lca(parent, depth, u, v)
+      return max(abs(a[u] + a[v]), abs(a[u] - a[v]))
+
+  def find_lca(parent, depth, u, v):
+      if depth[u] < depth[v]:
+          u, v = v, u
+      while depth[u] > depth[v]:
+          u = parent[u]
+      while u != v:
+          u = parent[u]
+          v = parent[v]
+      return u
+
+  if __name__ == "__main__":
+      n, q, a, edges, queries = read_input()
+      graph = build_graph(n, edges)
+      parent = [-1] * n
+      depth = [0] * n
+      dfs(graph, parent, depth, 0, -1)
+      for query in queries:
+          if query[0] == 1:
+              a[query[1]-1] = query[2]
+          else:
+              print(solve_query(a, parent, depth, query[1]-1, query[2]-1))
+2023-11-02 08:59:56.694 | INFO     | alpha_codium.llm.ai_handler:chat_completion:138 - done
+2023-11-02 08:59:56.694 | INFO     | alpha_codium.llm.ai_handler:chat_completion:139 - -----------------
+2023-11-02 08:59:56.698 | INFO     | alpha_codium.gen.stages.run_fix_code_from_tests_failure:run_fix_code_from_tests_failure:40 - diff:
+--- 
++++ 
+@@ -26,50 +26,9 @@
+             continue
+         dfs(graph, parent, depth, v, u)
+ 
+-def build_segment_tree(a, n):
+-    segment_tree = [0] * (4*n)
+-    build_segment_tree_util(a, segment_tree, 0, n-1, 0)
+-    return segment_tree
+-
+-def build_segment_tree_util(a, segment_tree, low, high, pos):
+-    if low == high:
+-        segment_tree[pos] = a[low]
+-        return
+-    mid = (low + high) // 2
+-    build_segment_tree_util(a, segment_tree, low, mid, 2*pos+1)
+-    build_segment_tree_util(a, segment_tree, mid+1, high, 2*pos+2)
+-    segment_tree[pos] = min(segment_tree[2*pos+1], segment_tree[2*pos+2])
+-
+-def update_segment_tree(segment_tree, n, i, val):
+-    diff = val - a[i]
+-    a[i] = val
+-    update_segment_tree_util(segment_tree, 0, n-1, i, diff, 0)
+-
+-def update_segment_tree_util(segment_tree, low, high, i, diff, pos):
+-    if i < low or i > high:
+-        return
+-    segment_tree[pos] += diff
+-    if low != high:
+-        mid = (low + high) // 2
+-        update_segment_tree_util(segment_tree, low, mid, i, diff, 2*pos+1)
+-        update_segment_tree_util(segment_tree, mid+1, high, i, diff, 2*pos+2)
+-
+-def min_query(segment_tree, n, l, r):
+-    return min_query_util(segment_tree, 0, n-1, l, r, 0)
+-
+-def min_query_util(segment_tree, low, high, l, r, pos):
+-    if l <= low and r >= high:
+-        return segment_tree[pos]
+-    if r < low or l > high:
+-        return float('inf')
+-    mid = (low + high) // 2
+-    return min(min_query_util(segment_tree, low, mid, l, r, 2*pos+1),
+-               min_query_util(segment_tree, mid+1, high, l, r, 2*pos+2))
+-
+-def solve_query(segment_tree, n, parent, depth, u, v):
++def solve_query(a, parent, depth, u, v):
+     lca = find_lca(parent, depth, u, v)
+-    return min(min_query(segment_tree, n, lca, u),
+-               min_query(segment_tree, n, lca, v))
++    return max(abs(a[u] + a[v]), abs(a[u] - a[v]))
+ 
+ def find_lca(parent, depth, u, v):
+     if depth[u] < depth[v]:
+@@ -87,9 +46,8 @@
+     parent = [-1] * n
+     depth = [0] * n
+     dfs(graph, parent, depth, 0, -1)
+-    segment_tree = build_segment_tree(a, n)
+     for query in queries:
+         if query[0] == 1:
+-            update_segment_tree(segment_tree, n, query[1]-1, query[2])
++            a[query[1]-1] = query[2]
+         else:
+-            print(solve_query(segment_tree, n, parent, depth, query[1]-1, query[2]-1))+            print(solve_query(a, parent, depth, query[1]-1, query[2]-1))
+2023-11-02 09:00:00.452 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:51 - compilation results:ProgramStatus.kSuccess
+2023-11-02 09:00:00.453 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:53 - 
+2023-11-02 09:00:00.453 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:54 - 
+2023-11-02 09:00:00.453 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:57 - input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+2023-11-02 09:00:00.453 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:58 - expected vs code output:
+39
+32
+0
+---
+19
+12
+4
+2023-11-02 09:00:00.453 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:72 - test-0 :: status=ProgramStatus.kSuccess, passed=False. 
+2023-11-02 09:00:00.453 | DEBUG    | alpha_codium.gen.stages.run_fix_code_from_tests_failure:run_fix_code_from_tests_failure:19 - error string:
+test input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+expected output:
+39
+32
+0
+code output:
+19
+12
+4
+====================
+====================
+
+2023-11-02 09:00:00.458 | INFO     | alpha_codium.llm.ai_handler:chat_completion:110 - -----------------
+2023-11-02 09:00:00.458 | INFO     | alpha_codium.llm.ai_handler:chat_completion:111 - Running inference ...
+2023-11-02 09:00:00.458 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:112 - system:
+You are an expert programmer and mathematician.
+
+you are given a code contest problem, and a Python code solution.
+However, when running the input-output example tests, the code failed to produce the expected outputs. You are asked to generate a fixed version of the code solution, that will pass all the tests.
+
+guidelines:
+- The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
+- Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.
+- If some outputs were true, make sure that the new solution code still produces the same outputs, and fixes only the wrong outputs.
+- Make sure the new solution code generalizes to all possible input-output examples, and not only to the provided input-output examples.
+- You must divide the new solution code into small sub-functions, with meaningful names and functionality
+
+The output must be a YAML object equivalent to type $FixedSolution, according to the following Pydantic definitions:
+'
+class FixedSolution(BaseModel):
+    failed_tests: List[int] = Field(description="list the input-output tests that failed. use the format [{input: .., expected_output: .., code_output: ..}, ...]")
+    what_went_wrong: str = Field(description="Explanation shortly, in words, which code lines caused the wrong output, and what was the mistake.")
+    fixed_code: str = Field(description="A fixed version of the code solution.")
+'
+
+Example YAML output:
+```yaml
+failed_tests: |-
+  ...
+what_went_wrong: |-
+  ...
+fixed_code: |-
+  ...
+
+
+The 'fixed_code' yaml output must follow this structure:
+'
+def f1(...):
+    ...
+    return ...
+
+def f2(...):
+    ...
+    return ...
+...
+
+if __name__ == "__main__":
+    ...
+'
+
+The 'fixed_code' should read the input using the 'input()' method.
+The output should be printed without additional words using the 'print()' method.
+
+```
+2023-11-02 09:00:00.458 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:113 - user:
+problem name: '1575_I. Illusions of the Desert'
+
+
+problem description:
+'
+Chanek Jones is back, helping his long-lost relative Indiana Jones, to find a secret treasure in a maze buried below a desert full of illusions.
+
+The map of the labyrinth forms a tree with n rooms numbered from 1 to n and n - 1 tunnels connecting them such that it is possible to travel between each pair of rooms through several tunnels.
+
+The i-th room (1 ≤ i ≤ n) has a_i illusion rate. To go from the x-th room to the y-th room, there must exist a tunnel between x and y, and it takes max(|a_x + a_y|, |a_x - a_y|) energy. |z| denotes the absolute value of z.
+
+To prevent grave robbers, the maze can change the illusion rate of any room in it. Chanek and Indiana would ask q queries.
+
+There are two types of queries to be done:
+
+  * 1\ u\ c — The illusion rate of the x-th room is changed to c (1 ≤ u ≤ n, 0 ≤ |c| ≤ 10^9). 
+  * 2\ u\ v — Chanek and Indiana ask you the minimum sum of energy needed to take the secret treasure at room v if they are initially at room u (1 ≤ u, v ≤ n). 
+
+
+
+Help them, so you can get a portion of the treasure!
+
+Input
+
+The first line contains two integers n and q (2 ≤ n ≤ 10^5, 1 ≤ q ≤ 10^5) — the number of rooms in the maze and the number of queries.
+
+The second line contains n integers a_1, a_2, …, a_n (0 ≤ |a_i| ≤ 10^9) — inital illusion rate of each room.
+
+The i-th of the next n-1 lines contains two integers s_i and t_i (1 ≤ s_i, t_i ≤ n), meaning there is a tunnel connecting s_i-th room and t_i-th room. The given edges form a tree.
+
+The next q lines contain the query as described. The given queries are valid.
+
+Output
+
+For each type 2 query, output a line containing an integer — the minimum sum of energy needed for Chanek and Indiana to take the secret treasure.
+
+Example
+
+Input
+
+
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+
+Output
+
+
+39
+32
+0
+
+Note
+
+<image>
+
+In the first query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|10 + 4|, |10 - 4|) = 14 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+In total, it takes 39 energy.
+
+In the second query, the illusion rate of the 1-st room changes from 10 to -3.
+
+In the third query, their movement from the 1-st to the 2-nd room is as follows.
+
+  * 1 → 5 — takes max(|-3 + 4|, |-3 - 4|) = 7 energy. 
+  * 5 → 6 — takes max(|4 + (-6)|, |4 - (-6)|) = 10 energy. 
+  * 6 → 2 — takes max(|-6 + (-9)|, |-6 - (-9)|) = 15 energy. 
+
+
+
+Now, it takes 32 energy.
+'
+
+self reflection on the problem:
+'
+The problem is about helping two characters, Chanek and Indiana, navigate through a maze that is represented as a tree with n rooms. Each room has an illusion rate, and the energy required to move from one room to another is determined by the absolute difference or sum of the illusion rates of the two rooms. The maze can change the illusion rate of any room. The goal is to answer a series of queries, which are either changing the illusion rate of a room or finding the minimum energy required to move from one room to another.
+'
+
+A solution code generated for the problem, that failed to pass all the tests:
+'
+import sys
+from collections import defaultdict
+from heapq import *
+
+def read_input():
+    n, q = map(int, input().split())
+    a = list(map(int, input().split()))
+    edges = [list(map(int, input().split())) for _ in range(n-1)]
+    queries = [list(map(int, input().split())) for _ in range(q)]
+    return n, q, a, edges, queries
+
+def build_graph(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+    return graph
+
+def dfs(graph, parent, depth, u, p):
+    parent[u] = p
+    depth[u] = depth[p] + 1 if p != -1 else 0
+    for v in graph[u]:
+        if v == p:
+            continue
+        dfs(graph, parent, depth, v, u)
+
+def solve_query(a, parent, depth, u, v):
+    lca = find_lca(parent, depth, u, v)
+    return max(abs(a[u] + a[v]), abs(a[u] - a[v]))
+
+def find_lca(parent, depth, u, v):
+    if depth[u] < depth[v]:
+        u, v = v, u
+    while depth[u] > depth[v]:
+        u = parent[u]
+    while u != v:
+        u = parent[u]
+        v = parent[v]
+    return u
+
+if __name__ == "__main__":
+    n, q, a, edges, queries = read_input()
+    graph = build_graph(n, edges)
+    parent = [-1] * n
+    depth = [0] * n
+    dfs(graph, parent, depth, 0, -1)
+    for query in queries:
+        if query[0] == 1:
+            a[query[1]-1] = query[2]
+        else:
+            print(solve_query(a, parent, depth, query[1]-1, query[2]-1))
+'
+
+Error message when running the 'solution code':
+'
+test input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+expected output:
+39
+32
+0
+code output:
+19
+12
+4
+====================
+====================
+'
+
+
+Output YAML:
+```yaml
+2023-11-02 09:00:28.025 | DEBUG    | alpha_codium.llm.ai_handler:chat_completion:137 - response:
+failed_tests: |-
+  - {input: '6 4\n10 -9 2 -1 4 -6\n1 5\n5 4\n5 6\n6 2\n6 3\n2 1 2\n1 1 -3\n2 1 2\n2 3 3\n', expected_output: '39\n32\n0\n', code_output: '19\n12\n4\n'}
+what_went_wrong: |-
+  The provided solution code is not correctly calculating the energy required to move from one room to another. It is only considering the illusion rates of the start and end rooms, and not the rooms in between. This is incorrect because the energy required to move from one room to another is determined by the absolute difference or sum of the illusion rates of the two rooms. Therefore, the energy required to move from one room to another should be the sum of the energies required to move between each pair of consecutive rooms along the path.
+fixed_code: |-
+  import sys
+  from collections import defaultdict
+  from heapq import *
+
+  def read_input():
+      n, q = map(int, input().split())
+      a = list(map(int, input().split()))
+      edges = [list(map(int, input().split())) for _ in range(n-1)]
+      queries = [list(map(int, input().split())) for _ in range(q)]
+      return n, q, a, edges, queries
+
+  def build_graph(n, edges):
+      graph = defaultdict(list)
+      for u, v in edges:
+          u -= 1
+          v -= 1
+          graph[u].append(v)
+          graph[v].append(u)
+      return graph
+
+  def dfs(graph, parent, depth, u, p):
+      parent[u] = p
+      depth[u] = depth[p] + 1 if p != -1 else 0
+      for v in graph[u]:
+          if v == p:
+              continue
+          dfs(graph, parent, depth, v, u)
+
+  def solve_query(a, parent, depth, u, v):
+      lca = find_lca(parent, depth, u, v)
+      return calculate_energy(a, parent, u, lca) + calculate_energy(a, parent, v, lca)
+
+  def find_lca(parent, depth, u, v):
+      if depth[u] < depth[v]:
+          u, v = v, u
+      while depth[u] > depth[v]:
+          u = parent[u]
+      while u != v:
+          u = parent[u]
+          v = parent[v]
+      return u
+
+  def calculate_energy(a, parent, u, lca):
+      energy = 0
+      while u != lca:
+          energy += max(abs(a[u] + a[parent[u]]), abs(a[u] - a[parent[u]]))
+          u = parent[u]
+      return energy
+
+  if __name__ == "__main__":
+      n, q, a, edges, queries = read_input()
+      graph = build_graph(n, edges)
+      parent = [-1] * n
+      depth = [0] * n
+      dfs(graph, parent, depth, 0, -1)
+      for query in queries:
+          if query[0] == 1:
+              a[query[1]-1] = query[2]
+          else:
+              print(solve_query(a, parent, depth, query[1]-1, query[2]-1))
+2023-11-02 09:00:28.026 | INFO     | alpha_codium.llm.ai_handler:chat_completion:138 - done
+2023-11-02 09:00:28.026 | INFO     | alpha_codium.llm.ai_handler:chat_completion:139 - -----------------
+2023-11-02 09:00:28.031 | INFO     | alpha_codium.gen.stages.run_fix_code_from_tests_failure:run_fix_code_from_tests_failure:40 - diff:
+--- 
++++ 
+@@ -28,7 +28,7 @@
+ 
+ def solve_query(a, parent, depth, u, v):
+     lca = find_lca(parent, depth, u, v)
+-    return max(abs(a[u] + a[v]), abs(a[u] - a[v]))
++    return calculate_energy(a, parent, u, lca) + calculate_energy(a, parent, v, lca)
+ 
+ def find_lca(parent, depth, u, v):
+     if depth[u] < depth[v]:
+@@ -39,6 +39,13 @@
+         u = parent[u]
+         v = parent[v]
+     return u
++
++def calculate_energy(a, parent, u, lca):
++    energy = 0
++    while u != lca:
++        energy += max(abs(a[u] + a[parent[u]]), abs(a[u] - a[parent[u]]))
++        u = parent[u]
++    return energy
+ 
+ if __name__ == "__main__":
+     n, q, a, edges, queries = read_input()
+
+2023-11-02 09:00:31.806 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:51 - compilation results:ProgramStatus.kSuccess
+2023-11-02 09:00:31.806 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:53 - 
+2023-11-02 09:00:31.806 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:54 - 
+2023-11-02 09:00:31.806 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:57 - input:
+6 4
+10 -9 2 -1 4 -6
+1 5
+5 4
+5 6
+6 2
+6 3
+2 1 2
+1 1 -3
+2 1 2
+2 3 3
+
+2023-11-02 09:00:31.806 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:58 - expected vs code output:
+39
+32
+0
+---
+39
+32
+0
+2023-11-02 09:00:31.807 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:72 - test-0 :: status=ProgramStatus.kSuccess, passed=True
+2023-11-02 09:00:31.807 | INFO     | alpha_codium.gen.coding_competitor:run:105 - Passed public tests after 3 attempts
+2023-11-02 09:00:31.808 | INFO     | alpha_codium.gen.coding_competitor:solve_problem:151 - testing solution on private tests
+2023-11-02 09:00:31.808 | INFO     | alpha_codium.gen.coding_competitor:solve_problem:152 - prediction:
+import sys
+from collections import defaultdict
+from heapq import *
+
+def read_input():
+    n, q = map(int, input().split())
+    a = list(map(int, input().split()))
+    edges = [list(map(int, input().split())) for _ in range(n-1)]
+    queries = [list(map(int, input().split())) for _ in range(q)]
+    return n, q, a, edges, queries
+
+def build_graph(n, edges):
+    graph = defaultdict(list)
+    for u, v in edges:
+        u -= 1
+        v -= 1
+        graph[u].append(v)
+        graph[v].append(u)
+    return graph
+
+def dfs(graph, parent, depth, u, p):
+    parent[u] = p
+    depth[u] = depth[p] + 1 if p != -1 else 0
+    for v in graph[u]:
+        if v == p:
+            continue
+        dfs(graph, parent, depth, v, u)
+
+def solve_query(a, parent, depth, u, v):
+    lca = find_lca(parent, depth, u, v)
+    return calculate_energy(a, parent, u, lca) + calculate_energy(a, parent, v, lca)
+
+def find_lca(parent, depth, u, v):
+    if depth[u] < depth[v]:
+        u, v = v, u
+    while depth[u] > depth[v]:
+        u = parent[u]
+    while u != v:
+        u = parent[u]
+        v = parent[v]
+    return u
+
+def calculate_energy(a, parent, u, lca):
+    energy = 0
+    while u != lca:
+        energy += max(abs(a[u] + a[parent[u]]), abs(a[u] - a[parent[u]]))
+        u = parent[u]
+    return energy
+
+if __name__ == "__main__":
+    n, q, a, edges, queries = read_input()
+    graph = build_graph(n, edges)
+    parent = [-1] * n
+    depth = [0] * n
+    dfs(graph, parent, depth, 0, -1)
+    for query in queries:
+        if query[0] == 1:
+            a[query[1]-1] = query[2]
+        else:
+            print(solve_query(a, parent, depth, query[1]-1, query[2]-1))
+2023-11-02 09:00:35.569 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:51 - compilation results:ProgramStatus.kSuccess
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:53 - 
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:54 - 
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:57 - input:
+2 1
+-1000000000 1000000000
+2 1
+2 1 2
+
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:58 - expected vs code output:
+2000000000
+---
+2000000000
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:72 - test-0 :: status=ProgramStatus.kSuccess, passed=True
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:57 - input:
+4 4
+2 -1000 100 3
+2 1
+3 2
+4 1
+2 1 3
+2 2 2
+1 1 -1000000000
+2 1 4
+
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:58 - expected vs code output:
+2102
+0
+1000000003
+---
+2102
+0
+1000000003
+2023-11-02 09:00:35.570 | INFO     | alpha_codium.code_contests.eval.code_test_runners:print_test_results:72 - test-1 :: status=ProgramStatus.kSuccess, passed=True

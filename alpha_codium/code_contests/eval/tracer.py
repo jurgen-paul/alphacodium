@@ -10,7 +10,9 @@ filter_out_lines = ["Starting var:",
                     "snooping_inner_function()",
                     "run_generated_code",
                     "return function(*args, **kwargs)",
-                    "source_line = source[line_no - 1]"]
+                    "source_line = source[line_no - 1]"
+                    "Elapsed time:",
+                    "Return value:.. None"]
 
 snooper_kwargs = {
     'color': False,

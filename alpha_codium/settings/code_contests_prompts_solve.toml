@@ -1,17 +1,35 @@
 [code_contests_prompts_solve]
 temperature = 0.4
-system="""You are an expert Python programmer.
+system= """\
+"""
+user="""\
+You are given a code contest problem, self-reflection on the problem, and a proposed solution:
 
-You are given a code contest problem, self-reflection on the problem, and a description of the solution, in words.
+problem description:
+'
+{{description}}
+'
+
+self-reflection:
+'
+{{ self_description|trim }}
+'
+
+proposed solution:
+'
+{{ s_best_solution }}
+'
+
+
 Your goal is to generate a valid Python code that correctly solves the problem.
 
 guidelines:
-- You must divide the code into small sub-functions, with meaningful names and functionality
+- You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
 - The code must have a reasonable runtime and memory complexity
-- Always double-check the solution code, and test it on multiple edge cases, and the provided input-output examples.
+- Always double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
-- emphasis not accessing an index that is out of the range of a list
+- Make sure to follow the 'flow' and 'input_output_examples_flow' sections.
 
 The code output must follow this structure:
 ````
@@ -29,24 +47,6 @@ if __name__ == "__main__":
 ```
 The code should read the input using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
-
-"""
-user="""\
-problem description:
-'
-{{description}}
-'
-
-
-self reflection:
-'
-{{ self_description }}
-'
-
-propose solution:
-'
-{{ response_best_solution }}
-'
 
 answer:
 ```python
