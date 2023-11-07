@@ -1,0 +1,53 @@
+[code_contests_prompts_generate_ai_tests]
+temperature = 0.5
+system = """\
+"""
+
+User="""\
+You are given a code contest problem, self-reflection on the problem, and a possible solution.
+
+problem description:
+'
+{{description|trim}}
+'
+
+
+self reflection:
+'
+{{ self_description|trim }}
+'
+
+possible solution:
+'
+{{ s_best_solution }}
+'
+
+Your task is to generate {{ number_of_ai_tests }} diverse input-output examples for the problem.
+They should be sorted by difficulty, from easiest to hardest.
+It is essential that all the inputs are valid, and the outputs are correct. Double check them, and validate they match the problem description and constraints.
+
+
+The output must be a YAML object equivalent to type $ProblemTests, according to the following Pydantic definitions:
+'
+class Test(BaseModel):
+    input: str
+    output: str
+
+class ProblemTests(BaseModel):
+    tests: List[Test] = Field(min_items={{number_of_ai_tests}}, max_items={{number_of_ai_tests}})
+'
+
+
+Example YAML output:
+```yaml
+tests:
+- input: |
+    ...
+  output: |
+    ...
+...
+```
+
+Answer:
+```yaml\
+"""

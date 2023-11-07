@@ -14,9 +14,14 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List
 
+import numpy as np
+
 from alpha_codium.code_contests.eval import tracer
 from alpha_codium.code_contests.eval.tracer import clean_trace, trace_code
+from alpha_codium.config_loader import get_settings
+from alpha_codium.log import get_logger
 
+logger = get_logger(__name__)
 
 class ProgramStatus(Enum):
     kUnknown = 0
@@ -172,12 +177,25 @@ def execute_inner(check_program, single_input, snoop, timeout, input_stream,  gl
 
 
 def compare_func(a, b):
+    delta = get_settings().code_tester.delta
     if a:
         a = a.strip()
     if b:
         b = b.strip()
-    return a == b
-
+    if a == b:
+        return True
+    elif delta:
+        try:
+            a = float(a)
+            b = float(b)
+            d = np.divide(np.abs(a - b), max(1.0, np.abs(b)))
+            if d <= delta:
+                logger.info(f"delta={delta} a={a} b={b} d={d}")
+                return True
+        except:
+            return False
+    else:
+        return False
 
 def calculate_tests_pass_fail(multi_tests_results: MultiTestResult, expected_results: List[str]):
     result = MultiTestResult()

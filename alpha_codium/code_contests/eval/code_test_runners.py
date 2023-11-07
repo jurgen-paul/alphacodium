@@ -55,8 +55,7 @@ class PythonTestsRunner(abc.ABC):
 
         for i, test_res in enumerate(result.test_results):
             logger.info(f"input:\n{test_inputs[i]}")
-            logger.info(f"expected output:\n{test_res.expected_output}")
-            logger.info(f"code output:\n{test_res.actual_output}")
+            logger.info(f"expected vs code output:\n{test_res.expected_output}\n---\n{test_res.actual_output}")
             details = f"passed={test_res.passed}"
             if not test_res.passed:
                 error = ""
@@ -68,8 +67,8 @@ class PythonTestsRunner(abc.ABC):
                 details = f"{details}. {error}"
             if test_res.program_status == ProgramStatus.kTimeout:
                 details = f"runtime of {test_res.execution_duration} exceeded allowed runtime"
-            if test_res.trace:
-                logger.info(f"trace:\n{test_res.trace or 'Not available'}")
+            # if test_res.trace:
+            #     logger.info(f"trace:\n{test_res.trace or 'Not available'}")
             logger.info(
                 f"test-{i} :: status={test_res.program_status}, {details}"
 
@@ -229,7 +228,7 @@ def eval_solution(evaluation_test_type: str = "private_tests",
         test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
-        logger.error("example doesn't have inputs or outputs")
+        logger.error(f"example '{example['name']}', type: '{evaluation_test_type}' doesn't have tests")
         return test_inputs, []
 
 
