@@ -17,13 +17,10 @@ described in the paper "Evaluating Large Language Models Trained on Code"
 (https://arxiv.org/abs/2107.03374)."""
 import itertools
 import os
-from collections import Counter, defaultdict
-from concurrent.futures import as_completed
 
 import datasets
 import evaluate
 import numpy as np
-import tqdm
 
 from alpha_codium.code_contests.eval.code_test_runners import PythonTestsRunner
 
@@ -160,61 +157,27 @@ class CodeContestsEval(evaluate.Metric):
             raise NotImplementedError(
                 "This metric is currently not supported on Windows."
             )
-
         runner = PythonTestsRunner.factory(self.config_name)
-        executor_cls, kw = runner.create_executor()
-        kw['max_workers'] = num_workers
-        with executor_cls(**kw) as executor:
-            futures = []
-            completion_id = Counter()
-            n_samples = 0
-            results = defaultdict(list)
+        inputs, results = runner.bulk_test(num_workers, predictions, references)
+        correct, total = self.pass_fail_ratio(results)
+        total = np.array(total)
+        correct = np.array(correct)
+        ks = k
+        pass_at_k = {
+            f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
+            for k in ks
+            if (total >= k).all()
+        }
 
-            for prediction, reference in zip(predictions, references):
-                task_name = prediction["task_name"]
-                candidates = prediction["solution_candidates"]
-                tests_inputs = reference["tests_inputs"]
-                tests_outputs = reference["tests_outputs"]
-                if not tests_inputs:
-                    print(f"ERROR: {task_name} - no inputs")
-                    continue
-                if not tests_outputs:
-                    print(f"ERROR: {task_name} - no outputs")
-                    continue
-                print(f"submitting task {task_name} with {len(candidates)}")
-                print(f"test inputs: {tests_inputs}")
-                print(f"test outputs: {tests_outputs}")
-                for candidate_id, candidate in enumerate(candidates):
+        return pass_at_k, inputs, results
 
-                    print(f"\tsubmitting candidate {candidate_id}")
-                    args = (
-                        task_name,
-                        candidate_id,
-                        candidate,
-                        tests_inputs,
-                        tests_outputs,
-                    )
-                    future = executor.submit(runner.run_tests, *args)
-                    futures.append(future)
-                    completion_id[task_name] += 1
-                    n_samples += 1
-
-            pbar = tqdm.tqdm(total=len(futures), desc="Processing tasks", ncols=100)  # create a progress bar
-            for future in as_completed(futures):
-                task_id, candidate_id, test_result = future.result()
-                print(task_id)
-                results[task_id].append((candidate_id, test_result))
-                pbar.update(1)  # update the progress bar by one step
-
-            pbar.close()
-
+    def pass_fail_ratio(self, results):
         total, correct = [], []
         for task_id, all_candidates_test_results in results.items():
             print(task_id)
             print("======================================")
             candidate_final_results = []
-            all_candidates_test_results.sort()
-            for candidate_id, test_results in all_candidates_test_results:
+            for candidate_id, test_results in enumerate(all_candidates_test_results):
                 _results = [
                     test_result.passed for test_result in test_results.test_results
                 ]
@@ -226,16 +189,7 @@ class CodeContestsEval(evaluate.Metric):
             correct.append(sum(candidate_final_results))
             print(f"{task_id} candidates: {candidate_final_results}")
             print("======================================")
-        total = np.array(total)
-        correct = np.array(correct)
-        ks = k
-        pass_at_k = {
-            f"pass@{k}": estimate_pass_at_k(total, correct, k).mean()
-            for k in ks
-            if (total >= k).all()
-        }
-
-        return pass_at_k, results
+        return correct, total
 
 
 def estimate_pass_at_k(num_samples, num_correct, k):

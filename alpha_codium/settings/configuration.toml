@@ -8,6 +8,7 @@ verbosity_level=0 # 0,1,2
 ai_timeout=180
 
 [solve]
+terminate_on_failure = false
 use_baseline = false
 do_recording = true
 use_recording = false
@@ -16,7 +17,6 @@ number_of_ai_tests=6
 disable_recording_public_tests=false
 max_counter_public_tests=3
 disable_ai_tests_fix = false
-
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
@@ -31,3 +31,11 @@ max_trace_lines=50
 trace_depth=4
 delta=0.0001
 #prefer_dynamic_programming=true
+
+
+[code_contests_tester]
+num_threads = 4
+stop_on_first_failure = false
+timeout = 10
+path_to_python_bin = "/usr/bin/python3.9"
+path_to_python_lib = ["/usr/lib", "/usr/lib/python3.9"]
