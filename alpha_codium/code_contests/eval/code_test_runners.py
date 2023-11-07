@@ -78,14 +78,24 @@ class PythonTestsRunner(abc.ABC):
 
     def print_test_results(self, result: MultiTestResult, test_inputs: List[str] = None):
         if result.compilation_result:
-            logger.info(
-                f"compilation results:{result.compilation_result.program_status if result.compilation_result else ''}")
-            logger.info(result.compilation_result.sandbox_result)
-            logger.info(result.compilation_result.stderr)
+            if get_settings().solve.reduce_verbose:
+                logger.debug(
+                    f"compilation results:{result.compilation_result.program_status if result.compilation_result else ''}")
+                logger.debug(result.compilation_result.sandbox_result)
+                logger.debug(result.compilation_result.stderr)
+            else:
+                logger.info(
+                    f"compilation results:{result.compilation_result.program_status if result.compilation_result else ''}")
+                logger.info(result.compilation_result.sandbox_result)
+                logger.info(result.compilation_result.stderr)
 
         for i, test_res in enumerate(result.test_results):
-            logger.info(f"input:\n{test_inputs[i]}")
-            logger.info(f"expected vs code output:\n{test_res.expected_output}\n---\n{test_res.actual_output}")
+            if get_settings().solve.reduce_verbose:
+                logger.debug(f"input:\n{test_inputs[i]}")
+                logger.debug(f"expected vs code output:\n{test_res.expected_output}\n---\n{test_res.actual_output}")
+            else:
+                logger.info(f"input:\n{test_inputs[i]}")
+                logger.info(f"expected vs code output:\n{test_res.expected_output}\n---\n{test_res.actual_output}")
             details = f"passed={test_res.passed}"
             if not test_res.passed:
                 error = ""
@@ -97,20 +107,13 @@ class PythonTestsRunner(abc.ABC):
                 details = f"{details}. {error}"
             if test_res.program_status == ProgramStatus.kTimeout:
                 details = f"runtime of {test_res.execution_duration} exceeded allowed runtime"
-            # if test_res.trace:
-            #     logger.info(f"trace:\n{test_res.trace or 'Not available'}")
-            logger.info(
-                f"test-{i} :: status={test_res.program_status}, {details}"
 
-            )
-
-            print(
-                "====================================================================="
-            )
-            # print(test_res.stdout)
-            # print(
-            #     "====================================================================="
-            # )
+            logger.info(f"test-{i} :: status={test_res.program_status}, passed={test_res.passed}")
+            if get_settings().solve.reduce_verbose:
+                logger.debug(f"{details}")
+            else:
+                logger.info(f"{details}")
+            logger.info("=====================================================================")
 
     def bulk_test(self, num_workers, predictions, references):
         executor_cls, kw = self.create_executor()

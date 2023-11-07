@@ -21,7 +21,7 @@ A Python solution code that was generated for the problem:
 '
 
 
-However, when running the following input example, the code failed to produce the expected output:
+However, when running the following input example, the Python code above failed to produce the expected output:
 '
 {{ error_str|trim }}
 '

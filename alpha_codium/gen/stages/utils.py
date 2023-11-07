@@ -6,9 +6,10 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-def set_configurations(problem):
+def set_configurations(problem, iteration=0):
     # configurations
     problem = {k: problem.get(k) for k in ["name", "description", "public_tests"]}
+    problem['iteration'] = iteration
     do_recording = get_settings().get("solve.do_recording", False)
     use_recording = get_settings().get("solve.use_recording", False)
     if use_recording or do_recording:
@@ -22,7 +23,7 @@ def set_configurations(problem):
         problem["recording_path"] = ''
     problem["do_recording"] = do_recording
     problem["use_recording"] = use_recording
-    problem['number_of_ai_tests'] = get_settings().get("solve.number_of_ai_tests", 6)
+    problem['number_of_ai_tests'] = get_settings().get("ai_tests.number_of_ai_tests", 6)
     problem['diff_that_didnt_help'] = ''
 
     # initialize passed tests field

@@ -27,7 +27,10 @@ async def run_fix_code_from_tests_failure(self, problem,error_str, trace_str):
             patch = ''.join(diff)
             problem['diff_patch'] = patch
             problem['diff_that_didnt_help'] = ''
-            logger.info(f"diff:\n{patch}")
+            if get_settings().solve.reduce_verbose:
+                logger.debug(f"diff:\n{patch}")
+            else:
+                logger.info(f"diff:\n{patch}")
 
             # result = remove_if_main(result)
         except yaml.YAMLError:

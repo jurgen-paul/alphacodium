@@ -19,11 +19,11 @@ async def run_evaluate_public_tests(self, problem):
         logger.info("--iterate on public tests stage--")
 
         use_recording = problem.get('use_recording', False)
-        if get_settings().solve.disable_recording_public_tests:
+        if get_settings().public_tests.disable_recording_public_tests:
             use_recording = False
         do_recording = problem.get('do_recording', False)
         recording_path = problem.get('recording_path', '')
-        MAX_ALLOWED_COUNTER = get_settings().solve.get("max_counter_public_tests", 3)
+        MAX_ALLOWED_FIXES_COUNTER = get_settings().public_tests.get("max_counter_public_tests", 3)
 
         if use_recording:
             code_recent_solution = np.load(recording_path + 'problem_run_public_tests.npy', allow_pickle=True).tolist()
@@ -36,6 +36,8 @@ async def run_evaluate_public_tests(self, problem):
             test_inputs_all = problem['public_tests']['input']
             test_outputs_all = problem['public_tests']['output']
             all_passed_public = True
+            max_allowed_calls = get_settings().get("public_tests.max_allowed_calls", 10)
+            actual_number_of_calls = 0
             for test_inputs, test_outputs in zip(test_inputs_all, test_outputs_all):
                 if not isinstance(test_inputs, list):
                     test_inputs = [test_inputs]
@@ -55,9 +57,15 @@ async def run_evaluate_public_tests(self, problem):
                     problem, passed_specific_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                         = run_tests(self, problem, counter, test_inputs, test_outputs)
 
+                    # save the best solution so far
                     if -1 < d_tot < best_d:
                         best_solution = copy.deepcopy(problem['code_recent_solution'])
                         best_d = d_tot
+
+                    # cap the number of calls to the ai
+                    if not passed_specific_test and actual_number_of_calls >= max_allowed_calls:
+                        logger.error(f"Failed to pass public test. reached max number of calls")
+                        break
 
                     # analyze the tests results
                     counter += 1
@@ -72,8 +80,8 @@ async def run_evaluate_public_tests(self, problem):
                         logger.error("timeout (no output). reverting to last solution")
                         problem['code_recent_solution'] = problem['code_last_solution']
                         continue
-                    elif counter > MAX_ALLOWED_COUNTER:
-                        logger.error(f"Failed to pass public tests after {MAX_ALLOWED_COUNTER} attempts")
+                    elif counter > MAX_ALLOWED_FIXES_COUNTER:
+                        logger.error(f"Failed to pass public tests after {MAX_ALLOWED_FIXES_COUNTER} attempts")
                         break
                     elif not non_empty_output:
                         logging.info("Failed to pass public tests. actual_output is empty")
@@ -96,6 +104,7 @@ async def run_evaluate_public_tests(self, problem):
 
                     # run 'fix_code_from_tests_failure' stage
                     problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+                    actual_number_of_calls += 2
 
                     # evaluate previous tests that passed. if they fail, revert to last solution
                     if problem['passed_tests']['inputs']:
