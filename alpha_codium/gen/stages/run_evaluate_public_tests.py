@@ -110,7 +110,7 @@ async def run_evaluate_public_tests(self, problem):
 
                 if not passed_specific_test:
                     if problem['passed_tests']['inputs']:
-                        logger.error(f"Public test - reverting to initial solution, where {problem['passed_tests']['inputs']} passed")
+                        logger.error(f"Public test - reverting to initial solution, where: '{problem['passed_tests']['inputs']}' passed")
                         problem['code_recent_solution'] = last_code_solution
                     else: # no solution passed so far.
                         logger.error(f'Public test -  Reverting to best solution so far, d_tot: {best_d}')

@@ -4,12 +4,8 @@ import logging
 import numpy as np
 import yaml
 
-from alpha_codium.config_loader import get_settings
-from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
-from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_tests import run_tests
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -38,6 +34,8 @@ async def run_evaluate_a_simple_test(self, problem):
             # run the solution on the simple test
             problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                 = run_tests(self, problem, counter, test_input, test_output)
+
+            # set the distance to the correct solution
             if -1 < d_tot < best_d:
                 best_solution = copy.deepcopy(problem['code_recent_solution'])
                 best_d = d_tot
