@@ -12,11 +12,15 @@ terminate_on_failure = false
 use_baseline = false
 do_recording = true
 use_recording = false
-load_final_code_solution = false
-number_of_ai_tests=6
+
+[public_tests]
+max_allowed_calls=6
+max_counter_public_tests=2
 disable_recording_public_tests=false
-max_counter_public_tests=3
-disable_ai_tests_fix = false
+
+[ai_tests]
+number_of_ai_tests=6
+max_allowed_calls=6
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"

@@ -24,6 +24,8 @@ async def run_evaluate_all_ai_tests(self, problem):
 
         # evaluate ai tests
         ai_tests = problem['problem_ai_tests']
+        max_allowed_calls = get_settings().get("ai_tests.max_allowed_calls", 10)
+        actual_number_of_calls = 0
         for test in ai_tests:
             test_inputs = test['input']
             test_outputs = test['output']
@@ -43,6 +45,11 @@ async def run_evaluate_all_ai_tests(self, problem):
                     problem['passed_tests']['outputs'] += test_outputs
 
             else:
+                # cap the number of calls to the ai
+                if actual_number_of_calls >= max_allowed_calls:
+                    logger.error(f"Failed to pass ai test. reached max number of calls")
+                    break
+
                 logger.error(f"Failed to pass ai tests. trying to fix code")
                 last_code_solution = copy.deepcopy(problem['code_recent_solution'])
 
@@ -51,6 +58,7 @@ async def run_evaluate_all_ai_tests(self, problem):
 
                 # run 'fix_code_from_tests_failure' stage
                 problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+                actual_number_of_calls += 2
 
                 problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
