@@ -44,6 +44,12 @@ async def run_self_reflect(self, problem):
                     problem['s_possible_solutions'] = [s]
                     problem['s_possible_solutions_str'] = s
                     break
+        if get_settings().code_tester.get('remove_dynamic_programming', False):
+            for s in problem['s_possible_solutions'][::-1]:
+                if 'dynamic' not in s['name'].lower() and 'programming' not in s['name'].lower():
+                    logger.info(f"Enforcing non dynamic programming solution: {s['name']}")
+                    problem['s_possible_solutions'] = [s]
+                    problem['s_possible_solutions_str'] = s
         return problem
     except Exception as e:
         logging.error(f"Error: {e}")
