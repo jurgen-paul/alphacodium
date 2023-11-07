@@ -10,10 +10,12 @@ problem description:
 {{description}}
 '
 
+
 self-reflection:
 '
 {{ self_description|trim }}
 '
+
 
 proposed solution:
 '
