@@ -78,7 +78,7 @@ for example, try:
 
 `eval_cc_solutions` - evaluate a solution from the actual code contests datasets
 
-Example command: `gencode eval eval_cc_solutions --dataset_name 101_test --split_name train --evaluation_test_type private_tests`
+Example command: `gencode eval eval_gen_solutions --solution_dataset my_solutions --ground_truth_dataset code_contests_sample --ground_truth_split valid --evaluation_test_type private_tests`
 
 This command takes a dataset name (can be a dataset stored locally) and evaluates the solutions against specified test types that accompany the problems.
 The result is a `pass@k` metric
