@@ -8,9 +8,11 @@ verbosity_level=0 # 0,1,2
 ai_timeout=180
 
 [solve]
-terminate_on_failure = false
+# 165 problems
+max_iterations = 5 # X iterations to try to solve the problem
+reduce_verbose = true
 use_baseline = false
-do_recording = true
+do_recording = false
 use_recording = false
 
 [self_reflect]

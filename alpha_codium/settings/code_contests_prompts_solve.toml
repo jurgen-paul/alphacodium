@@ -1,5 +1,5 @@
 [code_contests_prompts_solve]
-temperature = 0.4
+temperature = 0.5
 system= """\
 """
 user="""\

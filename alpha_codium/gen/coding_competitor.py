@@ -140,27 +140,22 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
 
     # solve problem
-    solver = CodeContestsCompetitor()
-    solution = solver.solve_problem(problem)
-
-    # test solution
-    test_results = None
-    if evaluation_test_type:
-        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
-
     if not problem['private_tests']['input']:
         logger.info("No private tests for this problem")
-    else:
-        test_passed = 0
-        test_failed = 0
-        for test in test_results[1].test_results:
-            if not test.passed:
-                test_failed += 1
-            else:
-                test_passed += 1
-        logger.info("=====================================")
-        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
-        logger.info("=====================================")
+        return None, None
+
+    solver = CodeContestsCompetitor()
+    setting = get_settings()
+    for iteration in range(setting.get("solve.max_iterations", 1)):
+        # run policy
+        if iteration > 0:
+            setting.self_reflect.randomize_best_solution = True
+
+        solution = solver.solve_problem(problem, iteration)
+        test_results, test_passed, test_failed = evaluate_on_private_tests(evaluation_test_type, problem, solution)
+        if test_failed == 0:
+            break
+
     return solution, test_results
 
 
@@ -170,4 +165,25 @@ if __name__ == "__main__":
                        problem_name="1548_D1. Gregor and the Odd Cows (Easy)",
                        evaluation_test_type="public_tests")
 
+def evaluate_on_private_tests(evaluation_test_type, problem, solution):
+    # evaluate solution
+    test_results = None
+    if evaluation_test_type:
+        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
+
+    test_passed = 0
+    test_failed = 0
+    if not problem['private_tests']['input']:
+        logger.info("No private tests for this problem")
+    else:
+        for test in test_results[1].test_results:
+            if not test.passed:
+                test_failed += 1
+            else:
+                test_passed += 1
+        logger.info("=====================================")
+        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
+        logger.info("=====================================")
+
+    return test_results, test_passed, test_failed
 
