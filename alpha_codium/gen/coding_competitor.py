@@ -139,10 +139,36 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
                                          evaluation_test_type=evaluation_test_type)
     logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
 
+    # evaluate prev solutions
+    evaluate_prev_solutions = get_settings().get("dataset.evaluate_prev_solutions", False)
+    if evaluate_prev_solutions:
+        try:
+            if not problem['solutions']['solution']:
+                logger.info("No public solutions for this problem")
+            found_solution = False
+            for index_published, sol_published in enumerate(problem['solutions']['solution']):
+                logger.info(f"evaluating public solution {index_published} on private tests...")
+                test_results, test_passed_private, test_failed_private = evaluate_on_private_tests('private_tests', problem,
+                                                                                           sol_published, silent=True)
+                logger.info(f"evaluating public solution {index_published} on generated tests...")
+                test_results, test_passed_generate, test_failed_generate = evaluate_on_private_tests('generated_tests',
+                                                                                                     problem,
+                                                                                                     sol_published,
+                                                                                                     silent=True)
+                if test_failed_private == 0 and test_failed_generate == 0 and (
+                        test_passed_private + test_passed_generate) > 0:
+                    logger.info(f"sol_published index {index_published} passed all tests:\n{sol_published}")
+                    found_solution = True
+                    break
+            if not found_solution:
+                logger.info(f"None of the public solutions passed all tests")
+        except:
+            pass
+
     # solve problem
     if not problem['private_tests']['input']:
         logger.info("No private tests for this problem")
-        return None, None
+        # return None, None
 
     solver = CodeContestsCompetitor()
     setting = get_settings()
@@ -152,9 +178,13 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
             setting.self_reflect.randomize_best_solution = True
 
         solution = solver.solve_problem(problem, iteration)
-        test_results, test_passed, test_failed = evaluate_on_private_tests(evaluation_test_type, problem, solution)
-        if test_failed == 0:
-            break
+        logger.info(f"evaluating solution on private tests...")
+        test_results, test_passed, test_failed_generate = evaluate_on_private_tests('private_tests', problem, solution)
+
+        logger.info(f"evaluating solution on generated tests...")
+        test_results, test_passed, test_failed_private = evaluate_on_private_tests('generated_tests', problem, solution)
+
+        logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}")
 
     return solution, test_results
 

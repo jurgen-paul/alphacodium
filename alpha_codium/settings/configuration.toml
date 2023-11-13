@@ -7,6 +7,10 @@ git_provider="github"
 verbosity_level=0 # 0,1,2
 ai_timeout=180
 
+[dataset]
+evaluate_prev_solutions=true
+
+
 [solve]
 # 165 problems
 max_iterations = 1 # X iterations to try to solve the problem
