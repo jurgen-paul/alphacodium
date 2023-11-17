@@ -160,9 +160,11 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
                     logger.info(f"sol_published index {index_published} passed all tests:\n{sol_published}")
                     found_solution = True
                     break
+
             if not found_solution:
                 logger.info(f"None of the public solutions passed all tests")
-        except:
+        except Exception as e:
+            logger.error(f"Error evaluating public solutions: {e}")
             pass
 
     # solve problem
@@ -203,17 +205,20 @@ def evaluate_on_private_tests(evaluation_test_type, problem, solution, silent=Tr
 
     test_passed = 0
     test_failed = 0
-    if not problem['private_tests']['input']:
-        logger.info("No private tests for this problem")
-    else:
-        for test in test_results[1].test_results:
-            if not test.passed:
-                test_failed += 1
-            else:
-                test_passed += 1
-        logger.info("=====================================")
-        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
-        logger.info("=====================================")
+
+
+    if not test_results[1]:
+        logger.info("No tests were run")
+        return test_results, 0, 0
+
+    for test in test_results[1].test_results:
+        if not test.passed:
+            test_failed += 1
+        else:
+            test_passed += 1
+    logger.info("=====================================")
+    logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
+    logger.info("=====================================")
 
     return test_results, test_passed, test_failed
 
