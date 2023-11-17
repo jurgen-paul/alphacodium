@@ -179,10 +179,10 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
         solution = solver.solve_problem(problem, iteration)
         logger.info(f"evaluating solution on private tests...")
-        test_results, test_passed, test_failed_generate = evaluate_on_private_tests('private_tests', problem, solution)
+        test_results, test_passed, test_failed_generate = evaluate_on_private_tests('private_tests', problem, solution, silent=True)
 
         logger.info(f"evaluating solution on generated tests...")
-        test_results, test_passed, test_failed_private = evaluate_on_private_tests('generated_tests', problem, solution)
+        test_results, test_passed, test_failed_private = evaluate_on_private_tests('generated_tests', problem, solution, silent=True)
 
         logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}")
 
@@ -195,11 +195,11 @@ if __name__ == "__main__":
                        problem_name="1548_D1. Gregor and the Odd Cows (Easy)",
                        evaluation_test_type="public_tests")
 
-def evaluate_on_private_tests(evaluation_test_type, problem, solution):
+def evaluate_on_private_tests(evaluation_test_type, problem, solution, silent=True):
     # evaluate solution
     test_results = None
     if evaluation_test_type:
-        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution)
+        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution, silent=silent)
 
     test_passed = 0
     test_failed = 0

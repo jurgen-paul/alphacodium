@@ -314,7 +314,7 @@ def eval_solution(evaluation_test_type: str = "private_tests",
                   prediction: str = '',  # python code to be evaluated
                   test_inputs: Optional[List[str]] = None,
                   test_outputs: Optional[List[str]] = None,
-                  ):
+                  silent=False):
     if not test_inputs:
         test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
     if not test_outputs:
@@ -329,7 +329,8 @@ def eval_solution(evaluation_test_type: str = "private_tests",
             tests_outputs=test_outputs,
             timeout=10,
         )
-        test_runner.print_test_results(results, test_inputs)
+        if not silent:
+            test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
         logger.error(f"example '{example['name']}', type: '{evaluation_test_type}' doesn't have tests")
