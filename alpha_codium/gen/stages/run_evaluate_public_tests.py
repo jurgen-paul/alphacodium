@@ -85,7 +85,7 @@ async def run_evaluate_public_tests(self, problem):
                             break
                         elif not non_empty_output:
                             logging.info("Failed to pass public tests. actual_output is empty")
-                            problem['recent_solution'] = problem['last_solution_code']
+                            problem['code_recent_solution'] = last_code_solution
                             continue
                         else:
                             # tests run. save the last solution
