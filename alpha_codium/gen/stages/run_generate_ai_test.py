@@ -40,7 +40,7 @@ async def run_generate_ai_tests(self, problem):
                 # to the beginning of the list
                 problem['problem_ai_tests'].insert(0, {'input': public_input, 'output': public_output})
                 # to the end of the list
-                problem['problem_ai_tests'].push({'input': public_input, 'output': public_output})
+                problem['problem_ai_tests'].append({'input': public_input, 'output': public_output})
 
             return problem
         except Exception as e:

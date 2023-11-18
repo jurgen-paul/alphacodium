@@ -38,7 +38,7 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
     aaa=3
 
 
-    for problem_number in range(8,num_problems):
+    for problem_number in range(0,num_problems):
         shutil.rmtree(log_path, ignore_errors=True)
         os.chdir(working_dir)
         setup_logger()
@@ -98,8 +98,8 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
         for iteration in range(setting.get("solve.max_iterations", 1)):
             it_str = f"iteration_{iteration}"
             # run policy
-            if iteration > 0:
-                setting.self_reflect.randomize_best_solution = True
+            # if iteration > 0:
+            #     setting.self_reflect.randomize_best_solution = True
 
             problem_database[problem_number]['codium'][it_str] = {}
 

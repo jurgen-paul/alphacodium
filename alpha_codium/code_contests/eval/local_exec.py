@@ -34,7 +34,6 @@ class ProgramStatus(Enum):
 class ExecutionResult:
     stdout: str = ''
     stderr: str = ''
-    sandbox_result: str = ''
     execution_duration: datetime.timedelta = 0
     program_status: ProgramStatus = ProgramStatus.kUnknown
     program_hash: int = 0
@@ -134,7 +133,7 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, sno
                         filtered_trace = traceback.format_exc()
                         if clean_exception:
                             filtered_trace = filtered_trace.splitlines()
-                            filtered_trace = filtered_trace [min(len(filtered_trace)-2, 3):]
+                            filtered_trace = filtered_trace[min(len(filtered_trace) - 2, 3):]
                             filtered_trace = [line for line in filtered_trace if not
                             any(substring in line for substring in tracer.filter_out_lines)]
                             filtered_trace = '\n'.join(filtered_trace)
@@ -154,7 +153,7 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, sno
                 os.chdir = chdir
 
 
-def execute_inner(check_program, single_input, snoop, timeout, input_stream,  globals, tracing=None):
+def execute_inner(check_program, single_input, snoop, timeout, input_stream, globals, tracing=None):
     input_stream = io.BytesIO(single_input.encode())
     input_stream.seek(0)
 
@@ -164,7 +163,6 @@ def execute_inner(check_program, single_input, snoop, timeout, input_stream,  gl
                 trace_code(check_program, globals, tracing)
             else:
                 exec(check_program, globals, {})
-
 
     std_output = stdout_stream.getvalue().strip()
     str_error = stderr_stream.getvalue()
@@ -179,12 +177,28 @@ def execute_inner(check_program, single_input, snoop, timeout, input_stream,  gl
 def compare_func(a, b):
     delta = get_settings().code_tester.delta
     if a:
-        a = a.strip()
+        a = a.strip().lower()
     if b:
-        b = b.strip()
+        b = b.strip().lower()
     if a == b:
         return True
-    elif delta:
+    elif a.replace(" ", "") == b.replace(" ", ""):
+        return True
+
+    try:  # multi-answer, order-doesnt-matter-per-answer comparison
+        a_multi = a.replace('\n\n\n', '\n').replace('\n\n', '\n').strip()
+        b_multi = b.replace('\n\n\n', '\n').replace('\n\n', '\n').strip()
+        if a_multi == b_multi:
+            return True
+        else:
+            a_multi_split = a_multi.split('\n')
+            b_multi_split = b_multi.split('\n')
+            if set(a_multi_split) == set(b_multi_split):
+                return True
+    except:
+        pass
+
+    if delta:
         try:
             a = float(a)
             b = float(b)
@@ -196,6 +210,7 @@ def compare_func(a, b):
             return False
     else:
         return False
+
 
 def calculate_tests_pass_fail(multi_tests_results: MultiTestResult, expected_results: List[str]):
     result = MultiTestResult()
@@ -373,20 +388,20 @@ def main():
             return 1
         else:
             return -1
-    
+
     def convex_hull(points):
         # Find the convex hull of a set of points
         n = len(points)
         if n < 3:
             return []
-    
+
         # Find the leftmost point
         leftmost = min(points, key=lambda p: p[0])
-    
+
         hull = []
         p = leftmost
         q = None
-    
+
         while True:
             hull.append(p)
             q = (p[0] + 1, p[1])  # Initialize q to a point outside the hull
@@ -398,39 +413,39 @@ def main():
             p = q
             if p == leftmost:
                 break
-    
+
         return hull
-    
+
     def area(polygon):
         # Calculate the area of a polygon using the Shoelace formula
         n = len(polygon)
         if n < 3:
             return 0
-    
+
         area = 0
         for i in range(n):
             j = (i + 1) % n
             area += polygon[i][0] * polygon[j][1] - polygon[j][0] * polygon[i][1]
-    
+
         return abs(area) / 2
-    
+
     def count_enclosed_cows(polygon):
         # Count the number of cows enclosed within a polygon
         n = len(polygon)
         if n < 3:
             return 0
-    
+
         count = 0
         for i in range(n):
             j = (i + 1) % n
             count += (polygon[i][0] + polygon[j][0]) * (polygon[i][1] - polygon[j][1])
-    
+
         return abs(count) // 2
-    
+
     def count_interesting_fences(n, fence_posts):
         # Count the number of interesting fences
         count = 0
-    
+
         for i in range(n):
             for j in range(i + 1, n):
                 for k in range(j + 1, n):
@@ -439,23 +454,23 @@ def main():
                     if len(hull) >= 3:
                         if count_enclosed_cows(hull) % 2 == 1 and area(hull) % 1 == 0:
                             count += 1
-    
+
         return count
-    
-    
+
+
     n = int(input())
     fence_posts = []
     for _ in range(n):
         x, y = map(int, input().split())
         fence_posts.append((x, y))
-    
+
     result = count_interesting_fences(n, fence_posts)
     print(result)
-        
+
 main()
 """
-,
-"input": '5\n0 0\n2 16\n30 14\n4 6\n2 10\n'}
+    ,
+             "input": '5\n0 0\n2 16\n30 14\n4 6\n2 10\n'}
 
 problem_1 = {"code":"x = input()\nprint(x)\n", "input":"hello\n"}
 

@@ -5,6 +5,7 @@ import yaml
 
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
+from alpha_codium.gen.utils import render_trace
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
 
@@ -25,12 +26,17 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
         all_passed = True
         non_empty_output = True
         tests_timeout = False
-        if str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
+        if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
             tests_timeout = True
+            all_passed = False
+            for i, t in enumerate(results.test_results):
+                error_str += f"test input:\n{test_inputs[i]}\n" \
+                             f"expected output:\n{t.expected_output}\n"
+                error_str += f"code output: 'Timeout, took too long to run'\n"
         elif str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
             logger.error("failed to run solution")
             error_str = results.test_results[0].sandbox_result
-            trace_str = f"trace information:\n{self.render_trace(results.test_results[0].trace)}\n\n"
+            trace_str = f"trace information:\n{render_trace(results.test_results[0].trace)}\n\n"
             all_passed = False
         else: # ProgramStatus.passed
             # initially assume all tests passed
@@ -46,7 +52,7 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
                              f"code output:\n{t.actual_output}\n" \
                              f"====================\n====================\n"
 
-                trace_str += f"trace:\n{self.render_trace(t.trace)}\n" \
+                trace_str += f"trace:\n{render_trace(t.trace)}\n" \
                              f"====================\n====================\n"
 
                 # if get_settings().code_tester.calc_trace:
