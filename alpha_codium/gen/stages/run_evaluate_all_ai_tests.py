@@ -59,7 +59,7 @@ async def run_evaluate_all_ai_tests(self, problem):
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
 
                 if not test_passed:
-                    logger.error(f"Failed to pass ai tests after trying to fix code. reverting to last solution")
+                    logger.error(f"Failed to pass ai tests with fixed code.")
                     problem['code_recent_solution'] = last_code_solution
                 else:  # we passed the test after fixing the code
 
