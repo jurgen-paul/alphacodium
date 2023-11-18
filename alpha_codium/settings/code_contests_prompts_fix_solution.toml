@@ -45,9 +45,9 @@ what went wrong:
 {{ what_went_wrong|trim }}
 '
 
-failed_test_fixed_flow:
+fixed_flow:
 '
-{{ failed_test_fixed_flow|trim }}
+{{ fixed_flow|trim }}
 '
 =====================================
 

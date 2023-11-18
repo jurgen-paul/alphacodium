@@ -93,10 +93,10 @@ async def run_evaluate_public_tests(self, problem):
 
 
                         # run 'analyze_test_failure' stage
-                        problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
+                        problem = await run_analyze_test_failure(self, problem, error_str)
 
                         # run 'fix_code_from_tests_failure' stage
-                        problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
+                        problem = await run_fix_code_from_tests_failure(self, problem, error_str)
                         actual_number_of_calls += 2
 
                         # evaluate previous tests that passed. if they fail, revert to last solution

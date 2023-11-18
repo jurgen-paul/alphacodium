@@ -13,7 +13,7 @@ problem description:
 '
 
 Your goal is reflect on the problem, and describe it in your own words.
-You should also present possible solutions to the problem. Avoid simple greedy or brute force solutions.
+You should also present up to three possible solutions to the problem. Avoid simple greedy or brute force solutions.
 Make sure to fully address the problem rules and constraints.
 
 The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:
