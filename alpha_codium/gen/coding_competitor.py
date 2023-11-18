@@ -70,12 +70,10 @@ class CodeContestsCompetitor:
     async def run(self, problem, iteration=0):
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
-        # configurations
-        problem = set_configurations(problem, iteration)
+        try:
+            # configurations
+            problem = set_configurations(problem, iteration)
 
-        if get_settings().get("solve.use_baseline", False):
-            problem['code_recent_solution'] = await run_baseline(self, problem)
-        else:
             # self-reflect
             problem = await run_self_reflect(self, problem)
 
@@ -97,7 +95,10 @@ class CodeContestsCompetitor:
             # evaluate on ai tests
             problem = await run_evaluate_all_ai_tests(self, problem)
 
-        return problem['code_recent_solution']
+            return problem['code_recent_solution']
+        except Exception as e:
+            logging.error(f"Error: {e}")
+            return ""
 
     def clip_string(self, s: str, max_lines: int = None):
         lines = s.split("\n")
