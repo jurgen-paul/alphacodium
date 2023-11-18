@@ -18,6 +18,7 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
         problem['error_str'] = error_str
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_analyze_and_fix")
         response_analyze_failure, _ = await retry_with_fallback_models(f)
+        problem['error_str'] = ''
         try:
             response_analyze_failure = response_analyze_failure.rstrip("'` \n") # remove trailing spaces and newlines from yaml response
             response_analyze_failure_yaml = yaml.safe_load(response_analyze_failure)
@@ -43,7 +44,7 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
                                         problem['code_recent_solution'].splitlines(keepends=True))
             patch = ''.join(diff)
             # problem['diff_patch'] = patch
-            problem['specific_test_explanation'] = ''
+            # problem['specific_test_explanation'] = ''
             # problem['passed_tests_str'] = ''
             if get_settings().solve.reduce_verbose:
                 logger.debug(f"diff:\n{patch}")

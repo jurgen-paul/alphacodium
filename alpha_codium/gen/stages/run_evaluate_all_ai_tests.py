@@ -24,12 +24,13 @@ async def run_evaluate_all_ai_tests(self, problem):
         max_allowed_calls = get_settings().get("ai_tests.max_allowed_calls", 10)
         actual_number_of_calls = 0
         for test in ai_tests:
+            counter = 0
             test_inputs = test['input']
             test_outputs = test['output']
             if not isinstance(test_inputs, list):
                 test_inputs = [test_inputs]
                 test_outputs = [test_outputs]
-            counter = 0
+
             # run the solution on the tests
             problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                 = run_tests(self, problem, counter, test_inputs, test_outputs)
@@ -60,8 +61,9 @@ async def run_evaluate_all_ai_tests(self, problem):
                 if not test_passed:
                     logger.error(f"Failed to pass ai tests after trying to fix code. reverting to last solution")
                     problem['code_recent_solution'] = last_code_solution
-                else:
-                    # running passed tests again to make sure we didn't break anything
+                else:  # we passed the test after fixing the code
+
+                    # running previous passed tests again to make sure we didn't break anything
                     if problem['passed_tests']['inputs']:
                         problem, all_passed_prev, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                             = run_tests(self, problem, counter,
@@ -76,8 +78,6 @@ async def run_evaluate_all_ai_tests(self, problem):
                     if test_inputs not in problem['passed_tests']['inputs']:
                         problem['passed_tests']['inputs'] += test_inputs
                         problem['passed_tests']['outputs'] += test_outputs
-
-
 
         return problem
     except Exception as e:

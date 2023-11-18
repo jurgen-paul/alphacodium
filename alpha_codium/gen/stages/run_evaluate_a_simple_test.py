@@ -20,7 +20,7 @@ async def run_evaluate_a_simple_test(self, problem):
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
             MAX_COUNTER = 2
-            if use_recording or True:
+            if use_recording:
                 code_recent_solution = np.load(recording_path + 'problem_run_simple_test.npy',
                                                allow_pickle=True).tolist()
                 problem['code_recent_solution'] = code_recent_solution

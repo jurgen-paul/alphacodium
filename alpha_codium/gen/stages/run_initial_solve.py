@@ -18,7 +18,7 @@ async def run_initial_solve(self, problem, enable_record=True):
             recording_path = problem.get('recording_path', '')
 
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
-            if use_recording or True:
+            if use_recording:
                 response_solve = np.load(recording_path + 'initial_solve.npy', allow_pickle=True).tolist()
                 logger.info("Using recording")
                 logger.debug(f"response_solve:\n{response_solve}")

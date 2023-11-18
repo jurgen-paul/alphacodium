@@ -16,7 +16,7 @@ evaluate_prev_solutions=false
 max_iterations = 1 # X iterations to try to solve the problem
 reduce_verbose = false
 use_baseline = false
-do_recording = true
+do_recording = false
 use_recording = false
 
 [self_reflect]
@@ -30,7 +30,7 @@ disable_recording_public_tests=false
 
 [ai_tests]
 number_of_ai_tests=6
-max_allowed_calls=6
+max_allowed_calls=5
 
 [etl]
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
@@ -38,7 +38,7 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [code_tester]
 tester_type="local" # local, code_contests
-sandbox=true
+sandbox=false
 calc_trace=false
 use_trace=false
 max_trace_lines=50

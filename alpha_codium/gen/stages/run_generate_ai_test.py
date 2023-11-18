@@ -18,7 +18,7 @@ async def run_generate_ai_tests(self, problem):
             recording_path = problem.get('recording_path', '')
 
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_generate_ai_tests")
-            if use_recording or True:
+            if use_recording:
                 response_problem_tests = np.load(recording_path + 'problem_ai_tests.npy', allow_pickle=True).tolist()
                 logger.info("Using recording")
                 logger.debug(f"response_solve:\n{response_problem_tests}")
