@@ -19,7 +19,7 @@ async def run_self_reflect(self, problem):
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
-            if use_recording:
+            if use_recording or True:
                 response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
                 logger.info("Using recording")
                 logger.debug(f"response_reflect:\n{response_reflect}")

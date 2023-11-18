@@ -19,7 +19,7 @@ async def run_choose_best_solution(self, problem):
             recording_path = problem.get('recording_path', '')
 
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_choose_best_solution")
-            if use_recording:
+            if use_recording or True:
                 response_best_solution = np.load(recording_path + 'best_solution.npy', allow_pickle=True) \
                     .tolist()
                 logger.info("Using recording")
