@@ -44,6 +44,13 @@ async def run_self_reflect(self, problem):
             problem['s_possible_solutions'] = response_reflect_yaml['possible_solutions']
             problem['s_possible_solutions_str'] = response_reflect.split('possible_solutions:')[1]
 
+            if get_settings().self_reflect.get('prefer_dynamic_programming', False):
+                for s in problem['s_possible_solutions']:
+                    if 'dynamic' in s['name'].lower() or 'dfs' in s['name'].lower() or 'bfs' in s['name'].lower():
+                        logger.info(f"Enforcing dynamic programming: {s['name']}")
+                        problem['s_possible_solutions'] = [s]
+                        problem['s_possible_solutions_str'] = s
+                        break
             if get_settings().self_reflect.get('randomize_best_solution', False):
                 i = problem['iteration'] % len(problem['s_possible_solutions'])
                 s = problem['s_possible_solutions'][i]
