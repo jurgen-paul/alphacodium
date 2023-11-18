@@ -47,13 +47,14 @@ class CodeContestsCompetitor:
         environment.globals["enumerate"] = enumerate
         sys_prompt = environment.from_string(self.prompt[prompt].system).render(problem_json)
         usr_prompt = environment.from_string(self.prompt[prompt].user).render(problem_json)
-        return sys_prompt, usr_prompt
+        temperature = self.prompt[prompt].temperature
+        return sys_prompt, usr_prompt, temperature
 
     async def _run(self, model, problem, prompt:str = "code_contests_prompt_reflect"):
-        system_prompt, user_prompt = self.render(problem, prompt)
+        system_prompt, user_prompt, temperature = self.render(problem, prompt)
 
         response, finish_reason = await self.ai_handler.chat_completion(
-            model=model, system=system_prompt, user=user_prompt
+            model=model, system=system_prompt, user=user_prompt, temperature=temperature
         )
         return response, finish_reason
 

@@ -36,9 +36,9 @@ async def run_self_reflect(self, problem):
             problem['response_reflect'] = response_reflect
 
             try:
-                problem['self_description'] = '- ' + '\n- '.join(response_reflect_yaml['self_reflection'])
+                problem['self_description'] = '- ' + '\n- '.join(response_reflect_yaml['self_description'])
             except:
-                problem['self_description'] = response_reflect_yaml['self_reflection']
+                problem['self_description'] = response_reflect_yaml['self_description']
 
             problem['s_possible_solutions'] = response_reflect_yaml['possible_solutions']
             problem['s_possible_solutions_str'] = response_reflect.split('possible_solutions:')[1]
