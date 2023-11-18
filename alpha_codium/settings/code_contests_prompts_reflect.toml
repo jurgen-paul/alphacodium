@@ -13,9 +13,8 @@ problem description:
 '
 
 Your goal is reflect on the problem, and describe it in your own words.
-You should also present possible solutions to the problem.
+You should also present possible solutions to the problem. Avoid simple greedy or brute force solutions.
 Make sure to fully address the problem rules and constraints.
-Double-check the solutions and test them on multiple edge cases and happy paths, including the provided input-output examples. Avoid simple greedy or brute force solutions.
 
 The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:
 '
@@ -28,7 +27,7 @@ class Solution(BaseModel):
 
 class ProblemReflection(BaseModel):
     self_description: str = Field(description="Describe the problem in your own words, in bullet points. Address the problem goal, inputs, outputs, rules, constraints, and other relevant details.")
-    possible_solutions: List[Solution] = Field(min_items=3, max_items=3, description="A list of possible solutions to the problem.")
+    possible_solutions: List[Solution] = Field(min_items=2, max_items=3, description="A list of possible solutions to the problem. Make sure each solution has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints.")
 '
 
 Example YAML output:
