@@ -4,6 +4,7 @@ import numpy as np
 import yaml
 
 from alpha_codium.config_loader import get_settings
+from alpha_codium.gen.utils import postprocess_response
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
 
@@ -31,7 +32,7 @@ async def run_self_reflect(self, problem):
             try:
                 response_reflect_yaml = yaml.safe_load(response_reflect)
             except yaml.YAMLError:
-                response_reflect = self.postprocess_response(response_reflect)  # try to include only the yaml part
+                response_reflect = postprocess_response(response_reflect)  # try to include only the yaml part
                 response_reflect_yaml = yaml.safe_load(response_reflect)
             problem['response_reflect'] = response_reflect
 

@@ -35,7 +35,7 @@ The fix should keep the solution robust, and work for all other input examples a
 The output must be a YAML object equivalent to type $FixedSolution, according to the following Pydantic definitions:
 '
 class FixedSolution(BaseModel):
-    failed_tests: List[int] = Field(description="list the input-output tests that failed. use the format {input: .., expected_output: .., code_output: ..}")
+    failed_tests: List[int] = Field(description="list the input-output tests that failed. use the format [{input: .., expected_output: .., code_output: ..}, ...]")
     what_went_wrong: str = Field(description="Explanation shortly, in words, what was the problem with the code solution, and how should it be fix. Be as specific as possible. Don't generate actuall code.")
     failed_test_fixed_flow: str = Field(description="describe shortly, in bullet points, how the fixed flow will calculate the correct output, step-by-step. be specific and elaborate. Emphasize the fixed parts, and how do they apply to getting the correct output")
 '

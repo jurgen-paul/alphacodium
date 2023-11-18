@@ -58,16 +58,6 @@ class CodeContestsCompetitor:
         )
         return response, finish_reason
 
-    def postprocess_response(self, response):
-        response = str(response)
-        if response.endswith("stop"):
-            response = response[:-4]
-        pattern = r'```\w*\n(.*?)```'
-        matches = re.findall(pattern, response, re.DOTALL)
-        if matches:
-            response = matches[0]
-        return response
-
     async def run(self, problem, iteration=0):
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
@@ -100,27 +90,6 @@ class CodeContestsCompetitor:
         except Exception as e:
             logging.error(f"Error: {e}")
             return ""
-
-    def clip_string(self, s: str, max_lines: int = None):
-        lines = s.split("\n")
-        if max_lines is not None and 0 < max_lines < len(lines):
-            logger.debug(f"clipping string from {len(lines)} to {max_lines}")
-            half_lines = int(max_lines / 2)
-            lines = (
-                    lines[:half_lines] +
-                    [f"\n.... {len(lines) - max_lines} omitted lines ....\n"] +
-                    lines[-half_lines:]
-            )
-            return "\n".join(lines)
-        else:
-            return s
-    def render_trace(self, trace_data):
-        if not trace_data:
-            return ''
-
-        max_trace_lines = get_settings().code_tester.get("max_trace_lines")
-        trace_data = self.clip_string(trace_data, max_trace_lines)
-        return trace_data
 
     def solve_problem(self, example, iteration=0):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
