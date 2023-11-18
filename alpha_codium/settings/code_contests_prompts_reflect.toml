@@ -28,7 +28,7 @@ class Solution(BaseModel):
 
 class ProblemReflection(BaseModel):
     self_description: str = Field(description="Describe the problem in your own words, in bullet points. Address the problem goal, inputs, outputs, rules, constraints, and other relevant details.")
-    possible_solutions: List[Solution] = Field(min_items=2, max_items=3, description="A list of possible solutions to the problem.")
+    possible_solutions: List[Solution] = Field(min_items=3, max_items=3, description="A list of possible solutions to the problem.")
 '
 
 Example YAML output:

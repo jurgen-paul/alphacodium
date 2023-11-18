@@ -52,7 +52,7 @@ failed_test_fixed_flow:
 
 Using the provided analysis above, you need generate a fixed solution code, that will pass all the tests.
 Additional guidelines for generating the fixed code:
-- The fixed solution code must pass all the tests, and have a reasonable runtime and memory complexity.
+- The fixed solution code must pass all the tests, and have a reasonable runtime - less than 3 seconds on a modern computer, under the problem constraints.
 - Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.
 - Make sure the new solution code generalizes to all possible input-output examples, and not only to the provided input-output examples.
 - You must divide the new solution code into small sub-functions, with meaningful names and functionality

@@ -56,7 +56,7 @@ Additional guidelines for generating the fixed code:
 - Divide the generated code into small sub-functions, with meaningful names and functionality. Keep the code simple and short.
 - The fixed code should be robust and general, and work for other input examples as well
 - Double-check the new solution code, and make sure it is correct and complete.
-- The fixed code must have a reasonable runtime and memory complexity - less than 3 seconds on a modern computer, given the problem constraints.
+- The fixed code must have a reasonable runtime - less than 3 seconds on a modern computer, given the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 
 
