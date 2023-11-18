@@ -13,7 +13,7 @@ problem description:
 '
 
 
-self reflection:
+self-reflection:
 '
 {{ self_description|trim }}
 '

@@ -26,16 +26,16 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
     path_database_backup= f'/Users/talrid/Git/alphaCodium/{split_name}_test_database_backup.json'
     log_path = '/Users/talrid/Git/alphaCodium/alpha_codium/gen/example.log'
     working_dir = '/Users/talrid/Git/alphaCodium/alpha_codium/gen'
+    get_settings().solve.reduce_verbose = True
 
     ## load database
     try:
         with open(path_database, 'r') as f:
             database = json.load(f)
-            database['test'] = OrderedDict(sorted(database['test'] .items(), key=lambda x: int(x[0])))
+            database[split_name] = OrderedDict(sorted(database[split_name] .items(), key=lambda x: int(x[0])))
     except:
         print(f"Failed to load database from {path_database}")
         database = {split_name: {}}
-    aaa=3
 
 
     for problem_number in range(0,num_problems):

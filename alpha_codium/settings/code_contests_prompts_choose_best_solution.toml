@@ -41,7 +41,7 @@ class ProblemSolution(BaseModel):
     content: str = Field(description="The content of the best solution")
     labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, two pointers,...")
     complexity: str = Field(description="The complexity of the solution.")
-    why: str = Field(description="shortly explain why is this the best solution?")
+    why: str = Field(description="Shortly explain why is this the best solution")
     flow: str = Field(description="detailed description of the flow of the solution, in bullet points")
     problem_tests: List[Test] = Field("list the input-output examples that are provided in the problem description. Sort them from easiest to hardest.")
     input_output_examples_flow: str = Field(description="describe in details how the proposed flow will lead to getting the expected output for the provided input examples")
