@@ -5,6 +5,7 @@ import numpy as np
 import yaml
 
 from alpha_codium.config_loader import get_settings
+from alpha_codium.gen.stages.run_analyze_and_fix_test_failure import run_analyze_and_fix_test_failure
 from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_tests import run_tests
@@ -17,10 +18,6 @@ logger = get_logger(__name__)
 async def run_evaluate_all_ai_tests(self, problem):
     try:
         logger.info("--iterate on all ai tests stage--")
-
-        use_recording = problem.get('use_recording', False)
-        do_recording = problem.get('do_recording', False)
-        recording_path = problem.get('recording_path', '')
 
         # evaluate ai tests
         ai_tests = problem['problem_ai_tests']
@@ -53,12 +50,9 @@ async def run_evaluate_all_ai_tests(self, problem):
                 logger.error(f"Failed to pass ai tests. trying to fix code")
                 last_code_solution = copy.deepcopy(problem['code_recent_solution'])
 
-                # run 'analyze_test_failure' stage
-                problem = await run_analyze_test_failure(self, problem, error_str, trace_str, counter)
-
-                # run 'fix_code_from_tests_failure' stage
-                problem = await run_fix_code_from_tests_failure(self, problem, error_str, trace_str)
-                actual_number_of_calls += 2
+                # run 'analyze_and_fix_test_failure' stage
+                problem = await run_analyze_and_fix_test_failure(self, problem, error_str)
+                actual_number_of_calls += 1
 
                 problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
@@ -78,7 +72,7 @@ async def run_evaluate_all_ai_tests(self, problem):
                             problem['code_recent_solution'] = last_code_solution
                             continue
 
-                    logger.info(f"Passed all ai tests after trying to fix code. using new solution")
+                    logger.info(f"Fixed current test, and passed prev tests. using new solution")
                     if test_inputs not in problem['passed_tests']['inputs']:
                         problem['passed_tests']['inputs'] += test_inputs
                         problem['passed_tests']['outputs'] += test_outputs
@@ -87,5 +81,5 @@ async def run_evaluate_all_ai_tests(self, problem):
 
         return problem
     except Exception as e:
-        logging.error(f"Error: {e}")
-        exit(-1)
+        logging.error(f"Error in 'run_evaluate_all_ai_tests': {e}")
+        return problem
