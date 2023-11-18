@@ -1,5 +1,5 @@
 [code_contests_prompt_analyze_trace]
-temperature = 0.2
+temperature = 0.3
 system = """\
 """
 user="""\
