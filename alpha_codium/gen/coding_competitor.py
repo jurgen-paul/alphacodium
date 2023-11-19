@@ -24,6 +24,7 @@ from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.gen.stages.run_evaluate_a_simple_test import run_evaluate_a_simple_test
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.gen.stages.utils import set_configurations
+from alpha_codium.gen.utils import evaluate_solution_on_subset
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.log import get_logger
 
@@ -119,15 +120,15 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
             found_solution = False
             for index_published, sol_published in enumerate(problem['solutions']['solution']):
                 logger.info(f"evaluating public solution {index_published} on private tests...")
-                test_results, test_passed_private, test_failed_private = evaluate_on_private_tests('private_tests', problem,
-                                                                                           sol_published, silent=True)
+                test_results, test_passed_private, test_failed_private, test_timeout_private\
+                    = evaluate_solution_on_subset('private_tests', problem, sol_published, silent=True)
                 logger.info(f"evaluating public solution {index_published} on generated tests...")
-                test_results, test_passed_generate, test_failed_generate = evaluate_on_private_tests('generated_tests',
-                                                                                                     problem,
-                                                                                                     sol_published,
-                                                                                                     silent=True)
-                if test_failed_private == 0 and test_failed_generate == 0 and (
-                        test_passed_private + test_passed_generate) > 0:
+                test_results, test_passed_generate, test_failed_generate, test_timeout_generate = (
+                    evaluate_solution_on_subset('generated_tests', problem, sol_published, silent=True))
+
+
+                if (test_failed_private == test_failed_generate ==test_timeout_private == test_timeout_generate == 0) \
+                        and test_passed_private + test_passed_generate> 0:
                     logger.info(f"sol_published index {index_published} passed all tests:\n{sol_published}")
                     found_solution = True
                     break
@@ -152,12 +153,13 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
         solution = solver.solve_problem(problem, iteration)
         logger.info(f"evaluating solution on private tests...")
-        test_results, test_passed, test_failed_generate = evaluate_on_private_tests('private_tests', problem, solution, silent=True)
+        test_results, test_passed, test_failed_generate, test_timeout_generate = evaluate_on_private_tests('private_tests', problem, solution, silent=True)
 
         logger.info(f"evaluating solution on generated tests...")
-        test_results, test_passed, test_failed_private = evaluate_on_private_tests('generated_tests', problem, solution, silent=True)
+        test_results, test_passed, test_failed_private, test_timeout_private = evaluate_on_private_tests('generated_tests', problem, solution, silent=True)
 
-        logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}")
+        logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
+                    f"test_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}")
 
     return solution, test_results
 
@@ -176,20 +178,24 @@ def evaluate_on_private_tests(evaluation_test_type, problem, solution, silent=Tr
 
     test_passed = 0
     test_failed = 0
-
+    test_timeout = 0
 
     if not test_results[1]:
         logger.info("No tests were run")
         return test_results, 0, 0
 
     for test in test_results[1].test_results:
-        if not test.passed:
+        if test.program_status.name=='kTimeout':
+            test_timeout += 1
+        elif not test.passed:
             test_failed += 1
         else:
             test_passed += 1
+
+
     logger.info("=====================================")
-    logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
+    logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}, test_timeout: {test_timeout}")
     logger.info("=====================================")
 
-    return test_results, test_passed, test_failed
+    return test_results, test_passed, test_failed, test_timeout
 

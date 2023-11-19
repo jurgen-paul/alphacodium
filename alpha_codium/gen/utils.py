@@ -46,31 +46,37 @@ def evaluate_solution_on_subset(evaluation_test_type, problem, solution, silent=
     # evaluate solution
     test_results = None
     if evaluation_test_type:
-        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution, silent=silent)
+        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution,
+                                     silent=silent)
 
     if test_results[1] == []:
         logger.info("=====================================")
         logger.info("No tests")
         logger.info("=====================================")
-        return test_results, 0, 0
-    if test_results[1].compilation_result.program_status.name == 'kTimeout':
+        return test_results, 0, 0, 0
+
+    if (hasattr(test_results[1], 'compilation_result') and
+            test_results[1].compilation_result.program_status.name == 'kTimeout'):
         logger.info("=====================================")
         logger.info("Timeout")
         logger.info("=====================================")
-        return test_results, 0, len(test_results[0])
+        return test_results, 0, 0, len(test_results[0])
 
     test_passed = 0
     test_failed = 0
+    test_timeout = 0
     if not problem[evaluation_test_type]['input']:
         logger.info(f"No {evaluation_test_type} for this problem")
     else:
         for test in test_results[1].test_results:
-            if not test.passed:
+            if (hasattr(test, 'program_status') and test.program_status.name == 'kTimeout'):
+                test_timeout += 1
+            elif not test.passed:
                 test_failed += 1
             else:
                 test_passed += 1
         logger.info("=====================================")
-        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}")
+        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}, test_timeout: {test_timeout}")
         logger.info("=====================================")
 
-    return test_results, test_passed, test_failed
+    return test_results, test_passed, test_failed, test_timeout

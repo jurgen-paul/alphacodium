@@ -65,15 +65,18 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
                 found_solution = False
                 for index_published, sol_published in enumerate(problem['solutions']['solution']):
                     logger.info(f"evaluating public solution {index_published} on private tests...")
-                    test_results, test_passed_private, test_failed_private = evaluate_solution_on_subset('private_tests', problem,
-                                                                                                         sol_published, silent=True)
+                    test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset(
+                        'private_tests', problem,
+                        sol_published, silent=True)
                     logger.info(f"evaluating public solution {index_published} on generated tests...")
-                    test_results, test_passed_generate, test_failed_generate = evaluate_solution_on_subset('generated_tests',
-                                                                                                           problem,
-                                                                                                           sol_published,
-                                                                                                           silent=True)
-                    if test_failed_private == 0 and test_failed_generate == 0 and (
-                            test_passed_private + test_passed_generate) > 0:
+                    test_results, test_passed_generate, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset(
+                        'generated_tests',
+                        problem,
+                        sol_published,
+                        silent=True)
+                    if (
+                            test_failed_private == test_failed_generate == test_timeout_private == test_timeout_generate == 0) \
+                            and test_passed_private + test_passed_generate > 0:
                         logger.info(f"sol_published index {index_published} passed all tests:\n{sol_published}")
                         found_solution = True
                         problem_database[problem_number]['public_solution'] = {}
@@ -115,26 +118,29 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
                 logger.info(f"codium failed to solve problem {problem_number} in iteration {iteration}")
                 continue
             logger.info(f"evaluating solution on public tests...")
-            test_results, test_passed_public, test_failed_public = evaluate_solution_on_subset('public_tests', problem, solution, silent=True)
+            test_results, test_passed_public, test_failed_public, test_timeout_public = evaluate_solution_on_subset('public_tests', problem, solution, silent=True)
 
             logger.info(f"evaluating solution on private tests...")
-            test_results, test_passed_private, test_failed_private = evaluate_solution_on_subset('private_tests', problem, solution, silent=True)
+            test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset('private_tests', problem, solution, silent=True)
 
             logger.info(f"evaluating solution on generated tests...")
-            test_results, test_passed_generate, test_failed_generate = evaluate_solution_on_subset('generated_tests', problem, solution, silent=True)
+            test_results, test_passed_generate, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset('generated_tests', problem, solution, silent=True)
 
 
-            logger.info(f"\ntest_passed_public: {test_passed_public}, test_failed_public: {test_failed_public}\n"
-                        f"test_passed_private: {test_passed_private}, test_failed_private: {test_failed_private}\n"
-                        f"test_passed_generate: {test_passed_generate}, test_failed_generate: {test_failed_generate}\n")
+            logger.info(f"\ntest_passed_public: {test_passed_public}, test_failed_public: {test_failed_public}, test_timeout_public: {test_timeout_public}\n"
+                        f"test_passed_private: {test_passed_private}, test_failed_private: {test_failed_private}, test_timeout_private: {test_timeout_private}\n"
+                        f"test_passed_generate: {test_passed_generate}, test_failed_generate: {test_failed_generate}, test_timeout_generate: {test_timeout_generate}\n")
 
             problem_database[problem_number]['codium'][it_str]['solution'] = solution
             problem_database[problem_number]['codium'][it_str]['test_passed_private'] = test_passed_private
             problem_database[problem_number]['codium'][it_str]['test_failed_private'] = test_failed_private
+            problem_database[problem_number]['codium'][it_str]['test_timeout_private'] = test_timeout_private
             problem_database[problem_number]['codium'][it_str]['test_passed_generate'] = test_passed_generate
             problem_database[problem_number]['codium'][it_str]['test_failed_generate'] = test_failed_generate
+            problem_database[problem_number]['codium'][it_str]['test_timeout_generate'] = test_timeout_generate
             problem_database[problem_number]['codium'][it_str]['test_passed_public'] = test_passed_public
             problem_database[problem_number]['codium'][it_str]['test_failed_public'] = test_failed_public
+            problem_database[problem_number]['codium'][it_str]['test_timeout_public'] = test_timeout_public
             with open(log_path, 'r') as f:
                 log = f.read()
                 problem_database[problem_number]['codium'][it_str]['log'] = log
