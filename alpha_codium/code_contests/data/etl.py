@@ -10,16 +10,19 @@ def etl(
     train_sample=0.1,
     translate_references=True,
     filter_languages=["PYTHON3"],  # noqa: B006
+    disable_filter_languages=False,
 ):
     cc = CodeContestDataProvider(source)
     ds = cc.dataset
-    if train_sample < 1:
+    if train_sample == 0:
+        del ds["train"]
+    elif train_sample < 1:
         ds["train"] = CodeContestDataProvider.sample(ds["train"], fraction=train_sample)
 
     if translate_references:
         ds = cc.translate_references(ds)
 
-    if filter_languages and len(filter_languages):
+    if (not disable_filter_languages) and filter_languages and len(filter_languages):
         ds = cc.filter_solution_by_languages(ds=ds, languages=filter_languages)
 
     if output_dataset_name:
@@ -32,3 +35,13 @@ def etl(
 
 if __name__ == "__main__":
     etl(output_dataset_name="train_sample_python_only")
+
+
+# data
+# etl
+# --source
+# /Users/talrid/Desktop/code_contest_dataset/original
+# --output_dataset_name
+# valid_and_test
+# --train_sample=0
+# --filter_languages=''

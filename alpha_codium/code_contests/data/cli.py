@@ -34,9 +34,11 @@ def data():
     show_default=True,
     required=False,
 )
+@click.option("--disable_filter_languages", default=False, show_default=True, required=False)
+
 @click.option("--train_sample", default=0.1, show_default=True, required=False)
 def etl_command(
-    source, output_dataset_name, train_sample, translate_references, filter_languages
+    source, output_dataset_name, train_sample, translate_references, filter_languages, disable_filter_languages,
 ):
     etl(
         source,
@@ -44,4 +46,5 @@ def etl_command(
         train_sample,
         translate_references,
         filter_languages,
+        disable_filter_languages,
     )
