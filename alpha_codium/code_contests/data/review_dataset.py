@@ -78,7 +78,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                 else:
                     if ds[key_int]['multiple_solutions']:
                         passed_current=-1
-                        break
+                        # break
                     else:
                         passed_current = 0
             if passed_current==1:
