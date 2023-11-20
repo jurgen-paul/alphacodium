@@ -1,7 +1,7 @@
 [code_contests_prompts_solve]
-temperature = 0.2
+temperature = 0.3
 system= """\
-- You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
+- You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 """
 user="""\
 You are given a code contest problem, self-reflection on the problem, and a proposed solution:
@@ -13,30 +13,29 @@ problem description:
 '
 
 
-self-reflection:
+self-reflection on the problem:
 '
 {{ self_description|trim }}
 '
 
 
-proposed solution:
+proposed solution to implement:
 '
 {{ s_best_solution }}
 '
 
 
-Your goal is to generate a valid Python code that correctly solves the problem.
+Your goal is to generate a valid Python code that correctly solves the problem using the proposed solution.
 
 guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
-- The generated code must have a reasonable runtime - less than 3 seconds on a modern computer, given the problem constraints.
-- Always double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
+- Double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 - Make sure to follow the 'flow' and 'input_output_examples_flow' sections.
 
 The code output must follow this structure:
-````
+```
 def f1(...):
     ...
     return ...
