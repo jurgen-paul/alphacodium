@@ -39,15 +39,15 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
 
     # iterate on problems
     for problem_number in range(0, num_problems):
+        # skip if already ran
+        if str(problem_number) in database[split_name]:
+            print(f"problem_number {problem_number} already ran")
+            continue
+
         shutil.rmtree(log_path, ignore_errors=True)
         os.chdir(working_dir)
         setup_logger()
         logger.info(f"problem_number: {problem_number}")
-
-        # skip if already ran
-        if str(problem_number) in database[split_name]:
-            logger.info(f"problem_number {problem_number} already ran")
-            continue
 
         problem_name = data_provider.dataset[split_name][int(problem_number)]['name']
         logger.info(f"problem_name: {problem_name}")

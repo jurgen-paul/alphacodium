@@ -204,7 +204,7 @@ def compare_func(a, b):
             b = float(b)
             d = np.divide(np.abs(a - b), max(1.0, np.abs(b)))
             if d <= delta:
-                logger.info(f"delta={delta} a={a} b={b} d={d}")
+                # logger.info(f"delta={delta} a={a} b={b} d={d}")
                 return True
         except:
             return False

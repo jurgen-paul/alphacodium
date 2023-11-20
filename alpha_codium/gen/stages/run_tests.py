@@ -56,7 +56,7 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
                 error_str += f"test input:\n{test_inputs[i]}\n" \
                              f"expected output:\n{t.expected_output}\n" \
                              f"code output:\n{t.actual_output}\n" \
-                             f"====================\n====================\n"
+                             # f"====================\n====================\n"
 
                 trace_str += f"trace:\n{render_trace(t.trace)}\n" \
                              f"====================\n====================\n"
