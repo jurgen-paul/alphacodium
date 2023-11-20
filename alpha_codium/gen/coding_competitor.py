@@ -145,21 +145,16 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
         # return None, None
 
     solver = CodeContestsCompetitor()
-    setting = get_settings()
-    for iteration in range(setting.get("solve.max_iterations", 1)):
-        # run policy
-        if iteration > 0:
-            setting.self_reflect.randomize_best_solution = True
+    iteration = 0
+    solution = solver.solve_problem(problem, iteration)
+    logger.info(f"evaluating solution on private tests...")
+    test_results, test_passed, test_failed_generate, test_timeout_generate = evaluate_on_private_tests('private_tests', problem, solution, silent=True)
 
-        solution = solver.solve_problem(problem, iteration)
-        logger.info(f"evaluating solution on private tests...")
-        test_results, test_passed, test_failed_generate, test_timeout_generate = evaluate_on_private_tests('private_tests', problem, solution, silent=True)
+    logger.info(f"evaluating solution on generated tests...")
+    test_results, test_passed, test_failed_private, test_timeout_private = evaluate_on_private_tests('generated_tests', problem, solution, silent=True)
 
-        logger.info(f"evaluating solution on generated tests...")
-        test_results, test_passed, test_failed_private, test_timeout_private = evaluate_on_private_tests('generated_tests', problem, solution, silent=True)
-
-        logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
-                    f"test_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}")
+    logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
+                f"test_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}")
 
     return solution, test_results
 

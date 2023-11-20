@@ -30,6 +30,7 @@ However, when running the following input example, the Python code above failed 
 
 Your goal is to analyze the code and the error, and propose a fix so the code will produce the expected output for the provided input example.
 The fix should keep the solution robust, and work for all other input examples as well.
+Make sure the fix has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints.
 
 
 The output must be a YAML object equivalent to type $FixedSolution, according to the following Pydantic definitions:

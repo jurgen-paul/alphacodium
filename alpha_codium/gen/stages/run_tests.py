@@ -26,7 +26,8 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
         all_passed = True
         non_empty_output = True
         tests_timeout = False
-        if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
+        if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout' or\
+                str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
             tests_timeout = True
             all_passed = False
             for i, t in enumerate(results.test_results):
