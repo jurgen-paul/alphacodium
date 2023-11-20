@@ -37,12 +37,14 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
         print(f"Failed to load database from {path_database}")
         database = {split_name: {}}
 
-
-    for problem_number in range(0,num_problems):
+    # iterate on problems
+    for problem_number in range(0, num_problems):
         shutil.rmtree(log_path, ignore_errors=True)
         os.chdir(working_dir)
         setup_logger()
         logger.info(f"problem_number: {problem_number}")
+
+        # skip if already ran
         if str(problem_number) in database[split_name]:
             logger.info(f"problem_number {problem_number} already ran")
             continue
@@ -54,9 +56,9 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
         if not problem['private_tests']['input']:
             logger.info("No private tests for this problem")
 
-        problem_database={problem_number: {}}
+        problem_database = {problem_number: {}}
 
-        # evaluate prev solutions
+        # evaluate prev public solutions first
         evaluate_prev_solutions = get_settings().get("dataset.evaluate_prev_solutions", False)
         if evaluate_prev_solutions:
             try:
@@ -147,8 +149,9 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
                 os.makedirs(f'/Users/talrid/Git/alphaCodium/{split_name}_logs/', exist_ok=True)
                 shutil.copyfile(log_path, f'/Users/talrid/Git/alphaCodium/{split_name}_logs/test_{problem_number}_{it_str}.log')
 
-            if test_failed_private == 0 and test_failed_generate == 0 and (
-                    test_passed_private + test_passed_generate) > 0:
+            if (test_failed_private == 0 and test_failed_generate == 0 and
+                    test_timeout_private == 0 and test_timeout_generate == 0 and
+                    (test_passed_private + test_passed_generate) > 0):
                 logger.info(f"codium solved problem {problem_number} in iteration {iteration}")
                 break
             else:

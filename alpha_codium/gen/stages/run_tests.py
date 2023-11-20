@@ -26,8 +26,7 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
         all_passed = True
         non_empty_output = True
         tests_timeout = False
-        if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout' or\
-                str(results.test_results[0].program_status) == 'ProgramStatus.kTimeout':
+        if str(results.compilation_result.program_status) == 'ProgramStatus.kTimeout':
             tests_timeout = True
             all_passed = False
             for i, t in enumerate(results.test_results):
@@ -48,6 +47,12 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
             error_str = ""
             trace_str = ""
             for i, t in enumerate(results.test_results):
+                if str(t.program_status) == 'ProgramStatus.kTimeout':
+                    t.actual_output = 'Timeout, took too long to run'
+                    t.passed = False
+                elif str(t.program_status) == 'ProgramStatus.kFailed':
+                    t.actual_output = t.sandbox_result
+                    t.passed = False
                 error_str += f"test input:\n{test_inputs[i]}\n" \
                              f"expected output:\n{t.expected_output}\n" \
                              f"code output:\n{t.actual_output}\n" \
