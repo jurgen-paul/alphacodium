@@ -21,7 +21,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
     output_dataset_name = 'valid_and_test_processed'
     base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
     output_path = os.path.join(base_path, output_dataset_name)
-    if True:
+    if False:
         data_provider = CodeContestDataProvider(dataset_location=dataset_name)
         for split_name in ['valid', 'test']:
             multiple_solutions_list =np.array([False] * len(data_provider.dataset[split_name]))
@@ -71,7 +71,14 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                 test_failed_private = v['test_failed_private']
                 test_passed_generate = v['test_passed_generate']
                 test_passed_private = v['test_passed_private']
-                if (test_failed_generate + test_failed_private) == 0 and (test_passed_generate + test_passed_private) > 0:
+                if 'test_timeout_generate' in v:
+                    test_timeout_generate = v['test_timeout_generate']
+                    test_timeout_private = v['test_timeout_private']
+                else:
+                    test_timeout_generate = 0
+                    test_timeout_private = 0
+                if ((test_failed_generate + test_timeout_generate + test_failed_private + test_timeout_private) == 0 and
+                        (test_passed_generate + test_passed_private) > 0):
                     print(f"problem {key_int} passed all tests")
                     passed_current=1
                     break

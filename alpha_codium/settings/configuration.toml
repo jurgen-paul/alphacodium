@@ -30,7 +30,7 @@ max_counter_public_tests=2
 disable_recording_public_tests=false
 
 [ai_tests]
-number_of_ai_tests=6
+number_of_ai_tests=8
 max_allowed_calls=5
 
 [etl]
