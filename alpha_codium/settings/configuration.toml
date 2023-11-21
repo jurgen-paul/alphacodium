@@ -27,7 +27,7 @@ prefer_dynamic_programming=false
 [public_tests]
 max_allowed_calls=6
 max_counter_public_tests=2
-disable_recording_public_tests=false
+disable_recording_public_tests=true
 
 [ai_tests]
 number_of_ai_tests=8
