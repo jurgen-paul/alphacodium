@@ -19,6 +19,12 @@ async def run_self_reflect(self, problem):
             use_recording = problem.get('use_recording', False)
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
+
+            if get_settings().self_reflect.get('randomize_best_solution', False):
+                problem['min_num_of_solutions'] = 2
+            else:
+                problem['min_num_of_solutions'] = 3
+
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
             if use_recording:
                 response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
