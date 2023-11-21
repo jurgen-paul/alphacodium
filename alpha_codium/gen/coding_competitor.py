@@ -153,7 +153,7 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     logger.info(f"evaluating solution on generated tests...")
     test_results, test_passed, test_failed_private, test_timeout_private = evaluate_on_private_tests('generated_tests', problem, solution, silent=True)
 
-    logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
+    logger.info(f"test_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}\n"
                 f"test_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}")
 
     return solution, test_results

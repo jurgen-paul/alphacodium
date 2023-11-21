@@ -16,7 +16,7 @@ evaluate_prev_solutions=true
 max_iterations = 3 # X iterations to try to solve the problem
 reduce_verbose = false
 use_baseline = false
-do_recording = false
+do_recording = true
 use_recording = false
 
 [self_reflect]
@@ -39,6 +39,7 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [code_tester]
 tester_type="local" # local, code_contests
+order_matters=true
 sandbox=false
 calc_trace=false
 use_trace=false

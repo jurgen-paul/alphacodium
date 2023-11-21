@@ -176,6 +176,7 @@ def execute_inner(check_program, single_input, snoop, timeout, input_stream, glo
 
 def compare_func(a, b):
     delta = get_settings().code_tester.delta
+    order_matters = get_settings().code_tester.order_matters
     if a:
         a = a.strip().lower()
     if b:
@@ -185,18 +186,19 @@ def compare_func(a, b):
     elif a.replace(" ", "") == b.replace(" ", ""):
         return True
 
-    try:  # multi-answer, order-doesnt-matter-per-answer comparison
-        a_multi = a.replace('\n\n\n', '\n').replace('\n\n', '\n').strip()
-        b_multi = b.replace('\n\n\n', '\n').replace('\n\n', '\n').strip()
-        if a_multi == b_multi:
-            return True
-        else:
-            a_multi_split = a_multi.split('\n')
-            b_multi_split = b_multi.split('\n')
-            if set(a_multi_split) == set(b_multi_split):
+    if not order_matters:
+        try:  # multi-answer, order-doesnt-matter-per-answer comparison
+            a_multi = a.replace('\n\n\n', '\n').replace('\n\n', '\n').strip()
+            b_multi = b.replace('\n\n\n', '\n').replace('\n\n', '\n').strip()
+            if a_multi == b_multi:
                 return True
-    except:
-        pass
+            else:
+                a_multi_split = a_multi.split('\n')
+                b_multi_split = b_multi.split('\n')
+                if set(a_multi_split) == set(b_multi_split):
+                    return True
+        except:
+            pass
 
     if delta:
         try:
