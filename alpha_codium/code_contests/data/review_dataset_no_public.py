@@ -46,30 +46,55 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                 p['solutions']['language'] = [p['solutions']['language'][i[0]] for i in inds_sorted]
             data_provider.dataset[split_name]=data_provider.dataset[split_name].add_column('multiple_solutions', multiple_solutions_list)
 
+        # will add 'is_valid_test' field to all problems
+        for split_name in ['valid', 'test']:
+            ds_dict = data_provider.dataset[split_name].to_dict()
+            ds_dict['public_tests'][0]['is_valid_test'] = None
+            ds_dict['private_tests'][0]['is_valid_test'] = None
+            ds_dict['generated_tests'][0]['is_valid_test'] = None
+            data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
 
-        # problem 3 valid
+        # problem 3 validation fix generated tests
         ind_problem_valid = 3
-        dataset_valid_dict = data_provider.dataset['valid'].to_dict()
+        split_name = 'valid'
+        dataset_dict = data_provider.dataset[split_name].to_dict()
         if True:
-            p_3 = data_provider.dataset['valid'][ind_problem_valid]
-            p_3_tests = p_3['generated_tests']
-            is_valid_test = [True] * len(p_3_tests['input'])
+            p_3 = data_provider.dataset[split_name][ind_problem_valid]
+            p_11_private_tests = p_3['generated_tests']
+            is_valid_test = [True] * len(p_11_private_tests['input'])
             count_false = 0
             count_correct = 0
-            for i, input in enumerate(p_3_tests['input']):
+            for i, input in enumerate(p_11_private_tests['input']):
                 n, m, x = input.splitlines()[0].split()
                 n = int(n)
                 m = int(m)
                 a = input.splitlines()[1].split()
                 b = input.splitlines()[2].split()
-                if (n != len(a) or m != len(b)):
+                if (n != len(a) or m != len(b)):  # according to the description, they should be equal
                     count_false += 1
                     is_valid_test[i] = False
                 else:
                     count_correct += 1
-            print(f"count_false: {count_false}, count_correct: {count_correct}")
-            dataset_valid_dict['generated_tests'][ind_problem_valid]['is_valid_test'] = is_valid_test
-            data_provider.dataset['valid'] = Dataset.from_dict(dataset_valid_dict)
+            dataset_dict['generated_tests'][ind_problem_valid]['is_valid_test'] = is_valid_test
+            data_provider.dataset[split_name] = Dataset.from_dict(dataset_dict)
+
+        # ind_problem_test = 11
+        # split_name = 'test'
+        # dataset_dict = data_provider.dataset[split_name].to_dict()
+        # if True:
+        #     p_11 = data_provider.dataset[split_name][ind_problem_test]
+        #     p_11_private_tests = p_11['private_tests']
+        #     is_valid_test = [True] * len(p_11_private_tests['input'])
+        #     for i,p in enumerate(p_11_private_tests['input']):
+        #         n=int(p.splitlines()[0].split()[0])
+        #         a_n_list = p.splitlines()[1].split()
+        #         if len(a_n_list)!=n:
+        #             is_valid_test[i]=False
+        #     dataset_dict['private_tests'][ind_problem_test]['is_valid_test'] = is_valid_test
+        #     data_provider.dataset[split_name] = Dataset.from_dict(dataset_dict)
+
+
+            aaa=3
 
         data_provider.dataset.save_to_disk(output_path)
 
