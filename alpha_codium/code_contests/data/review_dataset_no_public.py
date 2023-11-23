@@ -108,14 +108,14 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
         database_solutions[split_name] = OrderedDict(sorted(database_solutions[split_name] .items(), key=lambda x: int(x[0])))
 
     for sol in database_solutions[split_name]:
-        if int(sol)<=25:
+        if int(sol)<=50:
             continue
         try:
             key_str = sol
             key_int = int(key_str)
             value = database_solutions[split_name][sol]
-            # if value['public_solution']:
-            #     continue
+            if value['public_solution']:
+                continue
 
             possible_bad_generated_tests = False
             passed_problem = False
