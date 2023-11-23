@@ -319,6 +319,12 @@ def eval_solution(evaluation_test_type: str = "private_tests",
         test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
     if not test_outputs:
         test_outputs = example.get(evaluation_test_type).get("output") if example.get(evaluation_test_type) else None
+
+    is_valid_test_list = example.get(evaluation_test_type).get("is_valid_test") if example.get(
+        evaluation_test_type) else None
+    if is_valid_test_list:
+        test_inputs = [test_inputs[i] for i, is_valid in enumerate(is_valid_test_list) if is_valid]
+        test_outputs = [test_outputs[i] for i, is_valid in enumerate(is_valid_test_list) if is_valid]
     if test_inputs and test_outputs:
         test_runner = PythonTestsRunner.factory(get_settings().code_tester.tester_type)
         _, _, results = test_runner.run_tests(
