@@ -8,28 +8,26 @@ user="""\
 
 you are given a code contest problem, self-reflection on the problem, and a possible Python code solution to the problem:
 
-=====================================
+
 problem description:
-'
+=============
 {{ description|trim }}
-'
+=============
 
 
 self reflection on the problem:
-'
+=============
 {{ self_description|trim }}
-'
+=============
 
 
 A solution code generated for the problem:
-'
+=============
 {{ code_recent_solution|trim }}
-'
-=====================================
+=============
 
 
 However, when running the input-output example test, the code failed to produce the expected output:
-
 =====================================
 Error message when running the 'solution code':
 '
@@ -38,21 +36,20 @@ Error message when running the 'solution code':
 =====================================
 
 
-We analyzed the error message, and concluded that the following went wrong:
+We analyzed the error message, and concluded the following:
 
 what went wrong:
-'
+=============
 {{ what_went_wrong|trim }}
-'
+=============
 
 fixed_flow:
-'
+=============
 {{ fixed_flow|trim }}
-'
-=====================================
+=============
 
 
-Using the provided analysis above, you need generate a fixed solution code, that will pass all the tests.
+Using the analysis above, you need generate a fixed solution code, that will pass all the tests.
 Additional guidelines for generating the fixed code:
 - The fixed solution code must pass all the tests, and have a reasonable runtime - less than 3 seconds on a modern computer, under the problem constraints.
 - Always double-check the new solution code, and test it on multiple edge cases, and the provided input-output examples.

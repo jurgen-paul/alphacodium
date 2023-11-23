@@ -4,28 +4,28 @@ system = """\
 """
 
 User="""\
-You are given a code contest problem, self-reflection on the problem, and a list of possible solutions.
+You are given a code contest problem and a self-reflection on the problem:
 
 
 problem description:
-'
+=============
 {{description|trim}}
-'
+=============
 
 
 self-reflection on the problem:
-'
+=============
 {{ self_description|trim }}
-'
+=============
 
 
-possible solutions:
-'
+Here is a list of possible solutions to the problem:
+=============
 {{ s_possible_solutions_str|trim }}
-'
+=============
 
 
-Using these inputs, you goal is to choose the best solution to the code contest problem.
+Using the inputs above, you goal is to choose the best solution to the code contest problem.
 Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way.
 Make sure the chosen solution has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints.
 

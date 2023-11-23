@@ -8,21 +8,21 @@ You are given a code contest problem, self-reflection on the problem, and a poss
 
 
 problem description:
-'
+=============
 {{description|trim}}
-'
+=============
 
 
-self-reflection:
-'
+self-reflection on the problem:
+=============
 {{ self_description|trim }}
-'
+=============
 
 
 possible solution:
-'
+=============
 {{ s_best_solution }}
-'
+=============
 
 
 Your task is to generate additional {{ number_of_ai_tests }} diverse input-output examples for the problem.

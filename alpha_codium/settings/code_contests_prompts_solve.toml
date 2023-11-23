@@ -4,25 +4,23 @@ system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 """
 user="""\
-You are given a code contest problem, self-reflection on the problem, and a proposed solution:
-
+You are given a code contest problem and a self-reflection on the problem:
 
 problem description:
-'
+=============
 {{description}}
-'
-
+=============
 
 self-reflection on the problem:
-'
+=============
 {{ self_description|trim }}
-'
+=============
 
 
-proposed solution to implement:
-'
+Here is a proposed solution to implement:
+=============
 {{ s_best_solution }}
-'
+=============
 
 
 Your goal is to generate a valid Python code that correctly solves the problem using the proposed solution.

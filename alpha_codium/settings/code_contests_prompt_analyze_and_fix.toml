@@ -9,23 +9,24 @@ user="""\
 You are given a code contest problem:
 
 problem description:
-'
+=============
 {{ description|trim }}
-'
+=============
+
 
 A solution code generated for the problem:
-'
+=============
 {{ code_recent_solution|trim }}
-'
+=============
+
 
 However, when running the input-output example test, the code failed to produce the expected output:
-
-=====================================
+=============
 Error message when running the 'solution code':
 '
 {{ error_str|trim }}
 '
-=====================================
+=============
 
 
 Using all the information above, your goal is generate a fixed code solution, that will pass the test.
