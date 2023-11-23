@@ -23,7 +23,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
     output_dataset_name = 'valid_and_test_processed'
     base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
     output_path = os.path.join(base_path, output_dataset_name)
-    if True:
+    if False:
         data_provider = CodeContestDataProvider(dataset_location=dataset_name)
         for split_name in ['valid', 'test']:
             multiple_solutions_list =np.array([False] * len(data_provider.dataset[split_name]))
@@ -108,6 +108,8 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
         database_solutions[split_name] = OrderedDict(sorted(database_solutions[split_name] .items(), key=lambda x: int(x[0])))
 
     for sol in database_solutions[split_name]:
+        if int(sol)<=25:
+            continue
         try:
             key_str = sol
             key_int = int(key_str)
@@ -115,13 +117,12 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
             # if value['public_solution']:
             #     continue
 
-
             possible_bad_generated_tests = False
             passed_problem = False
-            iter=-1
+            iter = -1
             min_errors = 200
-            for i,v in enumerate(value['codium'].values()):
-                if list(value['codium'].keys())[i]=='simulation':
+            for i, v in enumerate(value['codium'].values()):
+                if list(value['codium'].keys())[i] == 'simulation':
                     continue
                 if not v:
                     continue
@@ -148,7 +149,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                             passed_problem = True
                             break
 
-                if test_failed_public== 0 and test_failed_private == 0 and test_failed_generate > 0:
+                if test_failed_public == 0 and test_failed_private == 0 and test_failed_generate > 0:
                     if min_errors > test_failed_generate:
                         possible_bad_generated_tests = True
                         min_errors = test_failed_generate
@@ -175,6 +176,10 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
 
                 test_results, test_passed_private, test_failed_private, test_timeout_private \
                     = evaluate_solution_on_subset('generated_tests', ds[key_int], v['solution'], silent=False)
+                test_results, test_passed_private, test_failed_private, test_timeout_private \
+                    = evaluate_solution_on_subset('private_tests', ds[key_int], v['solution'], silent=True)
+                problem = ds[key_int]
+                problem_description = ds[key_int]['description']
                 exit(-1)
         except Exception as e:
             print(f"Error: {e}")
