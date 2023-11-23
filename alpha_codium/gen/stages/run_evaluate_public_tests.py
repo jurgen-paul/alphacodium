@@ -26,6 +26,8 @@ async def run_evaluate_public_tests(self, problem):
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
             MAX_ALLOWED_FIXES_COUNTER = get_settings().public_tests.get("max_counter_public_tests", 3)
+            if len(problem['public_tests']['input']) == 1:
+                MAX_ALLOWED_FIXES_COUNTER +=1
 
             if use_recording:
                 code_recent_solution = np.load(recording_path + 'problem_run_public_tests.npy', allow_pickle=True).tolist()

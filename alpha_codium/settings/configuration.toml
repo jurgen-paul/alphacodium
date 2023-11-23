@@ -16,7 +16,7 @@ evaluate_prev_solutions=true
 max_iterations = 3 # X iterations to try to solve the problem
 reduce_verbose = false
 use_baseline = false
-do_recording = true
+do_recording = false
 use_recording = false
 
 [self_reflect]
