@@ -5,9 +5,14 @@ system="""\
 - The fixed code should be robust and general, and work for other input examples as well.
 """
 user="""\
+{%- if present_short_description %}
+you are given a code contest problem:
+=============
+{{ self_description|trim }}
+=============
 
-you are given a code contest problem, self-reflection on the problem, and a possible Python code solution to the problem:
-
+{%- else %}
+you are given a code contest problem and a self-reflection on the problem:
 
 problem description:
 =============
@@ -15,6 +20,11 @@ problem description:
 =============
 
 
+self reflection on the problem:
+=============
+{{ self_description|trim }}
+=============
+{% endif %}
 
 A previous solution code generated for the problem:
 =============

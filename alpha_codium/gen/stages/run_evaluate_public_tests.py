@@ -40,6 +40,7 @@ async def run_evaluate_public_tests(self, problem):
                 all_passed_public = True
                 max_allowed_calls = get_settings().get("public_tests.max_allowed_calls", 10)
                 actual_number_of_calls = 0
+                problem['present_short_description'] = False
                 for test_inputs, test_outputs in zip(test_inputs_all, test_outputs_all):
                     if not isinstance(test_inputs, list):
                         test_inputs = [test_inputs]
@@ -52,7 +53,10 @@ async def run_evaluate_public_tests(self, problem):
                     best_solution = copy.deepcopy(problem['code_recent_solution'])
                     best_d = float('inf')
                     while not passed_specific_test:
-
+                        if counter > 2:
+                            problem['present_short_description'] = True
+                        else:
+                            problem['present_short_description'] = False
                         # run the solution on the tests
                         problem, passed_specific_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                             = run_tests(self, problem, counter, test_inputs, test_outputs)

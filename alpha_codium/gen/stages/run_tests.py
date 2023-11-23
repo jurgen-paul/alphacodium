@@ -32,7 +32,10 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
             for i, t in enumerate(results.test_results):
                 error_str += f"test input:\n{test_inputs[i]}\n" \
                              f"expected output:\n{t.expected_output}\n"
-                error_str += f"code output: 'Timeout, took too long to run'\n"
+                if t.actual_output:
+                    error_str += f"code output:\n{t.actual_output}\n'Timeout, took too long to run next test'\n"
+                else:
+                    error_str += f"code output:\n'Timeout, took too long to run the test'\n"
         elif str(results.test_results[0].program_status) == 'ProgramStatus.kFailed':
             logger.error("failed to run solution")
             error_str = results.test_results[0].sandbox_result
@@ -48,7 +51,10 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
             trace_str = ""
             for i, t in enumerate(results.test_results):
                 if str(t.program_status) == 'ProgramStatus.kTimeout':
-                    t.actual_output = 'Timeout, took too long to run'
+                    if t.actual_output.strip():
+                        t.actual_output += "\nTimeout, took too long to run the next test"
+                    else:
+                        t.actual_output = 'Timeout, took too long to run'
                     t.passed = False
                 elif str(t.program_status) == 'ProgramStatus.kFailed':
                     t.actual_output = t.sandbox_result
