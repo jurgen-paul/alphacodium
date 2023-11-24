@@ -1,0 +1,151 @@
+import asyncio
+import copy
+import json
+import os
+import shutil
+from collections import OrderedDict
+import numpy as np
+from datasets import Dataset
+
+from alpha_codium.code_contests.data.provider import CodeContestDataProvider
+from alpha_codium.config_loader import get_settings
+from alpha_codium.log import get_logger, setup_logger
+from alpha_codium.gen.utils import evaluate_solution_on_subset
+logger = get_logger(__name__)
+
+
+
+
+def preapare_and_clean_dataset(dataset_name='valid_and_test'):
+
+    # process base dataset
+    output_dataset_name = 'valid_and_test_processed'
+    base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
+    output_path = os.path.join(base_path, output_dataset_name)
+    data_provider = CodeContestDataProvider(dataset_location=dataset_name)
+
+    # add and process the multiple_solutions field
+    data_provider = add_multiple_solutions_field(data_provider)
+
+    # will add 'is_valid_test' field to all problems
+    data_provider = add_is_valid_field(data_provider)
+
+    data_provider = problem_3_validation_fix(data_provider)
+
+    # sorting so that 'python' solutions will be first
+    data_provider = sort_solution_by_language(data_provider)
+
+
+    for split_name in ['valid', 'test']:
+        ds = data_provider.dataset[split_name]
+        ds_dict = ds.to_dict()
+        ds_dict['are_valid_solutions'] = [True] * len(ds)
+        th_correct = 0.2
+        max_tests = 20
+        solutions_list = ds_dict['solutions']
+        for i, solutions in enumerate(solutions_list):
+            logger.info(f"processing problem {i} in split '{split_name}' for valid solutions")
+            problem_dict = ds[i]
+            solutions_list = solutions['solution']
+            languages_list = solutions['language']
+            test_failed_private_list = []
+            test_failed_generated_list = []
+            counter = 0
+            for language, sol in zip(languages_list, solutions_list):
+                if 'python' not in language.lower():
+                    continue
+                counter += 1
+                if counter > max_tests:
+                    break
+                test_results, test_passed_public, test_failed_public, test_timeout_public \
+                    = evaluate_solution_on_subset('public_tests', problem_dict, sol, silent=True)
+                test_results, test_passed_private, test_failed_private, test_timeout_private \
+                    = evaluate_solution_on_subset('generated_tests', problem_dict, sol, silent=True)
+                test_results, test_passed_private, test_failed_private, test_timeout_private \
+                    = evaluate_solution_on_subset('private_tests', problem_dict, sol, silent=True)
+                test_failed_private_list.append(test_failed_private)
+                test_failed_generated_list.append(test_failed_private)
+            if not test_failed_private_list:
+                continue
+            test_failed_private_list = np.array(test_failed_private_list)
+            test_failed_generated_list = np.array(test_failed_generated_list)
+            frac_correct = np.sum((test_failed_private_list + test_failed_generated_list) == 0) / len(
+                test_failed_private_list)
+            if frac_correct < th_correct:
+                logger.info(f"problem {i} in split {split_name} is invalid, has {frac_correct} correct solutions")
+                ds_dict['are_valid_solutions'][i] = False
+
+        data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
+
+
+    data_provider.dataset.save_to_disk(output_path)
+
+
+def add_multiple_solutions_field(data_provider):
+    for split_name in ['valid', 'test']:
+        multiple_solutions_list = np.array([False] * len(data_provider.dataset[split_name]))
+        ds = data_provider.dataset[split_name]
+        for i, p in enumerate(ds):
+            d_output = p['description'].split('Output\n')[1]
+            if ('multiple solutions' in p['description'] or 'multiple possible solutions' in p['description']
+                    or 'multiple possible solutions' in p['description'] or 'multiple' in d_output):
+                # print(f"problem {i} has multiple solutions")
+                # print(f"=========\n{p['description']}\n=======\n\n")
+                multiple_solutions_list[i] = True
+            else:
+                multiple_solutions_list[i] = False
+
+        data_provider.dataset[split_name] = data_provider.dataset[split_name].add_column('multiple_solutions',
+                                                                                         multiple_solutions_list)
+    return data_provider
+
+
+def sort_solution_by_language(data_provider):
+    # sorting so that 'python' solutions will be first
+    for split_name in ['valid', 'test']:
+        ds_dict = data_provider.dataset[split_name].to_dict()
+        solutions_list = ds_dict['solutions']
+        for i, p in enumerate(solutions_list):
+            np_lang = np.array(p['language'])
+            ind_sorted = np.concatenate(
+                (np.argwhere(np_lang == 'PYTHON3'), np.argwhere(np_lang == 'CPP'), np.argwhere(np_lang == 'JAVA')))
+            p['solution'] = [p['solution'][i[0]] for i in ind_sorted]
+            p['language'] = [p['language'][i[0]] for i in ind_sorted]
+        data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
+    return data_provider
+def add_is_valid_field(data_provider):
+    for split_name in ['valid', 'test']:
+        ds_dict = data_provider.dataset[split_name].to_dict()
+        ds_dict['public_tests'][0]['is_valid_test'] = None
+        ds_dict['private_tests'][0]['is_valid_test'] = None
+        ds_dict['generated_tests'][0]['is_valid_test'] = None
+        data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
+    return data_provider
+
+def problem_3_validation_fix(data_provider):
+    # problem 3 validation fix generated tests
+    ind_problem_valid = 3
+    split_name = 'valid'
+    dataset_dict = data_provider.dataset[split_name].to_dict()
+    p_3 = data_provider.dataset[split_name][ind_problem_valid]
+    p_3_private_tests = p_3['generated_tests']
+    is_valid_test = [True] * len(p_3_private_tests['input'])
+    count_false = 0
+    count_correct = 0
+    for i, input in enumerate(p_3_private_tests['input']):
+        n, m, x = input.splitlines()[0].split()
+        n = int(n)
+        m = int(m)
+        a = input.splitlines()[1].split()
+        b = input.splitlines()[2].split()
+        if (n != len(a) or m != len(b)):  # according to the description, they should be equal
+            count_false += 1
+            is_valid_test[i] = False
+        else:
+            count_correct += 1
+    dataset_dict['generated_tests'][ind_problem_valid]['is_valid_test'] = is_valid_test
+    data_provider.dataset[split_name] = Dataset.from_dict(dataset_dict)
+    return data_provider
+
+if __name__ == "__main__":
+    preapare_and_clean_dataset()
