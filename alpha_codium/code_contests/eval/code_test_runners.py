@@ -216,7 +216,7 @@ class LocalPythonTestsRunner(PythonTestsRunner):
         #     raise ValueError("Input is not a legal Python program") from e
 
 
-    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10, snoop=None):
+    def run_tests(self, test_id, candidate_id, candidate, test_inputs, tests_outputs, timeout=10, snoop=None, break_on_timeout=False):
         try:
             candidate = PythonTestsRunner.remove_if_main(candidate)
         except:  # noqa
@@ -225,7 +225,8 @@ class LocalPythonTestsRunner(PythonTestsRunner):
 
         to_snoop = snoop if snoop is not None else self.calc_trace
         multi_result = execute_candidate_code(candidate=candidate, inputs=test_inputs,
-                                              test_id=test_id, timeout=timeout, sandbox=self.sandbox, snoop=to_snoop)
+                                              test_id=test_id, timeout=timeout, sandbox=self.sandbox,
+                                              snoop=to_snoop, break_on_timeout=break_on_timeout)
         tests_results = calculate_tests_pass_fail(multi_result, expected_results=tests_outputs)
         return test_id, candidate_id, tests_results
 
@@ -314,7 +315,8 @@ def eval_solution(evaluation_test_type: str = "private_tests",
                   prediction: str = '',  # python code to be evaluated
                   test_inputs: Optional[List[str]] = None,
                   test_outputs: Optional[List[str]] = None,
-                  silent=False):
+                  silent=False,
+                  break_on_timeout=False):
     if not test_inputs:
         test_inputs = example.get(evaluation_test_type).get("input") if example.get(evaluation_test_type) else None
     if not test_outputs:
@@ -333,13 +335,14 @@ def eval_solution(evaluation_test_type: str = "private_tests",
             candidate=prediction,
             test_inputs=test_inputs,
             tests_outputs=test_outputs,
-            timeout=10,
+            timeout=3,
+            break_on_timeout = break_on_timeout,
         )
         if not silent:
             test_runner.print_test_results(results, test_inputs)
         return test_inputs, results
     else:
-        logger.error(f"example '{example['name']}', type: '{evaluation_test_type}' doesn't have tests")
+        # logger.error(f"example '{example['name']}', type: '{evaluation_test_type}' doesn't have tests")
         return test_inputs, []
 
 

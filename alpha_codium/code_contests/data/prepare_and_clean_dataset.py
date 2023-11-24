@@ -36,17 +36,24 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
     # sorting so that 'python' solutions will be first
     data_provider = sort_solution_by_language(data_provider)
 
+    # calc if there are valid solutions to the problem. if not, mark the problem as invalid
+    data_provider = calc_is_valid_problem(data_provider)
+
+    # save the dataset
+    data_provider.dataset.save_to_disk(output_path)
+
+
+def calc_is_valid_problem(data_provider):
     get_settings().code_tester.sandbox = False
+    th_correct = 0.2  # if less than 20% of the solutions are correct, mark the problem as invalid
+    max_tests = 25
+
     for split_name in ['valid', 'test']:
         ds = data_provider.dataset[split_name]
         ds_dict = ds.to_dict()
-        ds_dict['are_valid_solutions'] = [True] * len(ds)
-        th_correct = 0.2
-        max_tests = 10
+        ds_dict['is_valid_problem'] = [True] * len(ds)
         solutions_list = ds_dict['solutions']
         for i, solutions in enumerate(solutions_list):
-            # i = 28
-            # solutions = solutions_list[i]
             logger.info(f"processing problem {i} in split '{split_name}' for valid solutions")
             problem_dict = ds[i]
             s_list = solutions['solution']
@@ -54,7 +61,7 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
             test_failed_private_list = []
             test_failed_generated_list = []
             counter = 0
-            timeout_len = 20  # 30 seconds
+            timeout_len = 30  # 30 seconds
             start_time = time.time()
             for language, sol in zip(l_list, s_list):
                 if 'python' not in language.lower():
@@ -64,12 +71,14 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
                     continue
                 if time.time() > start_time + timeout_len:
                     continue
-                test_results, test_passed_public, test_failed_public, test_timeout_public \
-                    = evaluate_solution_on_subset('public_tests', problem_dict, sol, silent=True)
+                # test_results, test_passed_public, test_failed_public, test_timeout_public \
+                #     = evaluate_solution_on_subset('public_tests', problem_dict, sol, silent=True, break_on_timeout=True)
                 test_results, test_passed_private, test_failed_private, test_timeout_private \
-                    = evaluate_solution_on_subset('private_tests', problem_dict, sol, silent=True)
+                    = evaluate_solution_on_subset('private_tests', problem_dict, sol, silent=True,
+                                                  break_on_timeout=True)
                 test_results, test_passed_generate, test_failed_generate, test_timeout_generate \
-                    = evaluate_solution_on_subset('generated_tests', problem_dict, sol, silent=True)
+                    = evaluate_solution_on_subset('generated_tests', problem_dict, sol, silent=True,
+                                                  break_on_timeout=True)
                 test_failed_private_list.append(test_failed_private)
                 test_failed_generated_list.append(test_failed_generate)
                 if (time.time() > start_time + timeout_len) and counter > 5:
@@ -86,17 +95,13 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
             if frac_correct < th_correct:
                 logger.info(f"Failed - problem {i} in split {split_name} is invalid, has {frac_correct} correct solutions, "
                             f"total of {len(test_failed_private_list)} solutions processed")
-                ds_dict['are_valid_solutions'][i] = False
+                ds_dict['is_valid_problem'][i] = False
             else:
                 logger.info(f"Passed - problem {i} in split {split_name} is valid, has {frac_correct} correct solutions, "
                             f"total of {len(test_failed_private_list)} solutions processed")
 
         data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
-
-
-    data_provider.dataset.save_to_disk(output_path)
-
-
+    return data_provider
 def add_multiple_solutions_field(data_provider):
     for split_name in ['valid', 'test']:
         multiple_solutions_list = np.array([False] * len(data_provider.dataset[split_name]))

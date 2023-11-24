@@ -58,12 +58,12 @@ class DualModeStream(io.BytesIO):
         return self.text_io.readline(*args, **kwargs)
 
 
-def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True, snoop=False):
+def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True, snoop=False, break_on_timeout=False):
     if sandbox:
         manager = multiprocessing.Manager()
         result = manager.list()
         p = multiprocessing.Process(target=unsafe_execute,
-                                    args=(test_id, candidate, inputs, result, timeout, sandbox, snoop))
+                                    args=(test_id, candidate, inputs, result, timeout, sandbox, snoop, break_on_timeout))
         p.start()
         p.join(timeout=timeout + 1)
 
@@ -72,7 +72,7 @@ def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True, 
     else:
         result = []
         unsafe_execute(test_id=test_id, check_program=candidate, inputs=inputs,
-                       result=result, timeout=timeout, sandbox=sandbox, snoop=snoop)
+                       result=result, timeout=timeout, sandbox=sandbox, snoop=snoop, break_on_timeout=break_on_timeout)
     if not result:
         multi_result = MultiTestResult()
         exec_result = ExecutionResult(program_status=ProgramStatus.kTimeout)
@@ -85,7 +85,7 @@ def execute_candidate_code(candidate, inputs, test_id, timeout=1, sandbox=True, 
     return multi_result
 
 
-def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, snoop=False):
+def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, snoop=False, break_on_timeout=False):
     with create_tempdir():
         # These system calls are needed when cleaning up tempdir.
         import os
@@ -128,6 +128,8 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, sno
                         exec_result.program_status = ProgramStatus.kSuccess
                     except TimeoutException:
                         exec_result.program_status = ProgramStatus.kTimeout
+                        if break_on_timeout:
+                            break
                     except BaseException:
                         clean_exception = True
                         filtered_trace = traceback.format_exc()

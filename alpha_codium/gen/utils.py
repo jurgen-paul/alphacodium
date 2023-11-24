@@ -42,24 +42,26 @@ def postprocess_response(response):
     return response
 
 
-def evaluate_solution_on_subset(evaluation_test_type, problem, solution, silent=False):
+def evaluate_solution_on_subset(evaluation_test_type, problem, solution, silent=False, break_on_timeout=True):
     # evaluate solution
     test_results = None
     if evaluation_test_type:
         test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution,
-                                     silent=silent)
+                                     silent=silent, break_on_timeout=break_on_timeout)
 
     if test_results[1] == []:
-        logger.info("=====================================")
-        logger.info("No tests")
-        logger.info("=====================================")
+        if not silent:
+            logger.info("=====================================")
+            logger.info("No tests")
+            logger.info("=====================================")
         return test_results, 0, 0, 0
 
     if (hasattr(test_results[1], 'compilation_result') and
             test_results[1].compilation_result.program_status.name == 'kTimeout'):
-        logger.info("=====================================")
-        logger.info("Timeout")
-        logger.info("=====================================")
+        if not silent:
+            logger.info("=====================================")
+            logger.info("Timeout")
+            logger.info("=====================================")
         return test_results, 0, 0, len(test_results[0])
 
     test_passed = 0
@@ -75,8 +77,9 @@ def evaluate_solution_on_subset(evaluation_test_type, problem, solution, silent=
                 test_failed += 1
             else:
                 test_passed += 1
-        logger.info("=====================================")
-        logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}, test_timeout: {test_timeout}")
-        logger.info("=====================================")
+        if not silent:
+            logger.info("=====================================")
+            logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}, test_timeout: {test_timeout}")
+            logger.info("=====================================")
 
     return test_results, test_passed, test_failed, test_timeout
