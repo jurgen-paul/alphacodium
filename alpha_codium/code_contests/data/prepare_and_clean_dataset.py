@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 from collections import OrderedDict
+import time
 import numpy as np
 from datasets import Dataset
 
@@ -35,45 +36,60 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
     # sorting so that 'python' solutions will be first
     data_provider = sort_solution_by_language(data_provider)
 
-
+    get_settings().code_tester.sandbox = False
     for split_name in ['valid', 'test']:
         ds = data_provider.dataset[split_name]
         ds_dict = ds.to_dict()
         ds_dict['are_valid_solutions'] = [True] * len(ds)
         th_correct = 0.2
-        max_tests = 20
+        max_tests = 10
         solutions_list = ds_dict['solutions']
         for i, solutions in enumerate(solutions_list):
+            # i = 28
+            # solutions = solutions_list[i]
             logger.info(f"processing problem {i} in split '{split_name}' for valid solutions")
             problem_dict = ds[i]
-            solutions_list = solutions['solution']
-            languages_list = solutions['language']
+            s_list = solutions['solution']
+            l_list = solutions['language']
             test_failed_private_list = []
             test_failed_generated_list = []
             counter = 0
-            for language, sol in zip(languages_list, solutions_list):
+            timeout_len = 20  # 30 seconds
+            start_time = time.time()
+            for language, sol in zip(l_list, s_list):
                 if 'python' not in language.lower():
                     continue
                 counter += 1
                 if counter > max_tests:
-                    break
+                    continue
+                if time.time() > start_time + timeout_len:
+                    continue
                 test_results, test_passed_public, test_failed_public, test_timeout_public \
                     = evaluate_solution_on_subset('public_tests', problem_dict, sol, silent=True)
                 test_results, test_passed_private, test_failed_private, test_timeout_private \
-                    = evaluate_solution_on_subset('generated_tests', problem_dict, sol, silent=True)
-                test_results, test_passed_private, test_failed_private, test_timeout_private \
                     = evaluate_solution_on_subset('private_tests', problem_dict, sol, silent=True)
+                test_results, test_passed_generate, test_failed_generate, test_timeout_generate \
+                    = evaluate_solution_on_subset('generated_tests', problem_dict, sol, silent=True)
                 test_failed_private_list.append(test_failed_private)
-                test_failed_generated_list.append(test_failed_private)
+                test_failed_generated_list.append(test_failed_generate)
+                if (time.time() > start_time + timeout_len) and counter > 5:
+                    continue
             if not test_failed_private_list:
+                logger.info(f"problem {i} in split '{split_name}' has no python solutions")
                 continue
             test_failed_private_list = np.array(test_failed_private_list)
             test_failed_generated_list = np.array(test_failed_generated_list)
             frac_correct = np.sum((test_failed_private_list + test_failed_generated_list) == 0) / len(
                 test_failed_private_list)
+
+            # final decision
             if frac_correct < th_correct:
-                logger.info(f"problem {i} in split {split_name} is invalid, has {frac_correct} correct solutions")
+                logger.info(f"Failed - problem {i} in split {split_name} is invalid, has {frac_correct} correct solutions, "
+                            f"total of {len(test_failed_private_list)} solutions processed")
                 ds_dict['are_valid_solutions'][i] = False
+            else:
+                logger.info(f"Passed - problem {i} in split {split_name} is valid, has {frac_correct} correct solutions, "
+                            f"total of {len(test_failed_private_list)} solutions processed")
 
         data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
 
