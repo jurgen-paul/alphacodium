@@ -16,44 +16,19 @@ logger = get_logger(__name__)
 
 
 def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
-
-    # process base dataset
-    output_dataset_name = 'valid_and_test_processed'
-    base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
-    output_path = os.path.join(base_path, output_dataset_name)
-    if False:
-        data_provider = CodeContestDataProvider(dataset_location=dataset_name)
-        for split_name in ['valid', 'test']:
-            multiple_solutions_list =np.array([False] * len(data_provider.dataset[split_name]))
-            ds = data_provider.dataset[split_name]
-            for i, p in enumerate(ds):
-                d_output = p['description'].split('Output\n')[1]
-                if ('multiple solutions' in p['description'] or 'multiple possible solutions' in p['description']
-                        or 'multiple possible solutions' in p['description'] or 'multiple' in d_output):
-                    print(f"problem {i} has multiple solutions")
-                    # print(f"=========\n{p['description']}\n=======\n\n")
-                    multiple_solutions_list[i] = True
-                else:
-                    multiple_solutions_list[i] = False
-
-                # sorting so that 'python' solutions will be first
-                np_lang = np.array(p['solutions']['language'])
-                inds_sorted = np.concatenate(
-                    (np.argwhere(np_lang == 'PYTHON3'), np.argwhere(np_lang == 'CPP'), np.argwhere(np_lang == 'JAVA')))
-                p['solutions']['solution'] = [p['solutions']['solution'][i[0]] for i in inds_sorted]
-                p['solutions']['language'] = [p['solutions']['language'][i[0]] for i in inds_sorted]
-            data_provider.dataset[split_name]=data_provider.dataset[split_name].add_column('multiple_solutions', multiple_solutions_list)
-        data_provider.dataset.save_to_disk(output_path)
-
     split_name = 'valid'
+    base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
+    dataset_name = 'valid_and_test_processed'
+    output_path = os.path.join(base_path, dataset_name)
     data_provider = CodeContestDataProvider(dataset_location=output_path)
     ds = data_provider.dataset[split_name]
-    num_problems = len(ds)
-    path_database= f'/Users/talrid/Git/alphaCodium/{split_name}_test_database.json'
 
-    with open(path_database, 'r') as f:
+    solution_path_database = f'/Users/talrid/Git/alphaCodium/{split_name}_test_database.json'
+
+    with open(solution_path_database, 'r') as f:
         database_solutions = json.load(f)
-        database_solutions[split_name] = OrderedDict(sorted(database_solutions[split_name] .items(), key=lambda x: int(x[0])))
+        database_solutions[split_name] = OrderedDict(
+            sorted(database_solutions[split_name].items(), key=lambda x: int(x[0])))
     total_passed = 0
     total_failed = 0
     possible_multiple_solutions = 0
@@ -61,10 +36,19 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
         try:
             key_str = sol
             key_int = int(key_str)
-            value = database_solutions[split_name][sol]
-            passed_current= -1
+            problem = ds[key_int]
+            if problem.get('is_valid_problem', True) is False:
+                logger.info(f"problem {key_int} is not valid")
+                continue
+            codium_solution = database_solutions[split_name][sol]
+            passed_current = -1
+
             # scanning the iterations
-            for v in value['codium'].values():
+            v_iter =[v for v in codium_solution['codium'].values() if 'solution' in v]
+            if 'simulation' in codium_solution['codium']:
+                v_iter_simulation = [v for v in codium_solution['codium']['simulation'].values() if 'solution' in v]
+                v_iter += v_iter_simulation
+            for v in v_iter:
                 if not v:
                     continue
                 test_failed_generate = v['test_failed_generate']
@@ -99,6 +83,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
             pass
 
     print(f"total_passed: {total_passed}, total_failed: {total_failed}, possible_multiple_solutions: {possible_multiple_solutions}")
+    print(f"pass rate: {total_passed/(total_passed+total_failed)}")
 
 
 
