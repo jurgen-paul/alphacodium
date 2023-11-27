@@ -67,16 +67,17 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                     passed_current=1
                     break
                 else:
-                    if ds[key_int]['multiple_solutions']:
-                        passed_current=-1
-                        # break
-                    else:
-                        passed_current = 0
-            if passed_current==1:
-                total_passed+=1
-            elif passed_current==0:
-                total_failed+=1
-            elif passed_current==-1:
+                    # if ds[key_int]['multiple_solutions']:
+                    #     passed_current = -1
+                    #     # break
+                    # else:
+                    #     passed_current = 0
+                    passed_current = 0
+            if passed_current == 1:
+                total_passed += 1
+            elif passed_current == 0:
+                total_failed += 1
+            elif passed_current == -1:
                 possible_multiple_solutions+=1
         except Exception as e:
             print(f"Error: {e}")
