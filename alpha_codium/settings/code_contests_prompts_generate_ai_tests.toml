@@ -26,7 +26,7 @@ possible solution:
 
 
 Your task is to generate additional {{ number_of_ai_tests }} diverse input-output examples for the problem.
-Address both happy and corner cases. For example, generate simple happy-path inputs, but also inputs that are close to the problem constraints, or reflect some edge cases.
+Address both happy and corner cases. For example, generate simple happy-path inputs, but also inputs that are close to the problem constraints regarding large inputs, or reflect some edge cases.
 The generated tests should be sorted by difficulty, from easiest to hardest.
 All the inputs should be valid, and the outputs are correct. Double check them, and validate they match the problem description, rules and constraints.
 

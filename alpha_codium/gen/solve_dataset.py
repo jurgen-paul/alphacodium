@@ -185,8 +185,6 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='valid'):
         with open(path_database_backup, 'w') as f:
             json.dump(database, f)
 
-        exit(-1)
-
 
 
 if __name__ == "__main__":

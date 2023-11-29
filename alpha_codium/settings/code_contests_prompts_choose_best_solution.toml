@@ -27,7 +27,7 @@ Here is a list of possible solutions to the problem:
 
 Using the inputs above, you goal is to choose the best solution to the code contest problem.
 Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem, in a simple and robust way.
-Make sure the chosen solution has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints.
+Make sure the chosen solution has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints regarding large inputs.
 
 The output must be a YAML object equivalent to type $ProblemSolution, according to the following Pydantic definitions:
 '
