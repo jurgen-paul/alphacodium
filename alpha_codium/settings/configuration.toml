@@ -53,6 +53,6 @@ delta=0.0001
 [code_contests_tester]
 num_threads = 4
 stop_on_first_failure = false
-timeout = 10
+timeout = 3
 path_to_python_bin = "/usr/bin/python3.9"
 path_to_python_lib = ["/usr/lib", "/usr/lib/python3.9"]

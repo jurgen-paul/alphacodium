@@ -4,7 +4,7 @@ system = """\
 """
 
 User="""\
-You are given a code contest problem and a self-reflection on the problem:
+You are given a code contest problem, and a self-reflection on the problem:
 
 
 problem description:
