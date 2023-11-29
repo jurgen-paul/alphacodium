@@ -11,19 +11,20 @@ problem description:
 {{description}}
 =============
 
+
 self-reflection on the problem:
 =============
 {{ self_description|trim }}
 =============
 
 
-Here is a proposed solution to implement:
+Here is a solution flow for the problem:
 =============
 {{ s_best_solution }}
 =============
 
 
-Your goal is to generate a valid Python code that correctly solves the problem using the proposed solution.
+Your goal is to generate a valid Python code that correctly solves the problem, using the proposed solution above.
 
 guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.

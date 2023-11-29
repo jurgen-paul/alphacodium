@@ -4,8 +4,6 @@ import os
 import shutil
 from collections import OrderedDict
 
-from jinja2 import Environment, StrictUndefined
-
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.coding_competitor import CodeContestsCompetitor
@@ -17,15 +15,16 @@ logger = get_logger(__name__)
 
 
 
-def solve_dataset(dataset_name='101_test', split_name='valid'):
+def solve_dataset(dataset_name='valid_and_test_processed', split_name='valid'):
 
     # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
     num_problems = len(data_provider.dataset[split_name])
-    path_database= f'./{split_name}_test_database.json'
-    path_database_backup= f'./{split_name}_test_database_backup.json'
-    log_path = './alpha_codium/gen/example.log'
-    working_dir = './alpha_codium/gen'
+    base_path = os.getcwd()
+    path_database= f'{base_path}/{split_name}_test_database.json'
+    path_database_backup= f'{base_path}/{split_name}_test_database_backup.json'
+    log_path = f'{base_path}/example.log'
+    # working_dir = f'{base_path}/alpha_codium/gen'
     get_settings().solve.reduce_verbose = True
 
     ## load database
@@ -37,15 +36,36 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
         print(f"Failed to load database from {path_database}")
         database = {split_name: {}}
 
+    # for d in database[split_name]:
+    #     if 'codium' in database[split_name][d]:
+    #         for it in database[split_name][d]['codium']:
+    #             if 'iteration' in it:
+    #                 database[split_name][d]['codium'][it] = None
     # iterate on problems
     for problem_number in range(0, num_problems):
         # skip if already ran
-        if str(problem_number) in database[split_name]:
+        if database[split_name].get(str(problem_number), {}).get('codium', {}).get('iteration_0', None) is not None:
             print(f"problem_number {problem_number} already ran")
             continue
 
+        if data_provider.dataset['valid'][problem_number].get('is_valid_problem', True) is False:
+            logger.info(f"problem {problem_number} is not valid")
+            continue
+
+        sim_results = database[split_name].get(str(problem_number), {}).get('codium', {}).get('simulation',{})
+        already_solved = False
+        for it_name in sim_results:
+            it_vals=sim_results[it_name]
+            if (it_vals['test_failed_private'] + it_vals['test_timeout_private'] + it_vals['test_failed_generate'] + it_vals['test_timeout_generate'] == 0) \
+                and (it_vals['test_passed_private'] + it_vals['test_passed_generate'] > 0):
+                logger.info(f"problem {problem_number} already solved in simulation")
+                already_solved = True
+                break
+        if already_solved:
+            continue
+
         shutil.rmtree(log_path, ignore_errors=True)
-        os.chdir(working_dir)
+        os.chdir(base_path)
         setup_logger()
         logger.info(f"problem_number: {problem_number}")
 
@@ -53,8 +73,8 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
         logger.info(f"problem_name: {problem_name}")
         problem = data_provider.find_problem(ds=data_provider.dataset, problem_name=problem_name, split_name=split_name)
         logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
-        if not problem['private_tests']['input']:
-            logger.info("No private tests for this problem")
+        # if not problem['private_tests']['input']:
+        #     logger.info("No private tests for this problem")
 
         problem_database = {problem_number: {}}
 
@@ -98,6 +118,9 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
 
         # solve problem
         problem_database[problem_number]['codium'] = {}
+        if 'simulation' in database[split_name].get(str(problem_number), {}).get('codium', {}):
+            problem_database[problem_number]['codium']['simulation'] = database[split_name].get(str(problem_number), {}).get('codium', {})['simulation']
+
         solver = CodeContestsCompetitor()
         setting = get_settings()
         for iteration in range(setting.get("solve.max_iterations", 1)):
@@ -161,6 +184,8 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
             json.dump(database, f)
         with open(path_database_backup, 'w') as f:
             json.dump(database, f)
+
+        exit(-1)
 
 
 
