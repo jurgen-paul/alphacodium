@@ -22,10 +22,10 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
     # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
     num_problems = len(data_provider.dataset[split_name])
-    path_database= f'/Users/talrid/Git/alphaCodium/{split_name}_test_database.json'
-    path_database_backup= f'/Users/talrid/Git/alphaCodium/{split_name}_test_database_backup.json'
-    log_path = '/Users/talrid/Git/alphaCodium/alpha_codium/gen/example.log'
-    working_dir = '/Users/talrid/Git/alphaCodium/alpha_codium/gen'
+    path_database= f'./{split_name}_test_database.json'
+    path_database_backup= f'./{split_name}_test_database_backup.json'
+    log_path = './alpha_codium/gen/example.log'
+    working_dir = './alpha_codium/gen'
     get_settings().solve.reduce_verbose = True
 
     ## load database
@@ -146,8 +146,8 @@ def solve_dataset(dataset_name='101_test', split_name='valid'):
             with open(log_path, 'r') as f:
                 log = f.read()
                 problem_database[problem_number]['codium'][it_str]['log'] = log
-                os.makedirs(f'/Users/talrid/Git/alphaCodium/{split_name}_logs/', exist_ok=True)
-                shutil.copyfile(log_path, f'/Users/talrid/Git/alphaCodium/{split_name}_logs/test_{problem_number}_{it_str}.log')
+                os.makedirs(f'./{split_name}_logs/', exist_ok=True)
+                shutil.copyfile(log_path, f'./{split_name}_logs/test_{problem_number}_{it_str}.log')
 
             if (test_failed_private == 0 and test_failed_generate == 0 and
                     test_timeout_private == 0 and test_timeout_generate == 0 and

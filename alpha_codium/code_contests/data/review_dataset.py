@@ -17,13 +17,16 @@ logger = get_logger(__name__)
 
 def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
     split_name = 'valid'
-    base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
+    # base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
     dataset_name = 'valid_and_test_processed'
-    output_path = os.path.join(base_path, dataset_name)
-    data_provider = CodeContestDataProvider(dataset_location=output_path)
+    # problems_path = os.path.join(base_path, dataset_name)
+    data_provider = CodeContestDataProvider(dataset_location=dataset_name)
+    # data_provider = CodeContestDataProvider(dataset_location='/mnt/talr/repos/alphaCodium/alpha_codium/code_contests/data/valid_and_test_processed')
+
     ds = data_provider.dataset[split_name]
 
-    solution_path_database = f'/Users/talrid/Git/alphaCodium/{split_name}_test_database.json'
+    solution_path_database = f'./{split_name}_test_database.json'
+
 
     with open(solution_path_database, 'r') as f:
         database_solutions = json.load(f)

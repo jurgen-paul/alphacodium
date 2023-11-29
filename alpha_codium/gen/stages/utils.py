@@ -14,7 +14,8 @@ def set_configurations(problem, iteration=0):
     use_recording = get_settings().get("solve.use_recording", False)
     if use_recording or do_recording:
         # recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
-        recording_path = f"/Users/talrid/Git/alphaCodium/alpha_codium/gen/code_contests/{problem['name']}/{get_settings().config['model']}/"
+        # recording_path = f"/Users/talrid/Git/alphaCodium/alpha_codium/gen/code_contests/{problem['name']}/{get_settings().config['model']}/"
+        recording_path = f"./alpha_codium/gen/code_contests/{problem['name']}/{get_settings().config['model']}/"
         logger.info(f"recording_path: {recording_path}\ndo_record: {do_recording}\nuse_record: {use_recording}")
         if do_recording:
             os.makedirs(recording_path, exist_ok=True)
