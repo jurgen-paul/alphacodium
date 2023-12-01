@@ -47,7 +47,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
             passed_current = -1
 
             # scanning the iterations
-            v_iter =[v for v in codium_solution['codium'].values() if 'solution' in v]
+            v_iter =[v for v in codium_solution['codium'].values() if (v is not None and 'solution' in v)]
             if 'simulation' in codium_solution['codium']:
                 v_iter_simulation = [v for v in codium_solution['codium']['simulation'].values() if 'solution' in v]
                 v_iter += v_iter_simulation

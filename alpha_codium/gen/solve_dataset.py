@@ -41,10 +41,12 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='valid'):
     #         for it in database[split_name][d]['codium']:
     #             if 'iteration' in it:
     #                 database[split_name][d]['codium'][it] = None
+
     # iterate on problems
     for problem_number in range(0, num_problems):
         # skip if already ran
-        if database[split_name].get(str(problem_number), {}).get('codium', {}).get('iteration_0', None) is not None:
+        prev = database[split_name].get(str(problem_number), {}).get('codium', {}).get('iteration_0', {})
+        if not ((prev=={}) or (prev is None)):
             print(f"problem_number {problem_number} already ran")
             continue
 
@@ -54,13 +56,16 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='valid'):
 
         sim_results = database[split_name].get(str(problem_number), {}).get('codium', {}).get('simulation',{})
         already_solved = False
-        for it_name in sim_results:
-            it_vals=sim_results[it_name]
-            if (it_vals['test_failed_private'] + it_vals['test_timeout_private'] + it_vals['test_failed_generate'] + it_vals['test_timeout_generate'] == 0) \
-                and (it_vals['test_passed_private'] + it_vals['test_passed_generate'] > 0):
-                logger.info(f"problem {problem_number} already solved in simulation")
-                already_solved = True
-                break
+        try:
+            for it_name in sim_results:
+                it_vals=sim_results[it_name]
+                if (it_vals['test_failed_private'] + it_vals['test_timeout_private'] + it_vals['test_failed_generate'] + it_vals['test_timeout_generate'] == 0) \
+                    and (it_vals['test_passed_private'] + it_vals['test_passed_generate'] > 0):
+                    logger.info(f"problem {problem_number} already solved in simulation")
+                    already_solved = True
+                    break
+        except:
+            pass
         if already_solved:
             continue
 
