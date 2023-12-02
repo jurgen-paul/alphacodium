@@ -4,7 +4,7 @@ system = """\
 """
 
 User="""\
-You are given a code contest problem, and a self-reflection on the problem.
+You are given a code contest problem, a self-reflection on the problem, and a possible solution.
 
 
 problem description:
@@ -18,6 +18,11 @@ self-reflection on the problem:
 {{ self_description|trim }}
 =============
 
+
+possible solution:
+=============
+{{ s_best_solution|trim }}
+=============
 
 Your task is to generate additional {{ number_of_ai_tests }} diverse input-output examples for the problem.
 Address both happy and corner cases. For example, generate simple happy-path inputs, but also inputs that are close to the problem constraints for large inputs, or reflect some other edge cases.

@@ -19,18 +19,21 @@ self-reflection on the problem:
 =============
 
 
-Your goal is to generate a Python code that implements the following solution to the problem:
+Here is a proposed solution to implement:
 =============
 {{ s_best_solution|trim }}
 =============
 
 
-Additional guidelines:
+Your goal is to generate a valid Python code that correctly solves the problem using the proposed solution.
+
+guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
-- Double-check the solution code, and simulate running it on the provided input-output examples.
-- Make sure to include all the necessary module imports, and properly initialize the variables.
+- Double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
+- Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 - Make sure to follow the 'flow' and 'input_output_examples_flow' sections.
+
 
 The code output must follow this structure:
 ```

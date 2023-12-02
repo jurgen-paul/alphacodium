@@ -15,7 +15,7 @@ logger = get_logger(__name__)
 
 
 
-def solve_dataset(dataset_name='valid_and_test_processed', split_name='valid'):
+def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
 
     # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
@@ -50,7 +50,7 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='valid'):
             print(f"problem_number {problem_number} already ran")
             continue
 
-        if data_provider.dataset['valid'][problem_number].get('is_valid_problem', True) is False:
+        if data_provider.dataset[split_name][problem_number].get('is_valid_problem', True) is False:
             logger.info(f"problem {problem_number} is not valid")
             continue
 
