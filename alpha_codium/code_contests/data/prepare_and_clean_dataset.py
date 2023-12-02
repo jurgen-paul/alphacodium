@@ -58,6 +58,11 @@ def calc_is_valid_problem(data_provider):
             problem_dict = ds[i]
             s_list = solutions['solution']
             l_list = solutions['language']
+            s_list = [s for s, l in zip(s_list, l_list) if 'python' in l.lower()]
+            l_list = [l for l in l_list if 'python' in l.lower()]
+            if len(s_list) < 5:
+                logger.info(f"problem {i} in split '{split_name}' has less than 5 python solutions, cannot validate")
+                continue
             test_failed_private_list = []
             test_failed_generated_list = []
             counter = 0
