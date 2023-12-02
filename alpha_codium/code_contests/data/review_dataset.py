@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 
 def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
-    split_name = 'valid'
+    split_name = 'test'
     # base_path = os.path.expanduser(get_settings().etl.private_dataset_cache_dir)
     dataset_name = 'valid_and_test_processed'
     # problems_path = os.path.join(base_path, dataset_name)
@@ -64,6 +64,7 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                 else:
                     test_timeout_generate = 0
                     test_timeout_private = 0
+
                 if ((test_failed_generate + test_timeout_generate + test_failed_private + test_timeout_private) == 0 and
                         (test_passed_generate + test_passed_private) > 0):
                     print(f"problem {key_int} passed all tests")
@@ -80,13 +81,13 @@ def solve_dataset(dataset_name='valid_and_test', split_name='valid'):
                 total_passed += 1
             elif passed_current == 0:
                 total_failed += 1
-            elif passed_current == -1:
-                possible_multiple_solutions+=1
+            # elif passed_current == -1:
+            #     possible_multiple_solutions+=1
         except Exception as e:
             print(f"Error: {e}")
             pass
 
-    print(f"total_passed: {total_passed}, total_failed: {total_failed}, possible_multiple_solutions: {possible_multiple_solutions}")
+    print(f"total_passed: {total_passed}, total_failed: {total_failed}")
     print(f"pass rate: {total_passed/(total_passed+total_failed)}")
 
 
