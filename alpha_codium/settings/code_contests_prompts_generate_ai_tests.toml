@@ -4,7 +4,7 @@ system = """\
 """
 
 User="""\
-You are given a code contest problem, self-reflection on the problem, and a possible solution.
+You are given a code contest problem, a self-reflection on the problem, and a possible solution.
 
 
 problem description:
@@ -21,14 +21,13 @@ self-reflection on the problem:
 
 possible solution:
 =============
-{{ s_best_solution }}
+{{ s_best_solution|trim }}
 =============
 
-
 Your task is to generate additional {{ number_of_ai_tests }} diverse input-output examples for the problem.
-Address both happy and corner cases. For example, generate simple happy-path inputs, but also inputs that are close to the problem constraints, or reflect some edge cases.
+Address both happy and corner cases. For example, generate simple happy-path inputs, but also inputs that are close to the problem constraints for large inputs, or reflect some other edge cases.
 The generated tests should be sorted by difficulty, from easiest to hardest.
-All the inputs should be valid, and the outputs are correct. Double check them, and validate they match the problem description, rules and constraints.
+All the inputs should be valid, and the outputs are correct. Double check them, and validate they match the problem description ans rules.
 
 
 The output must be a YAML object equivalent to type $ProblemTests, according to the following Pydantic definitions:

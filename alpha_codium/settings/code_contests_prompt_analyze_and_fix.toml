@@ -5,16 +5,13 @@ system = """\
 - The fixed code should be robust and general, and work for other input examples as well.
 """
 user="""\
-
 You are given a code contest problem:
-
-problem description:
 =============
 {{ description|trim }}
 =============
 
 
-A solution code generated for the problem:
+A code solution was generated for the problem:
 =============
 {{ code_recent_solution|trim }}
 =============

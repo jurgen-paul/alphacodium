@@ -12,7 +12,8 @@ you are given a code contest problem:
 =============
 
 {%- else %}
-you are given a code contest problem and a self-reflection on the problem:
+you are given a code contest problem, and a self-reflection on the problem:
+
 
 problem description:
 =============
@@ -25,6 +26,7 @@ self reflection on the problem:
 {{ self_description|trim }}
 =============
 {% endif %}
+
 
 A previous solution code generated for the problem:
 =============

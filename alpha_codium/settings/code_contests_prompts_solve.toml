@@ -1,15 +1,17 @@
 [code_contests_prompts_solve]
-temperature = 0.3
+temperature = 0.4
 system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 """
 user="""\
-You are given a code contest problem and a self-reflection on the problem:
+You are given a code contest problem, and a self-reflection on the problem:
+
 
 problem description:
 =============
-{{description}}
+{{description|trim}}
 =============
+
 
 self-reflection on the problem:
 =============
@@ -19,7 +21,7 @@ self-reflection on the problem:
 
 Here is a proposed solution to implement:
 =============
-{{ s_best_solution }}
+{{ s_best_solution|trim }}
 =============
 
 
@@ -31,6 +33,7 @@ guidelines:
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 - Make sure to follow the 'flow' and 'input_output_examples_flow' sections.
+
 
 The code output must follow this structure:
 ```

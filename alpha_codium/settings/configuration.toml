@@ -5,10 +5,10 @@ requests_per_minute=60
 fallback_models =[]
 git_provider="github"
 verbosity_level=0 # 0,1,2
-ai_timeout=180
+ai_timeout=120
 
 [dataset]
-evaluate_prev_solutions=true
+evaluate_prev_solutions=false
 
 
 [solve]
@@ -34,13 +34,14 @@ number_of_ai_tests=8
 max_allowed_calls=5
 
 [etl]
-private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
+#private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 #private_dataset_cache_dir='/Users/talrid/Desktop/code_contest_dataset'
+
 
 [code_tester]
 tester_type="local" # local, code_contests
 order_matters=true
-sandbox=false
+sandbox=true
 calc_trace=false
 use_trace=false
 max_trace_lines=50
@@ -52,6 +53,6 @@ delta=0.0001
 [code_contests_tester]
 num_threads = 4
 stop_on_first_failure = false
-timeout = 10
+timeout = 3
 path_to_python_bin = "/usr/bin/python3.9"
 path_to_python_lib = ["/usr/lib", "/usr/lib/python3.9"]

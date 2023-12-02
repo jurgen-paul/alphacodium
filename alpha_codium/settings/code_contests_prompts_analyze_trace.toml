@@ -3,7 +3,7 @@ temperature = 0.3
 system = """\
 """
 user="""\
-You are given a code contest problem and a self-reflection on the problem:
+You are given a code contest problem, and a self-reflection on the problem:
 
 
 problem description:
@@ -30,7 +30,7 @@ However, when running the following input example, the Python code above failed 
 =============
 
 
-Your goal is to analyze the code and the error, and propose a fix so the code will produce the expected output for the provided input example.
+Your goal is to analyze the code and the error, and propose a fix so the code will produce the expected output for the provided test input.
 The fix should keep the solution robust, and work for all other input examples as well.
 Make sure the fix has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints for large input.
 
@@ -52,8 +52,8 @@ what_went_wrong: |-
 fixed_flow: |-
   ...
 ```
-Each YAML output MUST be after a newline, indented, with block scalar indicator ('|-').
 
+Each YAML output MUST be after a newline, indented, with block scalar indicator ('|-').
 
 Answer:
 ```yaml

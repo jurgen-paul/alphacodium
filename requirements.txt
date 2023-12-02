@@ -31,3 +31,5 @@ Jinja2
 tqdm
 pysnooper
 loguru
+numpy
+retry
