@@ -29,7 +29,7 @@ async def run_evaluate_public_tests(self, problem):
             if len(problem['public_tests']['input']) == 1:
                 MAX_ALLOWED_FIXES_COUNTER +=1
 
-            if use_recording:
+            if use_recording and False:
                 code_recent_solution = np.load(recording_path + 'problem_run_public_tests.npy', allow_pickle=True).tolist()
                 problem['code_recent_solution'] = code_recent_solution
                 logger.info("Using recording public tests")
@@ -79,7 +79,7 @@ async def run_evaluate_public_tests(self, problem):
                         counter += 1
                         logger.info(f"counter: {counter}")
                         if passed_specific_test:
-                            logger.info(f"Passed public tests after {counter-1} attempts")
+                            logger.info(f"Passed a public test after {counter-1} attempts")
                             if test_inputs not in problem['passed_tests']['inputs']:
                                 problem['passed_tests']['inputs'] += test_inputs
                                 problem['passed_tests']['outputs'] += test_outputs
@@ -118,13 +118,15 @@ async def run_evaluate_public_tests(self, problem):
                                 problem['code_recent_solution'] = last_code_solution
                                 continue
 
-                    if not passed_specific_test:
-                        if problem['passed_tests']['inputs']:
-                            logger.error(f"Public test - reverting to initial solution, where: '{problem['passed_tests']['inputs']}' passed")
-                            problem['code_recent_solution'] = last_code_solution
-                        else: # no solution passed so far.
-                            logger.error(f'Public test -  Reverting to best solution so far, d_tot: {best_d}')
-                            problem['code_recent_solution'] = best_solution
+                    # if not passed_specific_test:
+                    #     if problem['passed_tests']['inputs']:
+                    #         logger.error(f"Public test - reverting to initial solution, where: '{problem['passed_tests']['inputs']}' passed")
+                    #         problem['code_recent_solution'] = last_code_solution
+                    #     else: # no solution passed so far.
+                    #         pass
+                    #         logger.error("No solution passed so far. continuing to next test")
+                    #         # logger.error(f'Public test -  Reverting to best solution so far, d_tot: {best_d}')
+                    #         # problem['code_recent_solution'] = best_solution
                     all_passed_public = all_passed_public and passed_specific_test
 
                 if all_passed_public:
@@ -135,7 +137,7 @@ async def run_evaluate_public_tests(self, problem):
                     logger.info(f"==================")
                     logger.info(f"Failed to pass all public tests")
                     logger.info(f"==================")
-                if do_recording:
+                if do_recording and False:
                     np.save(recording_path + 'problem_run_public_tests.npy', problem['code_recent_solution'])
 
             return problem

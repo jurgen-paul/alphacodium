@@ -4,18 +4,11 @@ system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 """
 user="""\
-You are given a code contest problem, and a self-reflection on the problem:
-
+You are given a code contest problem:
 
 problem description:
 =============
-{{description|trim}}
-=============
-
-
-self-reflection on the problem:
-=============
-{{ self_description|trim }}
+{{ description|trim }}
 =============
 
 
@@ -25,14 +18,14 @@ Here is a proposed solution to implement:
 =============
 
 
-Your goal is to generate a valid Python code that correctly solves the problem using the proposed solution.
+Your goal is to generate a valid Python code that correctly solves the problem, using the proposed solution.
 
 guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
-- Double-check the solution code, and simulate running it on the provided input-output examples. Follow the 'input_output_examples_flow' section.
+- Double-check the solution code, and simulate running it on the provided input-output examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
-- Make sure to follow the 'flow' and 'input_output_examples_flow' sections.
+
 
 
 The code output must follow this structure:

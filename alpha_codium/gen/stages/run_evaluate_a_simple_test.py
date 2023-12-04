@@ -19,8 +19,8 @@ async def run_evaluate_a_simple_test(self, problem):
             use_recording = problem.get('use_recording', False)
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
-            MAX_COUNTER = 3
-            if use_recording:
+            MAX_COUNTER = 6
+            if use_recording and False:
                 code_recent_solution = np.load(recording_path + 'problem_run_simple_test.npy',
                                                allow_pickle=True).tolist()
                 problem['code_recent_solution'] = code_recent_solution
@@ -53,7 +53,11 @@ async def run_evaluate_a_simple_test(self, problem):
                         logger.error(f"Failed to pass simple test after {counter - 1} attempts. exiting the stage")
                         break
 
+                    s_best_solution_original = problem['s_best_solution']
+                    problem['s_best_solution'] = problem['s_possible_solutions'][counter % len(problem['s_possible_solutions'])]
                     problem = await run_initial_solve(self, problem, enable_record=False)
+                    problem['s_best_solution'] = s_best_solution_original
+
 
                     problem, passed_simple_test, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
                         = run_tests(self, problem, counter, test_input, test_output)
@@ -66,7 +70,7 @@ async def run_evaluate_a_simple_test(self, problem):
                     logger.error(f'Reverting to best solution so far, d_tot: {best_d}')
                     problem['code_recent_solution'] = best_solution
 
-                if do_recording:
+                if do_recording and False:
                     np.save(recording_path + 'problem_run_simple_test.npy', problem['code_recent_solution'])
 
             return problem

@@ -72,11 +72,11 @@ class CodeContestsCompetitor:
             # choose best solution
             problem = await run_choose_best_solution(self, problem)
 
-            # initial solve
-            problem = await run_initial_solve(self, problem)
-
             # generate ai tests
             problem = await run_generate_ai_tests(self, problem)
+
+            # initial solve
+            problem = await run_initial_solve(self, problem)
 
             # run a simple test first
             problem = await run_evaluate_a_simple_test(self, problem)
@@ -111,6 +111,9 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
                                          evaluation_test_type=evaluation_test_type)
     logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
 
+    if problem['is_valid_problem'] == False:
+        logger.info(f"problem['is_valid_problem'] == False, skipping")
+        return None, None
     # evaluate prev solutions
     evaluate_prev_solutions = get_settings().get("dataset.evaluate_prev_solutions", False)
     if evaluate_prev_solutions:
@@ -119,6 +122,10 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
                 logger.info("No public solutions for this problem")
             found_solution = False
             for index_published, sol_published in enumerate(problem['solutions']['solution']):
+                if problem['solutions']['language'][index_published].lower() != 'python':
+                    # print(sol_published)
+                    found_solution = True
+                    continue
                 logger.info(f"evaluating public solution {index_published} on private tests...")
                 test_results, test_passed_private, test_failed_private, test_timeout_private\
                     = evaluate_solution_on_subset('private_tests', problem, sol_published, silent=True)
@@ -148,16 +155,17 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
     iteration = 0
     solution = solver.solve_problem(problem, iteration)
     logger.info(f"evaluating solution on private tests...")
-    test_results, test_passed, test_failed_private, test_timeout_private = evaluate_solution_on_subset('private_tests',
+    test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset('private_tests',
                                                                                                        problem,
                                                                                                        solution,
                                                                                                        silent=True)
 
     logger.info(f"evaluating solution on generated tests...")
-    test_results, test_passed, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset(
+    test_results, test_passed_generate, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset(
         'generated_tests', problem, solution, silent=True)
 
-    logger.info(f"\ntest_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
+    logger.info(f"\ntest_passed_generate: {test_passed_generate}, test_passed_private: {test_passed_private}"
+                f"\ntest_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
                 f"\ntest_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}")
 
     return solution, test_results
