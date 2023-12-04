@@ -7,7 +7,7 @@ system = """\
 user="""\
 You are given a code contest problem:
 =============
-{{ description|trim }}
+{{ description_short|trim }}
 =============
 
 
@@ -17,12 +17,9 @@ A code solution was generated for the problem:
 =============
 
 
-However, when running the input-output example test, the code failed to produce the expected output:
+However, when running the input-output example test, the code solution failed to produce the expected output, and gave the following error message:
 =============
-Error message when running the 'solution code':
-'
 {{ error_str|trim }}
-'
 =============
 
 

@@ -37,7 +37,7 @@ async def run_fix_code_from_tests_failure(self, problem,error_str):
             return problem
 
         except Exception as e:
-            logging.error(f"'ix_code_from_tests_failure' stage, counter_retry {counter_retry}, Error: {e}")
+            logging.error(f"fix_code_from_tests_failure' stage, counter_retry {counter_retry}, Error: {e}")
             counter_retry += 1
             if counter_retry > 2:
                 raise e

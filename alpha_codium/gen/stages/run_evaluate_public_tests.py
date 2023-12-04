@@ -65,6 +65,8 @@ async def run_evaluate_public_tests(self, problem):
 
                         # save the best solution so far
                         if -1 < d_tot < best_d:
+                            if counter > 0:
+                                logger.info(f"Found better solution, d_tot: {d_tot}")
                             best_solution = copy.deepcopy(problem['code_recent_solution'])
                             best_d = d_tot
 
@@ -95,7 +97,7 @@ async def run_evaluate_public_tests(self, problem):
                             continue
                         else:
                             # tests run. save the last solution
-                            problem['code_prev_solution'] = problem['code_recent_solution']
+                            problem['code_prev_solution'] = copy.deepcopy(problem['code_recent_solution'])
 
 
                         # run 'analyze_test_failure' stage

@@ -8,15 +8,15 @@ You are given a code contest problem, a self-reflection on the problem, and a po
 
 
 problem description:
-=============
-{{description|trim}}
-=============
+======
+{{ description|trim }}
+======
 
 
 self-reflection on the problem:
-=============
+======
 {{ self_description|trim }}
-=============
+======
 
 
 possible solution:
@@ -29,9 +29,8 @@ Address both happy and corner cases. For example, generate simple happy-path inp
 The generated tests should be sorted by difficulty, from easiest to hardest.
 All the inputs should be valid, and the outputs are correct. Double check them, and validate they match the problem description ans rules.
 
-
 The output must be a YAML object equivalent to type $ProblemTests, according to the following Pydantic definitions:
-'
+======
 class Test(BaseModel):
     input: str
     output: str
@@ -39,7 +38,7 @@ class Test(BaseModel):
 
 class ProblemTests(BaseModel):
     tests: List[Test] = Field(min_items={{number_of_ai_tests}}, max_items={{number_of_ai_tests}})
-'
+======
 
 
 Example YAML output:
