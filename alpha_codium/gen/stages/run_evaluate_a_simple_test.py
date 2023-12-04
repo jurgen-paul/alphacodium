@@ -28,8 +28,12 @@ async def run_evaluate_a_simple_test(self, problem):
                 logger.debug(f"code_recent_solution:\n{code_recent_solution}")
             else:
                 counter = 0
-                test_input = [problem['problem_ai_simple_test']['input']]
-                test_output = [problem['problem_ai_simple_test']['output']]
+                # test_input = [problem['problem_ai_simple_test']['input']]
+                # test_output = [problem['problem_ai_simple_test']['output']]
+
+                # first public test. maybe take this if there is more than one public test
+                test_input = [problem['public_tests']['input'][0]]
+                test_output = [problem['public_tests']['output'][0]]
 
                 best_solution = copy.deepcopy(problem['code_recent_solution'])
                 best_d = float('inf')
