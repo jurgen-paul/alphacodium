@@ -122,10 +122,10 @@ class AiHandler:
                     force_timeout=get_settings().config.ai_timeout,
                 )
         except (APIError, Timeout, TryAgain) as e:
-            logging.error("Error during OpenAI inference: ", e)
+            logging.error("Error during OpenAI inference")
             raise
         except RateLimitError as e:
-            logging.error("Rate limit error during OpenAI inference: ", e)
+            logging.error("Rate limit error during OpenAI inference")
             raise
         except Exception as e:
             logging.error("Unknown error during OpenAI inference: ", e)

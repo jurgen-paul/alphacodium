@@ -32,8 +32,12 @@ async def run_evaluate_a_simple_test(self, problem):
                 # test_output = [problem['problem_ai_simple_test']['output']]
 
                 # first public test. maybe take this if there is more than one public test
-                test_input = [problem['public_tests']['input'][0]]
-                test_output = [problem['public_tests']['output'][0]]
+                # test_input = [problem['public_tests']['input'][0]]
+                # test_output = [problem['public_tests']['output'][0]]
+
+                # All public tests
+                test_input = problem['public_tests']['input']
+                test_output = problem['public_tests']['output']
 
                 best_solution = copy.deepcopy(problem['code_recent_solution'])
                 best_d = float('inf')
