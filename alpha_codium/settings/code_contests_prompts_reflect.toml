@@ -23,13 +23,13 @@ class Solution(BaseModel):
     name: str = Field(description="The name of the solution")
     content: str = Field(description="A description of the solution")
     why_it_works: str = Field(description="Why this solution is correct. Be specific and detailed regarding the problem rules and goals.")
-    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, two pointers, simulation, ...")
+    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, greedy, math, data structures, geometry, number theory, two pointers, simulation, brute force, probabilities, ...")
     complexity: str = Field(description="The complexity of the solution")
 
 
 class ProblemReflection(BaseModel):
     self_description: str = Field(description="Describe the problem in your own words, in bullet points. Address the problem goal, inputs, outputs, rules, constraints, and other relevant details.")
-    possible_solutions: List[Solution] = Field(max_items=3, description="A list of possible solutions to the problem. Make sure each solution fully addresses the problem rules and goals, and has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints for large inputs.")
+    possible_solutions: List[Solution] = Field(min_items=3, max_items=3, description="A list of possible solutions to the problem. Make sure each solution fully addresses the problem rules and goals, and has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints for large inputs.")
 ======
 
 
