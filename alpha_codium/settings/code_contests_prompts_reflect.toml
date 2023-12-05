@@ -22,7 +22,7 @@ The output must be a YAML object equivalent to type $ProblemReflection, accordin
 class Solution(BaseModel):
     name: str = Field(description="The name of the solution")
     content: str = Field(description="A description of the solution")
-    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, two pointers ...")
+    labels: List[str] = Field(description="A list of labels for the solution. For example (partial list): binary search, dynamic programming, trees, combinatorics, dfs, bfs, graphs, constructive algorithms, math, data structures, geometry, number theory, two pointers, simulation, ...")
     complexity: str = Field(description="The complexity of the solution")
 
 

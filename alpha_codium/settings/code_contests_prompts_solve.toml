@@ -12,13 +12,12 @@ problem description:
 =============
 
 
-Here is a proposed solution to implement:
+Your goal is to generate a valid Python code that correctly solves the problem, using the following algorithm:
 =============
 {{ s_best_solution|trim }}
 =============
 
 
-Your goal is to generate a valid Python code that correctly solves the problem, using the proposed solution.
 
 guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
