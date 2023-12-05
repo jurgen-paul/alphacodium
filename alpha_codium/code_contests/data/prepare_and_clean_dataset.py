@@ -32,6 +32,8 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
     data_provider = add_is_valid_field(data_provider)
 
     data_provider = problem_3_validation_fix(data_provider)
+    data_provider = problem_92_test_fix(data_provider)
+
 
     # sorting so that 'python' solutions will be first
     data_provider = sort_solution_by_language(data_provider)
@@ -154,11 +156,11 @@ def problem_3_validation_fix(data_provider):
     split_name = 'valid'
     dataset_dict = data_provider.dataset[split_name].to_dict()
     p_3 = data_provider.dataset[split_name][ind_problem_valid]
-    p_3_private_tests = p_3['generated_tests']
-    is_valid_test = [True] * len(p_3_private_tests['input'])
+    p_3_generated_tests = p_3['generated_tests']
+    is_valid_test = [True] * len(p_3_generated_tests['input'])
     count_false = 0
     count_correct = 0
-    for i, input in enumerate(p_3_private_tests['input']):
+    for i, input in enumerate(p_3_generated_tests['input']):
         n, m, x = input.splitlines()[0].split()
         n = int(n)
         m = int(m)
@@ -170,6 +172,30 @@ def problem_3_validation_fix(data_provider):
         else:
             count_correct += 1
     dataset_dict['generated_tests'][ind_problem_valid]['is_valid_test'] = is_valid_test
+    data_provider.dataset[split_name] = Dataset.from_dict(dataset_dict)
+    return data_provider
+
+def problem_92_test_fix(data_provider):
+    ind_problem_valid = 92
+    split_name = 'test'
+    dataset_dict = data_provider.dataset[split_name].to_dict()
+    p_92 = data_provider.dataset[split_name][ind_problem_valid]
+    p_92_private_tests = p_92['private_tests']
+    is_valid_arr_private = [True] * len(p_92_private_tests['input'])
+    for i, input in enumerate(p_92_private_tests['input']):
+        if len(set(
+                input)) != 4:  # {'a', 'b',  '1', '\n'} - according to the description, the string should contain only 'a' and 'b'
+            is_valid_arr_private[i] = False
+
+    p_92_generated_tests = p_92['generated_tests']
+    is_valid_arr_generated = [True] * len(p_92_generated_tests['input'])
+    for i, input in enumerate(p_92_generated_tests['input']):
+        if len(set(
+                input)) != 4:  # {'a', 'b',  '1', '\n'} - according to the description, the string should contain only 'a' and 'b'
+            is_valid_arr_generated[i] = False
+
+    dataset_dict['generated_tests'][ind_problem_valid]['is_valid_test'] = is_valid_arr_generated
+    dataset_dict['private_tests'][ind_problem_valid]['is_valid_test'] = is_valid_arr_private
     data_provider.dataset[split_name] = Dataset.from_dict(dataset_dict)
     return data_provider
 
