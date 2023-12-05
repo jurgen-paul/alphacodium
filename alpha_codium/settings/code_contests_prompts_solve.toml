@@ -2,14 +2,22 @@
 temperature = 0.4
 system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
+- Double-check the solution code. The generated solution must generalize to any valid input, and not just the provided examples.
 """
 user="""\
-You are given a code contest problem:
+You are given a code contest problem, and a self-reflection on the problem.
+
 
 problem description:
 =============
 {{ description|trim }}
 =============
+
+
+self-reflection on the problem:
+======
+{{ self_description|trim }}
+======
 
 
 Your goal is to generate a valid Python code that correctly solves the problem, using the following algorithm:
@@ -21,7 +29,7 @@ Your goal is to generate a valid Python code that correctly solves the problem, 
 
 guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
-- Double-check the solution code, and simulate running it on the provided input-output examples.
+- Double-check the solution code. The generated solution must generalize to any valid input, and not just the provided examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 
