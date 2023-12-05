@@ -40,7 +40,7 @@ class ProblemSolution(BaseModel):
     content: str = Field(description="The content of the best solution")
     why: str = Field(description="Shortly explain why is this the best solution")
     flow: List[str] = Field(description="Detailed description of the flow of the solution, in bullet points")
-    problem_tests: List[Test] = Field("List the input-output examples that are provided in the problem description. Sort them from easiest to hardest.")
+    problem_tests: List[Test] = Field("List the input-output examples that are provided in the problem description.")
     input_output_examples_flow: List[str] = Field(description="Describe in details, in bullet points, how the proposed flow will lead to getting the expected output for the provided input examples")
 =======
 

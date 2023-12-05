@@ -41,7 +41,7 @@ max_allowed_calls=5
 [code_tester]
 tester_type="local" # local, code_contests
 order_matters=true
-sandbox=true
+sandbox=false
 calc_trace=false
 use_trace=false
 max_trace_lines=50

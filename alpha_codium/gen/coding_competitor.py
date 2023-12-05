@@ -116,13 +116,14 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
         return None, None
     # evaluate prev solutions
     evaluate_prev_solutions = get_settings().get("dataset.evaluate_prev_solutions", False)
+    base_path = os.getcwd()
     if evaluate_prev_solutions:
         try:
             if not problem['solutions']['solution']:
                 logger.info("No public solutions for this problem")
             found_solution = False
             for index_published, sol_published in enumerate(problem['solutions']['solution']):
-                if problem['solutions']['language'][index_published].lower() != 'python':
+                if 'python' not in problem['solutions']['language'][index_published].lower():
                     # print(sol_published)
                     found_solution = True
                     continue
@@ -153,6 +154,7 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
 
     solver = CodeContestsCompetitor()
     iteration = 0
+    os.chdir(base_path)
     solution = solver.solve_problem(problem, iteration)
     logger.info(f"evaluating solution on private tests...")
     test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset('private_tests',

@@ -55,10 +55,10 @@ async def run_evaluate_all_ai_tests(self, problem):
                 problem = await run_analyze_and_fix_test_failure(self, problem, error_str)
                 actual_number_of_calls += 1
 
-                problem, test_passed, non_empty_output, error_str, trace_str, tests_timeout, d_tot \
+                problem, test_passed2, non_empty_output2, error_str2, trace_str2, tests_timeout2, d_tot2 \
                     = run_tests(self, problem, counter, test_inputs, test_outputs)
 
-                if not test_passed:
+                if not test_passed2 and (not 'sandbox error: ' in error_str):
                     logger.error(f"Failed to pass ai tests with fixed code.")
                     problem['code_recent_solution'] = last_code_solution
                 else:  # we passed the test after fixing the code
@@ -74,10 +74,13 @@ async def run_evaluate_all_ai_tests(self, problem):
                             problem['code_recent_solution'] = last_code_solution
                             continue
 
-                    logger.info(f"Fixed current test, and passed prev tests. using new solution")
-                    if test_inputs not in problem['passed_tests']['inputs']:
-                        problem['passed_tests']['inputs'] += test_inputs
-                        problem['passed_tests']['outputs'] += test_outputs
+                    if test_passed2:
+                        logger.info(f"Fixed current test, and passed prev tests. using new solution")
+                        if test_inputs not in problem['passed_tests']['inputs']:
+                            problem['passed_tests']['inputs'] += test_inputs
+                            problem['passed_tests']['outputs'] += test_outputs
+                    else:
+                        logger.info(f"Code doesnt crash, but still fails the test. using new solution")
 
         return problem
     except Exception as e:

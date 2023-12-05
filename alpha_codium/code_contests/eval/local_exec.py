@@ -96,8 +96,8 @@ def unsafe_execute(test_id, check_program, inputs, result, timeout, sandbox, sno
         chdir = os.chdir
 
         # Disable functionalities that can make destructive changes to the test.
-        # if sandbox:
-            # reliability_guard()
+        if sandbox:
+            reliability_guard()
 
         exec_globals = {}
         multi_results = MultiTestResult()

@@ -33,3 +33,5 @@ pysnooper
 loguru
 numpy
 retry
+
+# uninstall ipython to catch breakpoints on debug with sandbox==false
