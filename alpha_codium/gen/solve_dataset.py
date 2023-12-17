@@ -173,6 +173,7 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
             problem_database[problem_number]['codium'][it_str]['test_passed_public'] = test_passed_public
             problem_database[problem_number]['codium'][it_str]['test_failed_public'] = test_failed_public
             problem_database[problem_number]['codium'][it_str]['test_timeout_public'] = test_timeout_public
+            os.chdir(base_path)
             with open(log_path, 'r') as f:
                 log = f.read()
                 problem_database[problem_number]['codium'][it_str]['log'] = log
@@ -187,11 +188,11 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
             else:
                 logger.info(f"codium failed to solve problem {problem_number} in iteration {iteration}")
         database[split_name][problem_number] = problem_database[problem_number]
+        os.chdir(base_path)
         with open(path_database, 'w') as f:
             json.dump(database, f)
         with open(path_database_backup, 'w') as f:
             json.dump(database, f)
-
 
 
 if __name__ == "__main__":
