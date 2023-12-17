@@ -29,7 +29,7 @@ The output must be a YAML object equivalent to type $ProblemTests, according to 
 class Test(BaseModel):
     input: str
     output: str
-    explanation: str = Field(default='Short explanation how we got the output from the input. Be specific')
+    explanation: str = Field(description='Short explanation how we got the output from the input. Be specific')
 
 class ProblemTests(BaseModel):
     tests: List[Test] = Field(min_items={{number_of_ai_tests}}, max_items={{number_of_ai_tests}})
