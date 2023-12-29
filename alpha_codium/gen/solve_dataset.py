@@ -130,19 +130,6 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
         setting = get_settings()
         for iteration in range(setting.get("solve.max_iterations", 1)):
             it_str = f"iteration_{iteration}"
-
-            # run policy
-            setting.self_reflect.randomize_best_solution = False
-            setting.self_reflect.prefer_dynamic_programming = False
-            if iteration == 1:
-                # setting.self_reflect.randomize_best_solution = True
-                pass
-            elif iteration == 2:
-                setting.self_reflect.prefer_dynamic_programming = True
-                setting.self_reflect.randomize_best_solution = True
-            elif iteration == 3:
-                setting.self_reflect.randomize_best_solution = True
-
             problem_database[problem_number]['codium'][it_str] = {}
 
             solution = solver.solve_problem(problem, iteration)

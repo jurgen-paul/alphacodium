@@ -19,6 +19,7 @@ from alpha_codium.gen.stages.run_evaluate_all_ai_tests import run_evaluate_all_a
 from alpha_codium.gen.stages.run_evaluate_public_tests import run_evaluate_public_tests
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_generate_ai_test import run_generate_ai_tests
+from alpha_codium.gen.stages.run_generate_possible_solutions import run_generate_possible_solutions
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
 from alpha_codium.gen.stages.run_evaluate_a_simple_test import run_evaluate_a_simple_test
@@ -68,6 +69,9 @@ class CodeContestsCompetitor:
 
             # self-reflect
             problem = await run_self_reflect(self, problem)
+
+            # generate solutions
+            problem = await run_generate_possible_solutions(self, problem)
 
             # choose best solution
             problem = await run_choose_best_solution(self, problem)

@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import yaml
 
-from alpha_codium.gen.stages.run_fix_self_reflect import run_fix_self_reflect
+from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.utils import postprocess_response
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -11,7 +11,7 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-async def run_self_reflect(self, problem, double_validation=True):
+async def run_self_reflect(self, problem):
     counter_retry = 0
     while True:
         try:
@@ -20,8 +20,12 @@ async def run_self_reflect(self, problem, double_validation=True):
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
 
-            actual_number_of_tests = len(problem['public_tests']['input'])
-            problem['actual_number_of_tests'] = actual_number_of_tests
+            # if get_settings().self_reflect.get('randomize_best_solution', False):
+            #     problem['min_num_of_solutions'] = 3
+            # else:
+            #     problem['min_num_of_solutions'] = 2
+            problem['min_num_of_solutions'] = 3
+
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
             if use_recording:
                 response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
@@ -37,29 +41,35 @@ async def run_self_reflect(self, problem, double_validation=True):
             except yaml.YAMLError:
                 response_reflect = postprocess_response(response_reflect)  # try to include only the yaml part
                 response_reflect_yaml = yaml.safe_load(response_reflect)
-
-            actual_number_of_tests = len(problem['public_tests']['input'])
-            calculated_number_of_tests = len(response_reflect_yaml['tests_explanations'])
-            if actual_number_of_tests != calculated_number_of_tests:
-                raise (f"Error: number of tests in self-reflection ({calculated_number_of_tests}) "
-                             f"does not match the actual number of tests ({actual_number_of_tests})")
             problem['response_reflect'] = response_reflect
+
             try:
                 problem['self_reflection'] = '- ' + '\n- '.join(response_reflect_yaml['self_reflection'])
             except:
                 problem['self_reflection'] = response_reflect_yaml['self_reflection']
-            problem['tests_explanations'] = response_reflect_yaml['tests_explanations']
-            problem['tests_explanations_str'] = response_reflect.split('tests_explanations:')[1]
 
-            # fix self-reflection
-            if double_validation:
-                problem = await run_fix_self_reflect(self, problem)
+            problem['s_possible_solutions'] = response_reflect_yaml['possible_solutions']
+            for i, s in enumerate(problem['s_possible_solutions']):
+                if 'brute' in s['name'].lower():
+                    logger.info(f"removing brute force solution: {s['name']}")
+                    del problem['s_possible_solutions'][i]
+                    break
+            problem['s_possible_solutions_str'] = response_reflect.split('possible_solutions:')[1]
 
-            for s in problem['tests_explanations']:
-                s['input'] = s['input'].replace('\\n', '\n')
-                s['output'] = s['output'].replace('\\n', '\n')
-                s['explanation'] = s['explanation'].replace('\\n', '\n')
 
+            # if get_settings().self_reflect.get('prefer_dynamic_programming', False):
+            #     for s in problem['s_possible_solutions']:
+            #         if 'dynamic' in s['name'].lower() or 'dfs' in s['name'].lower() or 'bfs' in s['name'].lower():
+            #             logger.info(f"Enforcing dynamic programming: {s['name']}")
+            #             problem['s_possible_solutions'] = [s]
+            #             problem['s_possible_solutions_str'] = s
+            #             break
+            # if get_settings().self_reflect.get('randomize_best_solution', False):
+            #     i = problem['iteration'] % len(problem['s_possible_solutions'])
+            #     s = problem['s_possible_solutions'][i]
+            #     logger.info(f"Enforcing randomize best solution: {s['name']}")
+            #     problem['s_possible_solutions'] = [s]
+            #     problem['s_possible_solutions_str'] = s
             return problem
         except Exception as e:
             logging.error(f"'run_self_reflect' stage, counter_retry {counter_retry}, Error: {e}")

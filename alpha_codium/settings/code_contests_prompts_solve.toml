@@ -16,7 +16,7 @@ problem description:
 
 self-reflection on the problem:
 ======
-{{ self_description|trim }}
+{{ self_reflection|trim }}
 ======
 
 

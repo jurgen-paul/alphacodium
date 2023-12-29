@@ -8,7 +8,7 @@ user="""\
 {%- if present_short_description %}
 you are given a code contest problem:
 =============
-{{ self_description|trim }}
+{{ self_reflection|trim }}
 =============
 
 {%- else %}
@@ -23,7 +23,7 @@ problem description:
 
 self reflection on the problem:
 =============
-{{ self_description|trim }}
+{{ self_reflection|trim }}
 =============
 {% endif %}
 
