@@ -111,9 +111,10 @@ def solve_and_test(dataset_name, split_name=None, problem_name=None, evaluation_
                                          evaluation_test_type=evaluation_test_type)
     logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
 
-    if problem['is_valid_problem'] == False:
+    if problem.get('is_valid_problem', True) == False:
         logger.info(f"problem['is_valid_problem'] == False, skipping")
         return None, None
+
     # evaluate prev solutions
     evaluate_prev_solutions = get_settings().get("dataset.evaluate_prev_solutions", False)
     base_path = os.getcwd()

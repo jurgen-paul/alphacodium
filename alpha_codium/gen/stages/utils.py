@@ -13,8 +13,6 @@ def set_configurations(problem, iteration=0):
     do_recording = get_settings().get("solve.do_recording", False)
     use_recording = get_settings().get("solve.use_recording", False)
     if use_recording or do_recording:
-        # recording_path = f"./code_contests/{problem['name']}/{get_settings().config['model']}/"
-        # recording_path = f"/Users/talrid/Git/alphaCodium/alpha_codium/gen/code_contests/{problem['name']}/{get_settings().config['model']}/"
         recording_path = f"./alpha_codium/gen/code_contests/{problem['name']}/{get_settings().config['model']}/"
         logger.info(f"recording_path: {recording_path}\ndo_record: {do_recording}\nuse_record: {use_recording}")
         if do_recording:
@@ -25,7 +23,6 @@ def set_configurations(problem, iteration=0):
     problem["do_recording"] = do_recording
     problem["use_recording"] = use_recording
     problem['number_of_ai_tests'] = get_settings().get("ai_tests.number_of_ai_tests", 6)
-    problem['diff_that_didnt_help'] = ''
 
     # initialize passed tests field
     problem['passed_tests'] = {}
