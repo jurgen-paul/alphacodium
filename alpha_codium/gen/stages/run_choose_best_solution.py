@@ -31,14 +31,6 @@ async def run_choose_best_solution(self, problem):
             response_best_solution = response_best_solution.rstrip("` \n")
             response_best_solution_yaml = yaml.safe_load(response_best_solution)  # noqa
             problem['s_best_solution'] = response_best_solution
-
-            # # re-order the public tests from easiest to hardest
-            # if len(response_best_solution_yaml['problem_tests']) == len(problem['public_tests']['input']):
-            #     problem['public_tests']['original'] = copy.deepcopy(problem['public_tests'])
-            #     problem['public_tests']['input'] = [t['input'] for t in response_best_solution_yaml['problem_tests']]
-            #     problem['public_tests']['output'] = [t['output'] for t in response_best_solution_yaml['problem_tests']]
-
-
             problem['s_other_solutions'] = []
             for solution in problem['s_possible_solutions']:
                 if solution['name'] != response_best_solution_yaml['name']:

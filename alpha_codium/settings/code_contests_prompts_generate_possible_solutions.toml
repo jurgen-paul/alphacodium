@@ -20,7 +20,7 @@ self-reflection on the problem:
 Your goal is to present possible solutions to the problem.
 
 guidelines:
-- Make sure that each solution can fully address the problem goals, constraints, examples and notes.
+- Make sure each solution fully addresses the problem goals, constraints, examples, and notes.
 - Each solution must have reasonable runtime and memory complexity - less than 3 seconds on a modern computer, given the problem constraints for large inputs.
 - Double-check the solutions. Each possible solution must be able to generalize to additional test cases, not just the ones provided in the problem description.
 
