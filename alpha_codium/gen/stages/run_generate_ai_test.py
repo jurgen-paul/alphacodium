@@ -16,20 +16,13 @@ async def run_generate_ai_tests(self, problem):
     while True:
         try:
             logger.info("--generate ai tests stage--")
-            use_recording = problem.get('use_recording', False)
-            do_recording = problem.get('do_recording', False)
-            recording_path = problem.get('recording_path', '')
-            validate_ai_tests = get_settings().get('ai_tests.validate_ai_tests', False)
 
+            # get settings
+            validate_ai_tests = get_settings().get('ai_tests.validate_ai_tests', False)
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_generate_ai_tests")
-            if use_recording:
-                response_problem_tests = np.load(recording_path + 'problem_ai_tests.npy', allow_pickle=True).tolist()
-                logger.info("Using recording")
-                logger.debug(f"response_solve:\n{response_problem_tests}")
-            else:
-                response_problem_tests, _ = await send_inference(f)
-                if do_recording:
-                    np.save(recording_path + 'problem_ai_tests.npy', response_problem_tests)
+
+            # inference
+            response_problem_tests, _ = await send_inference(f)
 
             # clean up and parse the response
             response_problem_tests = response_problem_tests.rstrip("` \n")
@@ -41,7 +34,7 @@ async def run_generate_ai_tests(self, problem):
             if validate_ai_tests:
                 problem = await run_validate_ai_tests(self, problem)
 
-            # adding public tests to the beginning of the list
+            # adding public tests to the beginning and end of the list, for the ai-iterate stage
             for public_input, public_output in zip(problem['public_tests']['input'],
                                                    problem['public_tests']['output']):
                 # to the beginning of the list
