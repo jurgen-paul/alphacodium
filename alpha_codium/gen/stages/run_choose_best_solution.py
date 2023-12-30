@@ -3,7 +3,7 @@ import functools
 import logging
 import numpy as np
 import yaml
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -25,7 +25,7 @@ async def run_choose_best_solution(self, problem):
                 logger.info("Using recording")
                 logger.debug(f"response_best_solution:\n{response_best_solution}")
             else:
-                response_best_solution, _ = await retry_with_fallback_models(f)
+                response_best_solution, _ = await send_inference(f)
                 if do_recording:
                     np.save(recording_path + 'best_solution.npy', response_best_solution)
             response_best_solution = response_best_solution.rstrip("` \n")

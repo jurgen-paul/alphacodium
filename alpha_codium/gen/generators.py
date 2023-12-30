@@ -2,7 +2,7 @@ import asyncio
 import functools
 
 from alpha_codium.llm.ai_handler import AiHandler
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 
 
 class SimplePrompt:
@@ -22,7 +22,7 @@ class SimplePrompt:
 
     async def run(self, user_prompt):
         f = functools.partial(self._run, user_prompt=user_prompt)
-        response = await retry_with_fallback_models(f)
+        response = await send_inference(f)
         return response
 
 

@@ -20,18 +20,22 @@ do_recording = false
 use_recording = false
 
 
-[public_tests]
-max_allowed_calls=6
-max_counter_public_tests=2
-disable_recording_public_tests=true
-
 [self_reflection]
 validate_self_reflection=true
+
+[possible_solutions]
+max_num_of_possible_solutions=3
 
 [ai_tests]
 validate_ai_tests=true
 number_of_ai_tests=8
 max_allowed_calls=5
+
+[public_tests]
+max_allowed_calls=6
+max_counter_public_tests=2
+disable_recording_public_tests=true
+
 
 [etl]
 #private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"

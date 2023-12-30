@@ -5,7 +5,7 @@ import yaml
 
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_validate_ai_test import run_validate_ai_tests
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -27,7 +27,7 @@ async def run_generate_ai_tests(self, problem):
                 logger.info("Using recording")
                 logger.debug(f"response_solve:\n{response_problem_tests}")
             else:
-                response_problem_tests, _ = await retry_with_fallback_models(f)
+                response_problem_tests, _ = await send_inference(f)
                 if do_recording:
                     np.save(recording_path + 'problem_ai_tests.npy', response_problem_tests)
 

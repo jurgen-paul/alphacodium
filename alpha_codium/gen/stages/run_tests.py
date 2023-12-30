@@ -6,7 +6,7 @@ import yaml
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.utils import render_trace
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)

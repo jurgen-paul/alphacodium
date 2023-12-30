@@ -6,7 +6,7 @@ import yaml
 
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -18,7 +18,7 @@ async def run_analyze_test_failure(self, problem,error_str):
         try:
             problem['error_str'] = error_str
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_analyze_trace")
-            response_analyze_failure, _ = await retry_with_fallback_models(f)
+            response_analyze_failure, _ = await send_inference(f)
             problem['error_str'] = ''
 
             response_analyze_failure = response_analyze_failure.rstrip("'` \n") # remove trailing spaces and newlines from yaml response

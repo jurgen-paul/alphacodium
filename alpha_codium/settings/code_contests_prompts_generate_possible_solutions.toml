@@ -19,7 +19,7 @@ self-reflection on the problem:
 
 Your goal is to present possible solutions to the problem.
 
-guidelines:
+Guidelines:
 - Make sure each solution fully addresses the problem goals, constraints, examples, and notes.
 - Each solution must have reasonable runtime and memory complexity - less than 3 seconds on a modern computer, given the problem constraints for large inputs.
 - Double-check the solutions. Each possible solution must be able to generalize to additional test cases, not just the ones provided in the problem description.
@@ -35,7 +35,7 @@ class Solution(BaseModel):
 
 
 class $ProblemSolutions(BaseModel):
-    possible_solutions: List[Solution] = Field(min_items=3, max_items=3, description="A list of possible solutions to the problem. Make sure each solution fully addresses the problem rules and goals, and has a reasonable runtime - less than 3 second on a modern computer, given the problem constraints for large inputs.")
+    possible_solutions: List[Solution] = Field(max_items={{max_num_of_possible_solutions}}, description="A list of possible solutions to the problem. Make sure each solution fully addresses the problem rules and goals.")
 ======
 
 
@@ -56,5 +56,5 @@ possible_solutions:
  ```
 
 Answer:
-```yaml
+```yaml\
 """

@@ -5,7 +5,7 @@ from typing import Callable, List
 from alpha_codium.config_loader import get_settings
 
 
-async def retry_with_fallback_models(f: Callable):
+async def send_inference(f: Callable):
     all_models = _get_all_models()
     all_deployments = _get_all_deployments(all_models)
     # try each (model, deployment_id) pair until one is successful, otherwise raise exception

@@ -1,7 +1,7 @@
 import functools
 import logging
 import yaml
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -13,7 +13,7 @@ async def run_validate_ai_tests(self, problem):
         try:
             logger.info("--validate ai tests stage--")
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_validate_ai_tests")
-            response_problem_tests, _ = await retry_with_fallback_models(f)
+            response_problem_tests, _ = await send_inference(f)
             response_problem_tests = response_problem_tests.rstrip("` \n")
             if response_problem_tests.startswith("```yaml"):
                 response_problem_tests = response_problem_tests[8:]

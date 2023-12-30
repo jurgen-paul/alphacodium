@@ -12,7 +12,7 @@ from alpha_codium.code_contests.data.provider import CodeContestDataProvider
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.config_loader import get_settings
 from alpha_codium.llm.ai_handler import AiHandler
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -22,7 +22,7 @@ async def run_baseline(self, problem):
     try:
         logging.info("Using baseline prompt")
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_baseline")
-        response_baseline, _ = await retry_with_fallback_models(f)
+        response_baseline, _ = await send_inference(f)
         recent_solution = self.postprocess_response(response_baseline)
         return recent_solution
     except Exception as e:

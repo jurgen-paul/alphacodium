@@ -4,18 +4,12 @@ system = """\
 """
 
 User="""\
-You are given a code contest problem, self-reflection on the problem, and explanations of how each input example leads to the corresponding output:
+You are given a code contest problem, and ai-generated explanations of how each input example leads to the corresponding output:
 
 
 problem description:
 ============
 {{description|trim}}
-============
-
-
-self-reflection on the problem:
-============
-{{ self_reflection|trim }}
 ============
 
 
@@ -25,7 +19,7 @@ tests explanations:
 ============
 
 
-Your goal is to consider each test explanation, and make sure it is correct and complete. Be critical - the provided explanations or the self-reflection may be wrong or incomplete.
+Your goal is to consider each test explanation, and make sure it is correct and complete. Be critical - the provided explanations may be wrong or incomplete.
 Read carefully the problem description. Make sure the test explanations are consistent with them, and between themselves.
 The explanations must coherently and logically lead from the input to the output, with the actual flow. Be specific as possible, and describe in detail how the input leads to the output.
 Pay attention to the problem constraints, and small details.

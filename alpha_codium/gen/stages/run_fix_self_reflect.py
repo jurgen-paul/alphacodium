@@ -6,7 +6,7 @@ import yaml
 
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.utils import postprocess_response
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -18,7 +18,7 @@ async def run_validate_self_reflect(self, problem):
         f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_fix_reflection")
 
         # inference
-        response_validate_reflect, _ = await retry_with_fallback_models(f)
+        response_validate_reflect, _ = await send_inference(f)
         response_validate_reflect = response_validate_reflect.rstrip("` \n")
         try:
             response_validate_reflect_yaml = yaml.safe_load(response_validate_reflect)

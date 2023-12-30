@@ -5,7 +5,7 @@ import yaml
 
 from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.utils import postprocess_response
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -32,7 +32,7 @@ async def run_self_reflect(self, problem):
                 logger.info("Using recording")
                 logger.debug(f"response_reflect:\n{response_reflect}")
             else:
-                response_reflect, _ = await retry_with_fallback_models(f)
+                response_reflect, _ = await send_inference(f)
                 if do_recording:
                     np.save(recording_path + 'reflect.npy', response_reflect)
             response_reflect = response_reflect.rstrip("` \n")

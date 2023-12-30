@@ -9,7 +9,7 @@ from alpha_codium.gen.stages.run_analyze_and_fix_test_failure import run_analyze
 from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
 from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_tests import run_tests
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)

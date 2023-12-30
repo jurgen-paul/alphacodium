@@ -2,7 +2,7 @@ import functools
 import logging
 import numpy as np
 import yaml
-from alpha_codium.llm.ai_invoker import retry_with_fallback_models
+from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
@@ -23,7 +23,7 @@ async def run_initial_solve(self, problem, enable_record=True):
                 logger.info("Using recording")
                 logger.debug(f"response_solve:\n{response_solve}")
             else:
-                response_solve, _ = await retry_with_fallback_models(f)
+                response_solve, _ = await send_inference(f)
                 if do_recording:
                     np.save(recording_path + 'initial_solve.npy', response_solve)
 
