@@ -22,7 +22,6 @@ def set_configurations(problem, iteration=0):
         problem["recording_path"] = ''
     problem["do_recording"] = do_recording
     problem["use_recording"] = use_recording
-    problem['number_of_ai_tests'] = get_settings().get("ai_tests.number_of_ai_tests", 6)
 
     # initialize passed tests field
     problem['passed_tests'] = {}

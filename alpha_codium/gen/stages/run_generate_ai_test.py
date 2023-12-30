@@ -19,6 +19,7 @@ async def run_generate_ai_tests(self, problem):
 
             # get settings
             validate_ai_tests = get_settings().get('ai_tests.validate_ai_tests', False)
+            problem['number_of_ai_tests'] = get_settings().get("ai_tests.number_of_ai_tests", 8)
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_generate_ai_tests")
 
             # inference
