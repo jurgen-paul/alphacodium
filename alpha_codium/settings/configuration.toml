@@ -25,7 +25,11 @@ max_allowed_calls=6
 max_counter_public_tests=2
 disable_recording_public_tests=true
 
+[self_reflection]
+validate_self_reflection=true
+
 [ai_tests]
+validate_ai_tests=true
 number_of_ai_tests=8
 max_allowed_calls=5
 

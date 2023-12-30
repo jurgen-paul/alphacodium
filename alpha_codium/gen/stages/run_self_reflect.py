@@ -16,6 +16,7 @@ async def run_self_reflect(self, problem, double_validation=True):
     while True:
         try:
             logger.info("--reflection stage--")
+            validate_self_reflection = problem.get('self_reflection.validate_self_reflection', False)
             use_recording = problem.get('use_recording', False)
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
@@ -51,8 +52,8 @@ async def run_self_reflect(self, problem, double_validation=True):
             problem['tests_explanations'] = response_reflect_yaml['tests_explanations']
             problem['tests_explanations_str'] = response_reflect.split('tests_explanations:')[1]
 
-            # fix self-reflection
-            if double_validation:
+            # double validation self-reflection
+            if validate_self_reflection:
                 problem = await run_fix_self_reflect(self, problem)
 
             for s in problem['tests_explanations']:
