@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import yaml
 
+from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_validate_ai_test import run_validate_ai_tests
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -15,10 +16,10 @@ async def run_generate_ai_tests(self, problem):
     while True:
         try:
             logger.info("--generate ai tests stage--")
-            use_recording =problem.get('use_recording', False)
+            use_recording = problem.get('use_recording', False)
             do_recording = problem.get('do_recording', False)
             recording_path = problem.get('recording_path', '')
-            validate_ai_tests = problem.get('ai_tests.validate_ai_tests', False)
+            validate_ai_tests = get_settings().get('ai_tests.validate_ai_tests', False)
 
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_generate_ai_tests")
             if use_recording:

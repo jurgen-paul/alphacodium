@@ -3,7 +3,8 @@ import logging
 import numpy as np
 import yaml
 
-from alpha_codium.gen.stages.run_fix_self_reflect import run_fix_self_reflect
+from alpha_codium.config_loader import get_settings
+from alpha_codium.gen.stages.run_fix_self_reflect import run_validate_self_reflect
 from alpha_codium.gen.utils import postprocess_response
 from alpha_codium.llm.ai_invoker import retry_with_fallback_models
 from alpha_codium.log import get_logger
@@ -11,27 +12,20 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-async def run_self_reflect(self, problem, double_validation=True):
+async def run_self_reflect(self, problem):
     counter_retry = 0
     while True:
         try:
             logger.info("--reflection stage--")
-            validate_self_reflection = problem.get('self_reflection.validate_self_reflection', False)
-            use_recording = problem.get('use_recording', False)
-            do_recording = problem.get('do_recording', False)
-            recording_path = problem.get('recording_path', '')
 
+            # get settings
+            validate_self_reflection = get_settings().get('self_reflection.validate_self_reflection', False)
             actual_number_of_tests = len(problem['public_tests']['input'])
             problem['actual_number_of_tests'] = actual_number_of_tests
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_reflect")
-            if use_recording:
-                response_reflect = np.load(recording_path + 'reflect.npy', allow_pickle=True).tolist()
-                logger.info("Using recording")
-                logger.debug(f"response_reflect:\n{response_reflect}")
-            else:
-                response_reflect, _ = await retry_with_fallback_models(f)
-                if do_recording:
-                    np.save(recording_path + 'reflect.npy', response_reflect)
+
+            # inference
+            response_reflect, _ = await retry_with_fallback_models(f)
             response_reflect = response_reflect.rstrip("` \n")
             try:
                 response_reflect_yaml = yaml.safe_load(response_reflect)
@@ -39,11 +33,12 @@ async def run_self_reflect(self, problem, double_validation=True):
                 response_reflect = postprocess_response(response_reflect)  # try to include only the yaml part
                 response_reflect_yaml = yaml.safe_load(response_reflect)
 
+            # check number of tests
             actual_number_of_tests = len(problem['public_tests']['input'])
             calculated_number_of_tests = len(response_reflect_yaml['tests_explanations'])
             if actual_number_of_tests != calculated_number_of_tests:
                 raise (f"Error: number of tests in self-reflection ({calculated_number_of_tests}) "
-                             f"does not match the actual number of tests ({actual_number_of_tests})")
+                       f"does not match the actual number of tests ({actual_number_of_tests})")
             problem['response_reflect'] = response_reflect
             try:
                 problem['self_reflection'] = '- ' + '\n- '.join(response_reflect_yaml['self_reflection'])
@@ -54,7 +49,7 @@ async def run_self_reflect(self, problem, double_validation=True):
 
             # double validation self-reflection
             if validate_self_reflection:
-                problem = await run_fix_self_reflect(self, problem)
+                problem = await run_validate_self_reflect(self, problem)
 
             for s in problem['tests_explanations']:
                 s['input'] = s['input'].replace('\\n', '\n')
