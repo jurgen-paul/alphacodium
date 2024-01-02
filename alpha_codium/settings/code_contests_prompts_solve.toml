@@ -1,5 +1,5 @@
 [code_contests_prompts_solve]
-temperature = 0.4
+temperature = 0.3
 system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 - Double-check the solution code. The generated solution must generalize to any valid input, and not just the provided examples.
@@ -20,14 +20,14 @@ self-reflection on the problem:
 ======
 
 
-Your goal is to generate a valid Python code that correctly solves the problem, using the following algorithm:
+Your goal is to generate a valid Python code that correctly solves the code contest problem, using the following algorithm:
 =============
 {{ s_best_solution|trim }}
 =============
 
 
 
-guidelines:
+Guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
 - Double-check the solution code. The generated solution must generalize to any valid input, and not just the provided examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
@@ -52,6 +52,7 @@ if __name__ == "__main__":
 The code should read the input using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
 
-answer:
+
+Answer:
 ```python
 """

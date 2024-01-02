@@ -5,14 +5,7 @@ system="""\
 - The fixed code should be robust and general, and work for other input examples as well.
 """
 user="""\
-{%- if present_short_description %}
-you are given a code contest problem:
-=============
-{{ self_reflection|trim }}
-=============
-
-{%- else %}
-you are given a code contest problem, and a self-reflection on the problem:
+You are given a code contest problem:
 
 
 problem description:
@@ -21,14 +14,7 @@ problem description:
 =============
 
 
-self reflection on the problem:
-=============
-{{ self_reflection|trim }}
-=============
-{% endif %}
-
-
-A previous python solution code generated for the problem:
+A previous Python solution code was generated for the problem:
 =============
 {{ code_recent_solution|trim }}
 =============
@@ -55,10 +41,10 @@ Here is a fixed flow, that a correct solution code should follow:
 =============
 
 
-Using the analysis above, you need generate a fixed solution code, that will pass all the tests.
+Using the analysis above, you need to generate a fixed solution code, that will pass all the tests.
 Additional guidelines for generating the fixed code:
-- The fixed solution code must pass all the tests, and have a reasonable runtime - less than 3 seconds on a modern computer, under the problem constraints.
-- Make sure the new solution code generalizes to all possible input-output examples, and not only to the provided input-output examples.
+- The fixed solution code must pass all the tests, and have a reasonable runtime - less than three seconds on a modern computer, under the problem constraints.
+- Make sure the new solution code generalizes to all possible input-output examples, not just the provided input-output examples.
 - You must divide the new solution code into small sub-functions, with meaningful names and functionality
 
 

@@ -13,19 +13,9 @@ async def run_initial_solve(self, problem, enable_record=True):
     while True:
         try:
             logger.info("--initial solve stage--")
-            use_recording =problem.get('use_recording', False) and enable_record
-            do_recording = problem.get('do_recording', False) and enable_record
-            recording_path = problem.get('recording_path', '')
 
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
-            if use_recording:
-                response_solve = np.load(recording_path + 'initial_solve.npy', allow_pickle=True).tolist()
-                logger.info("Using recording")
-                logger.debug(f"response_solve:\n{response_solve}")
-            else:
-                response_solve, _ = await send_inference(f)
-                if do_recording:
-                    np.save(recording_path + 'initial_solve.npy', response_solve)
+            response_solve, _ = await send_inference(f)
 
             # clean up the response
             response_solve = response_solve.rstrip("` \n")

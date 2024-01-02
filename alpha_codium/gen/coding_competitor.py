@@ -22,7 +22,7 @@ from alpha_codium.gen.stages.run_generate_ai_test import run_generate_ai_tests
 from alpha_codium.gen.stages.run_generate_possible_solutions import run_generate_possible_solutions
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_self_reflect import run_self_reflect
-from alpha_codium.gen.stages.run_evaluate_a_simple_test import run_evaluate_a_simple_test
+from alpha_codium.gen.stages.run_initial_code_generation import run_initial_code_generation
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.gen.stages.utils import set_configurations
 from alpha_codium.gen.utils import evaluate_solution_on_subset
@@ -79,11 +79,8 @@ class CodeContestsCompetitor:
             # generate ai tests
             problem = await run_generate_ai_tests(self, problem)
 
-            # initial solve
-            problem = await run_initial_solve(self, problem)
-
-            # run a simple test first
-            problem = await run_evaluate_a_simple_test(self, problem)
+            # initial code generation
+            problem = await run_initial_code_generation(self, problem)
 
             # evaluate on public tests
             problem = await run_evaluate_public_tests(self, problem)

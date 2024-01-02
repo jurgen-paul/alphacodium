@@ -33,11 +33,13 @@ use_test_explanations=true
 add_public_tests_to_ai_tests=true
 #max_allowed_calls=5
 
+[initial_code_generation]
+max_attempts=5
+
 [public_tests]
 max_allowed_calls=6
-max_counter_public_tests=2
-disable_recording_public_tests=true
-
+max_fixes_per_test=3
+use_test_explanations=true
 
 [etl]
 #private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"

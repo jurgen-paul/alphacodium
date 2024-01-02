@@ -17,7 +17,7 @@ async def run_analyze_test_failure(self, problem,error_str):
     while True:
         try:
             problem['error_str'] = error_str
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_analyze_trace")
+            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_analyze_failure")
             response_analyze_failure, _ = await send_inference(f)
             problem['error_str'] = ''
 
