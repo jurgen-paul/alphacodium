@@ -12,15 +12,19 @@ async def run_validate_ai_tests(self, problem):
     while True:
         try:
             logger.info("--validate ai tests stage--")
+
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_validate_ai_tests")
             response_problem_tests, _ = await send_inference(f)
             response_problem_tests = response_problem_tests.rstrip("` \n")
             if response_problem_tests.startswith("```yaml"):
                 response_problem_tests = response_problem_tests[8:]
             problem['problem_ai_tests'] = yaml.safe_load(response_problem_tests)['tests']
+
+            # clean up and parse the response
             for p in problem['problem_ai_tests']:
                 p['input'] = p['input'].replace('\\n', '\n')
                 p['output'] = p['output'].replace('\\n', '\n')
+
             return problem
         except Exception as e:
             logging.error(f"'validate ai tests' stage, counter_retry {counter_retry}, Error: {e}")

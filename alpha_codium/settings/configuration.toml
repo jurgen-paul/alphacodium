@@ -12,7 +12,6 @@ evaluate_prev_solutions=false
 
 
 [solve]
-# 165 problems
 max_iterations = 3 # X iterations to try to solve the problem
 reduce_verbose = false
 use_baseline = false
@@ -27,10 +26,12 @@ max_num_of_possible_solutions=3
 use_test_explanations=true
 remove_bruce_force_solutions=true
 
-[ai_tests]
+[generate_ai_tests]
 validate_ai_tests=true
 number_of_ai_tests=8
-max_allowed_calls=5
+use_test_explanations=true
+add_public_tests_to_ai_tests=true
+#max_allowed_calls=5
 
 [public_tests]
 max_allowed_calls=6

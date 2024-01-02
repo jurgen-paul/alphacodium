@@ -18,8 +18,9 @@ async def run_generate_ai_tests(self, problem):
             logger.info("--generate ai tests stage--")
 
             # get settings
-            validate_ai_tests = get_settings().get('ai_tests.validate_ai_tests', False)
-            problem['number_of_ai_tests'] = get_settings().get("ai_tests.number_of_ai_tests", 8)
+            validate_ai_tests = get_settings().get('generate_ai_tests.validate_ai_tests', False)
+            problem['number_of_ai_tests'] = get_settings().get("generate_ai_tests.number_of_ai_tests", 8)
+            problem['use_test_explanations_possible_solutions'] = get_settings().get('generate_ai_tests.use_test_explanations')
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_generate_ai_tests")
 
             # inference
@@ -36,12 +37,13 @@ async def run_generate_ai_tests(self, problem):
                 problem = await run_validate_ai_tests(self, problem)
 
             # adding public tests to the beginning and end of the list, for the ai-iterate stage
-            for public_input, public_output in zip(problem['public_tests']['input'],
-                                                   problem['public_tests']['output']):
-                # to the beginning of the list
-                problem['problem_ai_tests'].insert(0, {'input': public_input, 'output': public_output})
-                # to the end of the list
-                problem['problem_ai_tests'].append({'input': public_input, 'output': public_output})
+            if get_settings().get('generate_ai_tests.add_public_tests_to_ai_tests', False):
+                for public_input, public_output in zip(problem['public_tests']['input'],
+                                                       problem['public_tests']['output']):
+                    # to the beginning of the list
+                    problem['problem_ai_tests'].insert(0, {'input': public_input, 'output': public_output})
+                    # to the end of the list
+                    problem['problem_ai_tests'].append({'input': public_input, 'output': public_output})
 
             return problem
         except Exception as e:
