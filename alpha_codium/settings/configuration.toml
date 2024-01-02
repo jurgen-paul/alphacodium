@@ -1,22 +1,19 @@
 [config]
-#model="gpt-4"
-model = "gpt-3.5-turbo-16k"
-requests_per_minute=60
+model="gpt-4"
+#model = "gpt-3.5-turbo-16k"
+max_requests_per_minute=60
 fallback_models =[]
 git_provider="github"
 verbosity_level=0 # 0,1,2
-ai_timeout=120
+ai_timeout=120 # seconds
 
 [dataset]
 evaluate_prev_solutions=false
-
 
 [solve]
 max_iterations = 3 # X iterations to try to solve the problem
 reduce_verbose = false
 use_baseline = false
-do_recording = false
-use_recording = false
 
 [self_reflection]
 validate_self_reflection=true
@@ -31,7 +28,6 @@ validate_ai_tests=true
 number_of_ai_tests=8
 use_test_explanations=true
 add_public_tests_to_ai_tests=true
-#max_allowed_calls=5
 
 [initial_code_generation]
 max_attempts=5
@@ -48,18 +44,15 @@ max_allowed_calls=6
 #private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 #private_dataset_cache_dir='/Users/talrid/Desktop/code_contest_dataset'
 
-
 [code_tester]
 tester_type="local" # local, code_contests
 order_matters=true
 sandbox=false
+delta=0.0001
 calc_trace=false
 use_trace=false
 max_trace_lines=50
 trace_depth=4
-delta=0.0001
-#prefer_dynamic_programming=true
-
 
 [code_contests_tester]
 num_threads = 4

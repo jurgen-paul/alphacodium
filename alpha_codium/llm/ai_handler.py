@@ -27,7 +27,7 @@ class AiHandler:
         Initializes the OpenAI API key and other settings from a configuration file.
         Raises a ValueError if the OpenAI key is missing.
         """
-        self.limiter = AsyncLimiter(get_settings().config.requests_per_minute)
+        self.limiter = AsyncLimiter(get_settings().config.max_requests_per_minute)
         try:
             openai.api_key = get_settings().openai.key
             litellm.openai_key = get_settings().openai.key
