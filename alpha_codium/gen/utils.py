@@ -83,3 +83,33 @@ def evaluate_solution_on_subset(evaluation_test_type, problem, solution, silent=
             logger.info("=====================================")
 
     return test_results, test_passed, test_failed, test_timeout
+
+
+def evaluate_on_private_tests(evaluation_test_type, problem, solution, silent=True):
+    # evaluate solution
+    test_results = None
+    if evaluation_test_type:
+        test_results = eval_solution(evaluation_test_type=evaluation_test_type, example=problem, prediction=solution, silent=silent)
+
+    test_passed = 0
+    test_failed = 0
+    test_timeout = 0
+
+    if not test_results[1]:
+        logger.info("No tests were run")
+        return test_results, 0, 0
+
+    for test in test_results[1].test_results:
+        if test.program_status.name=='kTimeout':
+            test_timeout += 1
+        elif not test.passed:
+            test_failed += 1
+        else:
+            test_passed += 1
+
+
+    logger.info("=====================================")
+    logger.info(f"test_passed: {test_passed}, test_failed: {test_failed}, test_timeout: {test_timeout}")
+    logger.info("=====================================")
+
+    return test_results, test_passed, test_failed, test_timeout

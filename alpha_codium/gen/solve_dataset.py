@@ -13,40 +13,30 @@ from alpha_codium.log import get_logger, setup_logger
 logger = get_logger(__name__)
 
 
-
-
 def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
-
     # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
     num_problems = len(data_provider.dataset[split_name])
     base_path = os.getcwd()
-    path_database= f'{base_path}/{split_name}_test_database.json'
-    path_database_backup= f'{base_path}/{split_name}_test_database_backup.json'
+    path_database = f'{base_path}/{split_name}_test_database.json'
+    path_database_backup = f'{base_path}/{split_name}_test_database_backup.json'
     log_path = f'{base_path}/example.log'
-    # working_dir = f'{base_path}/alpha_codium/gen'
     get_settings().solve.reduce_verbose = True
 
     ## load database
     try:
         with open(path_database, 'r') as f:
             database = json.load(f)
-            database[split_name] = OrderedDict(sorted(database[split_name] .items(), key=lambda x: int(x[0])))
+            database[split_name] = OrderedDict(sorted(database[split_name].items(), key=lambda x: int(x[0])))
     except:
         print(f"Failed to load database from {path_database}")
         database = {split_name: {}}
-
-    # for d in database[split_name]:
-    #     if 'codium' in database[split_name][d]:
-    #         for it in database[split_name][d]['codium']:
-    #             if 'iteration' in it:
-    #                 database[split_name][d]['codium'][it] = None
 
     # iterate on problems
     for problem_number in range(0, num_problems):
         # skip if already ran
         prev = database[split_name].get(str(problem_number), {}).get('codium', {}).get('iteration_0', {})
-        if not ((prev=={}) or (prev is None)):
+        if not ((prev == {}) or (prev is None)):
             print(f"problem_number {problem_number} already ran")
             continue
 
@@ -54,13 +44,14 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
             logger.info(f"problem {problem_number} is not valid")
             continue
 
-        sim_results = database[split_name].get(str(problem_number), {}).get('codium', {}).get('simulation',{})
+        sim_results = database[split_name].get(str(problem_number), {}).get('codium', {}).get('simulation', {})
         already_solved = False
         try:
             for it_name in sim_results:
-                it_vals=sim_results[it_name]
-                if (it_vals['test_failed_private'] + it_vals['test_timeout_private'] + it_vals['test_failed_generate'] + it_vals['test_timeout_generate'] == 0) \
-                    and (it_vals['test_passed_private'] + it_vals['test_passed_generate'] > 0):
+                it_vals = sim_results[it_name]
+                if (it_vals['test_failed_private'] + it_vals['test_timeout_private'] + it_vals['test_failed_generate'] +
+                    it_vals['test_timeout_generate'] == 0) \
+                        and (it_vals['test_passed_private'] + it_vals['test_passed_generate'] > 0):
                     logger.info(f"problem {problem_number} already solved in simulation")
                     already_solved = True
                     break
@@ -111,8 +102,10 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
                         problem_database[problem_number]['public_solution']['solution'] = sol_published
                         problem_database[problem_number]['public_solution']['test_passed_private'] = test_passed_private
                         problem_database[problem_number]['public_solution']['test_failed_private'] = test_failed_private
-                        problem_database[problem_number]['public_solution']['test_passed_generate'] = test_passed_generate
-                        problem_database[problem_number]['public_solution']['test_failed_generate'] = test_failed_generate
+                        problem_database[problem_number]['public_solution'][
+                            'test_passed_generate'] = test_passed_generate
+                        problem_database[problem_number]['public_solution'][
+                            'test_failed_generate'] = test_failed_generate
                         break
                 if not found_solution:
                     problem_database[problem_number]['public_solution'] = {}
@@ -120,11 +113,11 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
             except:
                 pass
 
-
         # solve problem
         problem_database[problem_number]['codium'] = {}
         if 'simulation' in database[split_name].get(str(problem_number), {}).get('codium', {}):
-            problem_database[problem_number]['codium']['simulation'] = database[split_name].get(str(problem_number), {}).get('codium', {})['simulation']
+            problem_database[problem_number]['codium']['simulation'] = \
+            database[split_name].get(str(problem_number), {}).get('codium', {})['simulation']
 
         solver = CodeContestsCompetitor()
         setting = get_settings()
@@ -137,18 +130,21 @@ def solve_dataset(dataset_name='valid_and_test_processed', split_name='test'):
                 logger.info(f"codium failed to solve problem {problem_number} in iteration {iteration}")
                 continue
             logger.info(f"evaluating solution on public tests...")
-            test_results, test_passed_public, test_failed_public, test_timeout_public = evaluate_solution_on_subset('public_tests', problem, solution, silent=True)
+            test_results, test_passed_public, test_failed_public, test_timeout_public = evaluate_solution_on_subset(
+                'public_tests', problem, solution, silent=True)
 
             logger.info(f"evaluating solution on private tests...")
-            test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset('private_tests', problem, solution, silent=True)
+            test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset(
+                'private_tests', problem, solution, silent=True)
 
             logger.info(f"evaluating solution on generated tests...")
-            test_results, test_passed_generate, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset('generated_tests', problem, solution, silent=True)
+            test_results, test_passed_generate, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset(
+                'generated_tests', problem, solution, silent=True)
 
-
-            logger.info(f"\ntest_passed_public: {test_passed_public}, test_failed_public: {test_failed_public}, test_timeout_public: {test_timeout_public}\n"
-                        f"test_passed_private: {test_passed_private}, test_failed_private: {test_failed_private}, test_timeout_private: {test_timeout_private}\n"
-                        f"test_passed_generate: {test_passed_generate}, test_failed_generate: {test_failed_generate}, test_timeout_generate: {test_timeout_generate}\n")
+            logger.info(
+                f"\ntest_passed_public: {test_passed_public}, test_failed_public: {test_failed_public}, test_timeout_public: {test_timeout_public}\n"
+                f"test_passed_private: {test_passed_private}, test_failed_private: {test_failed_private}, test_timeout_private: {test_timeout_private}\n"
+                f"test_passed_generate: {test_passed_generate}, test_failed_generate: {test_failed_generate}, test_timeout_generate: {test_timeout_generate}\n")
 
             problem_database[problem_number]['codium'][it_str]['solution'] = solution
             problem_database[problem_number]['codium'][it_str]['test_passed_private'] = test_passed_private

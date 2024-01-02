@@ -20,7 +20,7 @@ class CodeContestDataProvider:
 
     def __init__(self, dataset_location=hf_dataset_name, connection=None):
         self.private_datasets_root = os.path.expanduser(
-            get_settings().etl.private_dataset_cache_dir
+            get_settings().config.private_dataset_cache_dir
         )
         (
             self.dataset_location,
