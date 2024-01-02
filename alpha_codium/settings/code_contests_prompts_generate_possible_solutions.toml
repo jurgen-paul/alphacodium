@@ -16,8 +16,15 @@ self-reflection on the problem:
 {{ self_reflection|trim }}
 ============
 
+{%- if use_test_explanations_possible_solutions %}
 
-Your goal is to present possible solutions to the problem.
+
+Here are also explanations for the test cases:
+{{ tests_explanations_str|trim }}
+{%- endif %}
+
+
+Your goal is to provide possible solutions to the code contest problem.
 
 Guidelines:
 - Make sure each solution fully addresses the problem goals, constraints, examples, and notes.

@@ -19,6 +19,7 @@ async def run_generate_possible_solutions(self, problem):
 
             # get settings
             problem['max_num_of_possible_solutions'] = get_settings().get('possible_solutions.max_num_of_possible_solutions')
+            problem['use_test_explanations_possible_solutions'] = get_settings().get('possible_solutions.use_test_explanations')
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_generate_possible_solutions")
 
             # inference

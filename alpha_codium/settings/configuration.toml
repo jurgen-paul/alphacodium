@@ -19,12 +19,12 @@ use_baseline = false
 do_recording = false
 use_recording = false
 
-
 [self_reflection]
 validate_self_reflection=true
 
 [possible_solutions]
 max_num_of_possible_solutions=3
+use_test_explanations=true
 
 [ai_tests]
 validate_ai_tests=true
