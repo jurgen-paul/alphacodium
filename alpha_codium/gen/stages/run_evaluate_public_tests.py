@@ -29,7 +29,7 @@ async def run_evaluate_public_tests(self, problem):
             # evaluate on public tests one by one
             test_inputs_all = problem['public_tests']['input']
             test_outputs_all = problem['public_tests']['output']
-            test_explanations_all = problem['public_tests']['tests_explanations']
+            test_explanations_all = problem['tests_explanations']
             all_passed_public = True
             actual_number_of_llm_calls = 0
             for test_inputs, test_outputs, test_explanation in zip(test_inputs_all, test_outputs_all,

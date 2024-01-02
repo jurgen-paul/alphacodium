@@ -1,7 +1,7 @@
 [code_contests_prompt_analyze_failure]
 temperature = 0.3
-#system = """\
-#"""
+system = """\
+"""
 user="""\
 You are given a code contest problem, and a self-reflection on the problem:
 
@@ -31,7 +31,7 @@ However, when running the following input example, the code solution above faile
 
 {%- if use_test_explanations_public %}
 
-Here is an explanation for the input-output test:
+Here is an explanation of how the input should have led to the expected output:
 ======
 {{ test_explanation_current|trim }}
 ======

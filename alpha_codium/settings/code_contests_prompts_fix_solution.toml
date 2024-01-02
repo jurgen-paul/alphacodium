@@ -6,9 +6,6 @@ system="""\
 """
 user="""\
 You are given a code contest problem:
-
-
-problem description:
 =============
 {{ description_short|trim }}
 =============
