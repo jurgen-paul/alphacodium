@@ -25,6 +25,13 @@ async def run_generate_possible_solutions(self, problem):
             # inference
             response_possible_solutions, _ = await send_inference(f)
             response_possible_solutions_yaml = yaml.safe_load(response_possible_solutions)
+
+            if get_settings().get('possible_solutions.remove_bruce_force_solutions'):
+                for i, s in enumerate(response_possible_solutions_yaml['possible_solutions']):
+                    if 'brute' in s['name'].lower():
+                        response_possible_solutions_yaml['possible_solutions'].pop(i)
+                        response_possible_solutions = yaml.dump(response_possible_solutions_yaml, sort_keys=False, line_break="\n")
+                        break
             problem['s_possible_solutions'] = response_possible_solutions_yaml['possible_solutions']
             problem['s_possible_solutions_str'] = response_possible_solutions.split('possible_solutions:')[1].strip()
 

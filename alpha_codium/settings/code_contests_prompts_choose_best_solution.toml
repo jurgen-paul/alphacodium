@@ -19,7 +19,7 @@ self-reflection on the problem:
 =======
 
 
-Here is a list of possible solutions to the problem:
+Here is a list of {{ s_possible_solutions|length }} possible solutions to the problem:
 =======
 {{ s_possible_solutions_str|trim }}
 =======
@@ -27,7 +27,7 @@ Here is a list of possible solutions to the problem:
 
 Using the inputs above, your goal is to choose the best solution to the code contest problem.
 Don't just pick the most efficient solution. The main consideration is that the solution can fully solve the problem in a simple and robust manner.
-Make sure the chosen solution has a reasonable runtime - less than 3 seconds on a modern computer, given the problem constraints regarding large inputs.
+Make sure the chosen solution has a reasonable runtime - less than three seconds on a modern computer, given the problem constraints regarding large inputs.
 
 The output must be a YAML object equivalent to type $ProblemSolution, according to the following Pydantic definitions:
 =======
@@ -39,9 +39,9 @@ class ProblemSolution(BaseModel):
     name: str = Field(description="The name of the best solution")
     content: str = Field(description="The content of the best solution")
     why: str = Field(description="Shortly explain why is this the best solution")
-    flow: List[str] = Field(description="Detailed description of the flow of the solution, in bullet points")
+    flow: List[str] = Field(description="Describe of the flow of the solution, in bullet points")
     problem_tests: List[Test] = Field("List the input-output examples that are provided in the problem description.")
-    input_output_examples_flow: List[str] = Field(description="Describe in details, in bullet points, how the proposed flow will lead to getting the expected output for the provided input examples")
+    input_output_examples_flow: List[str] = Field(description="Describe, in bullet points, how the proposed flow will lead to getting the expected output for the provided input examples")
 =======
 
 

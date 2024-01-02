@@ -22,11 +22,14 @@ async def run_choose_best_solution(self, problem):
             response_best_solution, _ = await send_inference(f)
             response_best_solution = response_best_solution.rstrip("` \n")
             response_best_solution_yaml = yaml.safe_load(response_best_solution)  # noqa
+
+            # update best solution
             problem['s_best_solution'] = response_best_solution
             problem['s_other_solutions'] = []
             for solution in problem['s_possible_solutions']:
                 if solution['name'] != response_best_solution_yaml['name']:
                     problem['s_other_solutions'].append(solution)
+
             return problem
         except Exception as e:
             logging.error(f"'run_choose_best_solution' stage, counter_retry {counter_retry}, Error: {e}")
