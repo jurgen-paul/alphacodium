@@ -35,7 +35,6 @@ def preapare_and_clean_dataset(dataset_name='valid_and_test'):
     data_provider = problem_29_test_fix(data_provider)
     data_provider = problem_92_test_fix(data_provider)
 
-
     # sorting so that 'python' solutions will be first
     data_provider = sort_solution_by_language(data_provider)
 
@@ -69,7 +68,7 @@ def calc_is_valid_problem(data_provider):
             test_failed_private_list = []
             test_failed_generated_list = []
             counter = 0
-            timeout_len = 30  # 30 seconds
+            timeout_len = 60  # 60 seconds
             start_time = time.time()
             for language, sol in zip(l_list, s_list):
                 if 'python' not in language.lower():
@@ -89,7 +88,7 @@ def calc_is_valid_problem(data_provider):
                                                   break_on_timeout=True)
                 test_failed_private_list.append(test_failed_private)
                 test_failed_generated_list.append(test_failed_generate)
-                if (time.time() > start_time + timeout_len) and counter > 5:
+                if (time.time() > start_time + timeout_len) and counter > 10:
                     continue
             if not test_failed_private_list:
                 logger.info(f"problem {i} in split '{split_name}' has no python solutions")
@@ -101,11 +100,11 @@ def calc_is_valid_problem(data_provider):
 
             # final decision
             if frac_correct < th_correct:
-                logger.info(f"Failed - problem {i} in split {split_name} is invalid, has {frac_correct} correct solutions, "
+                logger.info(f"Failed - problem {i} in split {split_name} is invalid, has {frac_correct*100}% correct solutions, "
                             f"total of {len(test_failed_private_list)} solutions processed")
                 ds_dict['is_valid_problem'][i] = False
             else:
-                logger.info(f"Passed - problem {i} in split {split_name} is valid, has {frac_correct} correct solutions, "
+                logger.info(f"Passed - problem {i} in split {split_name} is valid, has {frac_correct*100}% correct solutions, "
                             f"total of {len(test_failed_private_list)} solutions processed")
 
         data_provider.dataset[split_name] = Dataset.from_dict(ds_dict)
