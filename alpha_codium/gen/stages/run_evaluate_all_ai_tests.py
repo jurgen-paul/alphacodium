@@ -19,9 +19,10 @@ async def run_evaluate_all_ai_tests(self, problem):
     try:
         logger.info("--iterate on all ai tests stage--")
 
-        # evaluate ai tests
         ai_tests = problem['problem_ai_tests']
-        max_allowed_calls = get_settings().get("ai_tests.max_allowed_calls", 10)
+        max_allowed_calls = get_settings().get("ai_tests.max_allowed_calls", 6)
+
+        # evaluate ai tests
         actual_number_of_calls = 0
         for i, test in enumerate(ai_tests):
             counter = 0
@@ -41,7 +42,6 @@ async def run_evaluate_all_ai_tests(self, problem):
                     logger.info(f"Passed ai tests without code fixing. adding to passed tests list")
                     problem['passed_tests']['inputs'] += test_inputs
                     problem['passed_tests']['outputs'] += test_outputs
-
             else:
                 # cap the number of calls to the ai
                 if actual_number_of_calls >= max_allowed_calls:

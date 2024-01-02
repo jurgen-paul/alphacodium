@@ -42,16 +42,9 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
                     return problem
             problem['code_recent_solution'] = code_recent_solution
 
-            diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
-                                        problem['code_recent_solution'].splitlines(keepends=True))
-            patch = ''.join(diff)
-            # problem['diff_patch'] = patch
-            # problem['specific_test_explanation'] = ''
-            # problem['passed_tests_str'] = ''
-            if get_settings().solve.reduce_verbose:
-                logger.debug(f"diff:\n{patch}")
-            else:
-                logger.info(f"diff:\n{patch}")
+            # diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
+            #                             problem['code_recent_solution'].splitlines(keepends=True))
+            # patch = ''.join(diff)
             return problem
         except Exception as e:
             logging.error(f"'analyze_and_fix_test_failure' stage, counter_retry {counter_retry}, Error: {e}")
