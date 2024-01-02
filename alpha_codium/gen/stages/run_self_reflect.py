@@ -1,9 +1,8 @@
 import functools
 import logging
-import numpy as np
 import yaml
 
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 from alpha_codium.gen.stages.run_fix_self_reflect import run_validate_self_reflect
 from alpha_codium.gen.utils import postprocess_response
 from alpha_codium.llm.ai_invoker import send_inference

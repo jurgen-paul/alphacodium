@@ -8,7 +8,7 @@ import pandas as pd
 from datasets import Dataset, DatasetDict, load_dataset, load_from_disk
 from datasets.features.features import Sequence, Value
 
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 
 problem_translations = ("source", "difficulty")
 

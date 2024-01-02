@@ -8,7 +8,7 @@ from litellm import acompletion
 from openai.error import APIError, RateLimitError, Timeout, TryAgain
 from retry import retry
 
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)

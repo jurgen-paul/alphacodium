@@ -1,18 +1,17 @@
 [config]
-model="gpt-4"
-#model = "gpt-3.5-turbo-16k"
+#model="gpt-4"
+model = "gpt-3.5-turbo-16k"
 max_requests_per_minute=60
 fallback_models =[]
-git_provider="github"
 verbosity_level=0 # 0,1,2
 ai_timeout=120 # seconds
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [dataset]
 evaluate_prev_solutions=false
+num_iterations=3 # X iterations to try to solve the problem
 
 [solve]
-max_iterations = 3 # X iterations to try to solve the problem
 reduce_verbose = false
 use_baseline = false
 
@@ -44,8 +43,9 @@ max_allowed_calls=6
 [code_tester]
 tester_type="local" # local, code_contests
 order_matters=true
-sandbox=false
+sandbox=true
 delta=0.0001
+# trace
 calc_trace=false
 use_trace=false
 max_trace_lines=50

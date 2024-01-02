@@ -1,6 +1,6 @@
 import pysnooper
 
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 
 filter_out_lines = ["Starting var:",
                     "exec(",

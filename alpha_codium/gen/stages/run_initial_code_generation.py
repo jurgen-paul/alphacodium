@@ -1,10 +1,7 @@
 import copy
-import functools
 import logging
-import numpy as np
-import yaml
 
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 from alpha_codium.gen.stages.run_initial_solve import run_initial_solve
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.log import get_logger

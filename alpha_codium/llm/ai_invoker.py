@@ -2,7 +2,7 @@ import logging
 import traceback
 from typing import Callable, List
 
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 
 
 async def send_inference(f: Callable):

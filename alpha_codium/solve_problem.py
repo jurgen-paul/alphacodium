@@ -2,6 +2,7 @@ import argparse
 
 from alpha_codium.gen.coding_competitor import solve_problem
 from alpha_codium.log import setup_logger
+from alpha_codium.settings.config_loader import get_settings
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_name", type=str, default="valid_and_test_processed")

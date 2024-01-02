@@ -14,7 +14,7 @@ from alpha_codium.code_contests.eval.local_exec import (
     calculate_tests_pass_fail,
     execute_candidate_code,
 )
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)

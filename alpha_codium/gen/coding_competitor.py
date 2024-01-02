@@ -4,7 +4,6 @@ import os
 from jinja2 import Environment, StrictUndefined
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
-from alpha_codium.config_loader import get_settings
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
 from alpha_codium.gen.stages.run_evaluate_all_ai_tests import run_evaluate_all_ai_tests
 from alpha_codium.gen.stages.run_evaluate_public_tests import run_evaluate_public_tests
@@ -16,6 +15,7 @@ from alpha_codium.gen.stages.utils import set_configurations
 from alpha_codium.gen.utils import evaluate_solution_on_subset
 from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.log import get_logger
+from alpha_codium.settings.config_loader import get_settings
 
 logger = get_logger(__name__)
 

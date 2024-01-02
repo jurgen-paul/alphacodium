@@ -1,7 +1,7 @@
 import re
 
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
-from alpha_codium.config_loader import get_settings
+from alpha_codium.settings.config_loader import get_settings
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)

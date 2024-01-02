@@ -1,6 +1,3 @@
-import os
-
-from alpha_codium.config_loader import get_settings
 from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
