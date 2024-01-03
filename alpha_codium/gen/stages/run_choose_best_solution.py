@@ -1,10 +1,8 @@
-import copy
 import functools
 import logging
-import numpy as np
-import yaml
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
+from alpha_codium.gen.utils import load_yaml
 
 logger = get_logger(__name__)
 
@@ -20,8 +18,8 @@ async def run_choose_best_solution(self, problem):
 
             # inference
             response_best_solution, _ = await send_inference(f)
-            response_best_solution = response_best_solution.rstrip("` \n")
-            response_best_solution_yaml = yaml.safe_load(response_best_solution)  # noqa
+            response_best_solution_yaml = load_yaml(response_best_solution,
+                                        keys_fix_yaml=["name", "content","why","input","output"])
 
             # update best solution
             problem['s_best_solution'] = response_best_solution

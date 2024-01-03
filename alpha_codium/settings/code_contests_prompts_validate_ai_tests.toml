@@ -44,7 +44,6 @@ Class Test(BaseModel):
     input: str
     output: str
     explanation: str = Field(description="Explanation of how the input leads to the output.")
-    what_was_wrong: Optional[str] = Field(description="Describe shortly what was wrong with the previous output or the explanation, and how you fixed it. Leave empty if nothing was wrong.")
 
 class ProblemTests(BaseModel):
     tests: List[Test] = Field(min_items={{number_of_ai_tests}}, max_items={{number_of_ai_tests}})
@@ -59,8 +58,6 @@ tests:
   output: |
     ...
   explanation: |
-    ...
-  what_was_wrong: |
     ...
 ...
 ```

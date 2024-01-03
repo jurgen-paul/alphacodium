@@ -21,8 +21,8 @@ async def run_validate_ai_tests(self, problem):
 
             # clean up and parse the response
             for p in problem['problem_ai_tests']:
-                p['input'] = p['input'].replace('\\n', '\n')
-                p['output'] = p['output'].replace('\\n', '\n')
+                p['input'] = str(p['input']).replace('\\n', '\n')
+                p['output'] = str(p['output']).replace('\\n', '\n')
 
             return problem
         except Exception as e:
