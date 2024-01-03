@@ -9,9 +9,10 @@ import numpy as np
 from datasets import Dataset
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
-from alpha_codium.config_loader import get_settings
 from alpha_codium.log import get_logger, setup_logger
 from alpha_codium.gen.utils import evaluate_solution_on_subset
+from alpha_codium.settings.config_loader import get_settings
+
 logger = get_logger(__name__)
 
 

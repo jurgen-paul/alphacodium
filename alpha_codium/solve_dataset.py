@@ -20,6 +20,5 @@ if __name__ == "__main__":
         logger.info(f"args.database_solution_path: {args.database_solution_path}")
 
     solve_dataset(dataset_name=args.dataset_name,
-
                   split_name=args.split_name,
                   database_solution_path=args.database_solution_path)

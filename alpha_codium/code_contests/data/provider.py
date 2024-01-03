@@ -16,9 +16,8 @@ solution_translations = ("solutions", "incorrect_solutions")
 
 
 class CodeContestDataProvider:
-    hf_dataset_name = "deepmind/code_contests"
 
-    def __init__(self, dataset_location=hf_dataset_name, connection=None):
+    def __init__(self, dataset_location, connection=None):
         self.private_datasets_root = os.path.expanduser(
             get_settings().config.private_dataset_cache_dir
         )
@@ -84,7 +83,7 @@ class CodeContestDataProvider:
     def parse_location(self, dataset_location):
         result_location = dataset_location
         dataset_name = dataset_location.split(os.path.sep)[-1]
-        load_from_disk = dataset_location != CodeContestDataProvider.hf_dataset_name
+        load_from_disk = True
         if load_from_disk:
             if not result_location.startswith(os.path.sep):
                 result_location = os.path.join(
