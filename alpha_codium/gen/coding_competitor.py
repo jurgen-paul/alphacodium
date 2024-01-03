@@ -102,10 +102,10 @@ def solve_problem(dataset_name,
     problem = data_provider.find_problem(ds=data_provider.dataset, problem_name=problem_name, split_name=split_name)
     logger.info(f"problem['cf_tags']: {problem['cf_tags']}")
 
-    # check if problem is valid (at least one of the provided solutions actually passes the generated tests)
-    if not problem.get('is_valid_problem', True):
-        logger.info(f"problem['is_valid_problem'] == False, skipping")
-        return None, None
+    # # check if problem is valid (at least one of the provided solutions actually passes the generated tests)
+    # if not problem.get('is_valid_problem', True):
+    #     logger.info(f"problem['is_valid_problem'] == False, skipping")
+    #     return None, None
 
     # evaluate prev solutions
     evaluate_prev_solutions = get_settings().get("dataset.evaluate_prev_solutions", False)
@@ -141,6 +141,14 @@ def solve_problem(dataset_name,
     solver = CodeContestsCompetitor()
     os.chdir(base_path)
     solution = solver.solve_problem(problem)
+
+    logger.info(f"evaluating solution on public tests...")
+    test_results, test_passed_public, test_failed_public, test_timeout_public = evaluate_solution_on_subset('public_tests',
+                                                                                                       problem,
+                                                                                                       solution,
+                                                                                                       silent=True)
+
+
     logger.info(f"evaluating solution on private tests...")
     test_results, test_passed_private, test_failed_private, test_timeout_private = evaluate_solution_on_subset('private_tests',
                                                                                                        problem,
@@ -151,9 +159,9 @@ def solve_problem(dataset_name,
     test_results, test_passed_generate, test_failed_generate, test_timeout_generate = evaluate_solution_on_subset(
         'generated_tests', problem, solution, silent=True)
 
-    logger.info(f"\ntest_passed_generate: {test_passed_generate}, test_passed_private: {test_passed_private}"
-                f"\ntest_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}"
-                f"\ntest_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}")
+    logger.info(f"\ntest_passed_generate: {test_passed_generate}, test_passed_private: {test_passed_private}, test_passed_public: {test_passed_public}"
+                f"\ntest_failed_generate: {test_failed_generate}, test_failed_private: {test_failed_private}, test_failed_public: {test_failed_public}"
+                f"\ntest_timeout_generate: {test_timeout_generate}, test_timeout_private: {test_timeout_private}, test_timeout_public: {test_timeout_public}")
 
     return solution, test_results
 
