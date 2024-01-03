@@ -3,6 +3,7 @@ import logging
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 from alpha_codium.gen.utils import load_yaml
+from alpha_codium.settings.config_loader import get_settings
 
 logger = get_logger(__name__)
 
@@ -14,7 +15,7 @@ async def run_choose_best_solution(self, problem):
             logger.info("--choose best solution stage--")
 
             # get settings
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_choose_best_solution")
+            f = functools.partial(self._run, problem=problem, prompt=choose_prompt())
 
             # inference
             response_best_solution, _ = await send_inference(f)
@@ -34,3 +35,10 @@ async def run_choose_best_solution(self, problem):
             counter_retry += 1
             if counter_retry > 2:
                 raise e
+
+
+def choose_prompt():
+    if get_settings().get("dataset.use_direct_solutions", False):
+        return "code_contests_prompts_choose_best_solution"
+    else:
+        return "code_contests_prompts_choose_best_solution_direct"
