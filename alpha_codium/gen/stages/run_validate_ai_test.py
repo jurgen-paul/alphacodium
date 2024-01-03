@@ -1,6 +1,7 @@
 import functools
 import logging
-import yaml
+
+from alpha_codium.gen.utils import load_yaml
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 
@@ -15,10 +16,8 @@ async def run_validate_ai_tests(self, problem):
 
             f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_validate_ai_tests")
             response_problem_tests, _ = await send_inference(f)
-            response_problem_tests = response_problem_tests.rstrip("` \n")
-            if response_problem_tests.startswith("```yaml"):
-                response_problem_tests = response_problem_tests[8:]
-            problem['problem_ai_tests'] = yaml.safe_load(response_problem_tests)['tests']
+            problem['problem_ai_tests'] = load_yaml(response_problem_tests,
+                                        keys_fix_yaml=["input","output","explanation","what_was_wrong"])['tests']
 
             # clean up and parse the response
             for p in problem['problem_ai_tests']:

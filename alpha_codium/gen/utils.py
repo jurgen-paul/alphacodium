@@ -1,4 +1,7 @@
 import re
+from typing import List
+
+import yaml
 
 from alpha_codium.code_contests.eval.code_test_runners import eval_solution
 from alpha_codium.settings.config_loader import get_settings
@@ -113,3 +116,33 @@ def evaluate_on_private_tests(evaluation_test_type, problem, solution, silent=Tr
     logger.info("=====================================")
 
     return test_results, test_passed, test_failed, test_timeout
+
+
+def load_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
+    response_text = response_text.rstrip("` \n")
+    response_text = response_text.removeprefix('```yaml').rstrip('`')
+    try:
+        data = yaml.safe_load(response_text)
+    except Exception as e:
+        get_logger().error(f"Failed to parse AI prediction: {e}")
+        data = try_fix_yaml(response_text, keys_fix_yaml=keys_fix_yaml)
+    return data
+
+
+def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
+    response_text_lines = response_text.split('\n')
+
+    keys = keys_fix_yaml
+    response_text_lines_copy = response_text_lines.copy()
+    for i in range(0, len(response_text_lines_copy)):
+        for key in keys:
+            if key in response_text_lines_copy[i] and not '|' in response_text_lines_copy[i]:
+                response_text_lines_copy[i] = response_text_lines_copy[i].replace(f'{key}',
+                                                                                  f'{key} |-\n        ')
+    try:
+        data = yaml.safe_load('\n'.join(response_text_lines_copy))
+        get_logger().info(f"Successfully parsed AI prediction after adding |-\n")
+        return data
+    except:
+        get_logger().info(f"Failed to parse AI prediction after adding |-\n")
+        raise "yaml parsing error"
