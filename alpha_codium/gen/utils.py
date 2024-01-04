@@ -144,5 +144,5 @@ def try_fix_yaml(response_text: str, keys_fix_yaml: List[str] = []) -> dict:
         get_logger().info(f"Successfully parsed AI prediction after adding |-\n")
         return data
     except:
-        get_logger().info(f"Failed to parse AI prediction after adding |-\n")
+        # get_logger().info(f"Failed to parse AI prediction after adding |-\n")
         raise "yaml parsing error"

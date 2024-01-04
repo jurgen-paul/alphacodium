@@ -1,10 +1,12 @@
 [config]
 #model="gpt-4"
 model = "gpt-3.5-turbo-16k"
+#model = "https://deepseek.azure.codium.ai/"
+#model_type= "deepseek"
 max_requests_per_minute=60
 fallback_models =[]
 verbosity_level=0 # 0,1,2
-ai_timeout=60 # seconds
+ai_timeout=90 # seconds
 private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 
 [dataset]
@@ -17,7 +19,7 @@ reduce_verbose = false
 use_baseline = false
 
 [self_reflection]
-validate_self_reflection=true
+validate_self_reflection=false
 
 [possible_solutions]
 max_num_of_possible_solutions=3

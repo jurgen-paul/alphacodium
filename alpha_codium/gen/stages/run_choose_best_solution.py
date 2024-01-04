@@ -39,6 +39,6 @@ async def run_choose_best_solution(self, problem):
 
 def choose_prompt():
     if get_settings().get("dataset.use_direct_solutions", False):
-        return "code_contests_prompts_choose_best_solution"
-    else:
         return "code_contests_prompts_choose_best_solution_direct"
+    else:
+        return "code_contests_prompts_choose_best_solution"
