@@ -1,9 +1,8 @@
 import functools
 import logging
-import numpy as np
-import yaml
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
+from alpha_codium.settings.config_loader import get_settings
 
 logger = get_logger(__name__)
 
@@ -14,7 +13,7 @@ async def run_initial_solve(self, problem, enable_record=True):
         try:
             logger.info("--initial solve stage--")
 
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_solve")
+            f = functools.partial(self._run, problem=problem, prompt=choose_prompt())
             response_solve, _ = await send_inference(f)
 
             # clean up the response
@@ -33,3 +32,9 @@ async def run_initial_solve(self, problem, enable_record=True):
             counter_retry += 1
             if counter_retry > 2:
                 raise e
+
+def choose_prompt():
+    if get_settings().get("solve.use_direct_solutions", False):
+        return "code_contests_prompts_solve_direct"
+    else:
+        return "code_contests_prompts_solve"
