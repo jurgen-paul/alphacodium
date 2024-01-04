@@ -5,7 +5,9 @@ import litellm
 import openai
 from aiolimiter import AsyncLimiter
 from litellm import acompletion
-from openai.error import APIError, RateLimitError, Timeout, TryAgain
+from litellm import RateLimitError
+from litellm.exceptions import APIError
+# from openai.error import APIError, RateLimitError, Timeout, TryAgain
 from retry import retry
 
 from alpha_codium.settings.config_loader import get_settings
@@ -31,34 +33,22 @@ class AiHandler:
         try:
             openai.api_key = get_settings().openai.key
             litellm.openai_key = get_settings().openai.key
-            if get_settings().get("litellm.use_client"):
-                litellm_token = get_settings().get("litellm.LITELLM_TOKEN")
-                assert litellm_token, "LITELLM_TOKEN is required"
-                os.environ["LITELLM_TOKEN"] = litellm_token
-                litellm.use_client = True
             self.azure = False
-            if get_settings().get("OPENAI.ORG", None):
-                litellm.organization = get_settings().openai.org
-            if get_settings().get("OPENAI.API_TYPE", None):
-                if get_settings().openai.api_type == "azure":
-                    self.azure = True
-                    litellm.azure_key = get_settings().openai.key
-            if get_settings().get("OPENAI.API_VERSION", None):
-                litellm.api_version = get_settings().openai.api_version
-            if get_settings().get("OPENAI.API_BASE", None):
-                litellm.api_base = get_settings().openai.api_base
-            if get_settings().get("ANTHROPIC.KEY", None):
-                litellm.anthropic_key = get_settings().anthropic.key
-            if get_settings().get("COHERE.KEY", None):
-                litellm.cohere_key = get_settings().cohere.key
-            if get_settings().get("REPLICATE.KEY", None):
-                litellm.replicate_key = get_settings().replicate.key
-            if get_settings().get("REPLICATE.KEY", None):
-                litellm.replicate_key = get_settings().replicate.key
-            if get_settings().get("HUGGINGFACE.KEY", None):
-                litellm.huggingface_key = get_settings().huggingface.key
-                if get_settings().get("HUGGINGFACE.API_BASE", None):
-                    litellm.api_base = get_settings().huggingface.api_base
+            if "deepseek" in get_settings().get("config.model"):
+                litellm.register_prompt_template(
+                    model="huggingface/deepseek-ai/deepseek-coder-33b-instruct",
+                    roles={
+                        "system": {
+                            "pre_message": "",
+                            "post_message": "\n"
+                        },
+                        "user": {
+                            "pre_message": "### Instruction:\n",
+                            "post_message": "\n### Response:\n"
+                        },
+                    },
+
+                )
         except AttributeError as e:
             raise ValueError("OpenAI key is required") from e
 
@@ -70,14 +60,14 @@ class AiHandler:
         return get_settings().get("OPENAI.DEPLOYMENT_ID", None)
 
     @retry(
-        exceptions=(APIError, Timeout, TryAgain, AttributeError, RateLimitError),
+        exceptions=(AttributeError, RateLimitError),
         tries=OPENAI_RETRIES,
         delay=2,
         backoff=2,
         jitter=(1, 3),
     )
     async def chat_completion(
-        self, model: str, system: str, user: str, temperature: float = 0.2
+            self, model: str, system: str, user: str, temperature: float = 0.2
     ):
         """
         Performs a chat completion using the OpenAI ChatCompletion API.
@@ -111,17 +101,33 @@ class AiHandler:
                 logger.info("Running inference ...")
                 logger.debug(f"system:\n{system}")
                 logger.debug(f"user:\n{user}")
-                response = await acompletion(
-                    model=model,
-                    deployment_id=deployment_id,
-                    messages=[
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user},
-                    ],
-                    temperature=temperature,
-                    force_timeout=get_settings().config.ai_timeout,
-                )
-        except (APIError, Timeout, TryAgain) as e:
+                if "deepseek" in get_settings().get("config.model"):
+                    response = await acompletion(
+                        model="huggingface/deepseek-ai/deepseek-coder-33b-instruct",
+                        messages=[
+                            {"role": "system", "content": system},
+                            {"role": "user", "content": user},
+                        ],
+                        api_base=get_settings().get("config.model"),
+                        temperature=temperature,
+                        force_timeout=get_settings().config.ai_timeout,
+                        stop=['<|EOT|>'],
+                    )
+                    response["choices"][0]["message"]["content"] = response["choices"][0]["message"]["content"].rstrip()
+                    if response["choices"][0]["message"]["content"].endswith("<|EOT|>"):
+                        response["choices"][0]["message"]["content"] = response["choices"][0]["message"]["content"][:-7]
+                else:
+                    response = await acompletion(
+                        model=model,
+                        deployment_id=deployment_id,
+                        messages=[
+                            {"role": "system", "content": system},
+                            {"role": "user", "content": user},
+                        ],
+                        temperature=temperature,
+                        force_timeout=get_settings().config.ai_timeout,
+                    )
+        except (APIError) as e:
             logging.error("Error during OpenAI inference")
             raise
         except RateLimitError as e:
@@ -129,9 +135,9 @@ class AiHandler:
             raise
         except Exception as e:
             logging.error("Unknown error during OpenAI inference: ", e)
-            raise TryAgain from e
+            raise APIError from e
         if response is None or len(response["choices"]) == 0:
-            raise TryAgain
+            raise APIError
         resp = response["choices"][0]["message"]["content"]
         finish_reason = response["choices"][0]["finish_reason"]
         logger.debug(f"response:\n{resp}")

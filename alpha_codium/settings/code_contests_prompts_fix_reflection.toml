@@ -30,7 +30,7 @@ The output must be a YAML object equivalent to type $InputOutputExplanation, acc
 Class InputOutput(BaseModel):
     input: str
     output: str
-    explanation: str = Field(description="Explanation of how the input leads to the output.")
+    explanation: str = Field(description="Short explanation of how the input leads to the output.")
 
 
 class $InputOutputExplanation(BaseModel):

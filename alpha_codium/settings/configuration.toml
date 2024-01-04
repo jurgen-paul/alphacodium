@@ -2,7 +2,6 @@
 #model="gpt-4"
 model = "gpt-3.5-turbo-16k"
 #model = "https://deepseek.azure.codium.ai/"
-#model_type= "deepseek"
 max_requests_per_minute=60
 fallback_models =[]
 verbosity_level=0 # 0,1,2
@@ -12,11 +11,11 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 [dataset]
 evaluate_prev_solutions=false
 num_iterations=3 # X iterations to try to solve the problem
-use_direct_solutions=false
 
 [solve]
 reduce_verbose = false
 use_baseline = false
+use_direct_solutions=false
 
 [self_reflection]
 validate_self_reflection=false

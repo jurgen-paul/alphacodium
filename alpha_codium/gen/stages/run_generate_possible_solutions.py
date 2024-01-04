@@ -16,6 +16,8 @@ async def run_generate_possible_solutions(self, problem):
     while True:
         try:
             logger.info("--generate possible solutions stage--")
+            if get_settings().get("solve.use_direct_solutions", False):
+                return problem
 
             # get settings
             problem['max_num_of_possible_solutions'] = get_settings().get('possible_solutions.max_num_of_possible_solutions')

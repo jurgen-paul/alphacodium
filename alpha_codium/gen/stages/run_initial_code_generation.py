@@ -44,7 +44,8 @@ async def run_initial_code_generation(self, problem):
                     break
 
                 s_best_solution_original = problem['s_best_solution']
-                if counter > 1:  # give two attempts to the highest ranked solution
+                if counter > 1 and 's_best_solution' in problem['s_best_solution']:
+                    # give two attempts to the highest ranked solution
                     problem['s_best_solution'] = problem['s_possible_solutions'][
                         counter % len(problem['s_possible_solutions'])]
                 problem = await run_initial_solve(self, problem)

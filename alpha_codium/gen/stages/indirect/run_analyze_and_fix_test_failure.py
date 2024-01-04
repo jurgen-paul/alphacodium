@@ -5,6 +5,7 @@ import logging
 import yaml
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
+from alpha_codium.settings.config_loader import get_settings
 
 logger = get_logger(__name__)
 
@@ -14,7 +15,7 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
     while True:
         try:
             problem['error_str'] = error_str
-            f = functools.partial(self._run, problem=problem, prompt="code_contests_prompt_analyze_and_fix")
+            f = functools.partial(self._run, problem=problem, prompt=choose_prompt())
             response_analyze_failure, _ = await send_inference(f)
             problem['error_str'] = ''
 
@@ -48,4 +49,8 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
             if counter_retry > 2:
                 raise e
 
-
+def choose_prompt():
+    if get_settings().get("solve.use_direct_solutions", False):
+        return "code_contests_prompt_analyze_and_fix_direct"
+    else:
+        return "code_contests_prompt_analyze_and_fix"

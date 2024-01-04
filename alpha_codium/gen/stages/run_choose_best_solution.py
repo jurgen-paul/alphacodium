@@ -24,10 +24,11 @@ async def run_choose_best_solution(self, problem):
 
             # update best solution
             problem['s_best_solution'] = response_best_solution
-            problem['s_other_solutions'] = []
-            for solution in problem['s_possible_solutions']:
-                if solution['name'] != response_best_solution_yaml['name']:
-                    problem['s_other_solutions'].append(solution)
+            if 's_possible_solutions' in problem:
+                problem['s_other_solutions'] = []
+                for solution in problem['s_possible_solutions']:
+                    if solution['name'] != response_best_solution_yaml['name']:
+                        problem['s_other_solutions'].append(solution)
 
             return problem
         except Exception as e:
@@ -38,7 +39,7 @@ async def run_choose_best_solution(self, problem):
 
 
 def choose_prompt():
-    if get_settings().get("dataset.use_direct_solutions", False):
+    if get_settings().get("solve.use_direct_solutions", False):
         return "code_contests_prompts_choose_best_solution_direct"
     else:
         return "code_contests_prompts_choose_best_solution"
