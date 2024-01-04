@@ -17,7 +17,7 @@ from alpha_codium.llm.ai_handler import AiHandler
 from alpha_codium.log import get_logger
 from alpha_codium.settings.config_loader import get_settings
 
-logger = get_logger(__name__)
+
 
 class CodeContestsCompetitor:
     def __init__(self, test_flavor='local'):
@@ -44,7 +44,11 @@ class CodeContestsCompetitor:
         )
         return response, finish_reason
 
-    async def run(self, problem, iteration=0):
+    async def run(self, problem, iteration=0, logger_ext=None):
+        if logger_ext:
+            logger = logger_ext
+        else:
+            logger = get_logger(__name__)
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
         try:
@@ -77,10 +81,9 @@ class CodeContestsCompetitor:
             logging.error(f"Error: {e}")
             return ""
 
-    def solve_problem(self, example, iteration=0):
+    def solve_problem_in_dataset(self, example, iteration=0, logger_ext=None):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
-        prediction = asyncio.run(self.run(problem=problem, iteration=iteration))
-        logger.info(f"testing solution on private tests with prediction:\n{prediction}")
+        prediction = asyncio.run(self.run(problem=problem, iteration=iteration, logger_ext=logger_ext))
         return prediction
 
 
@@ -91,6 +94,7 @@ def solve_problem(dataset_name,
 
     # load dataset
     base_path = os.getcwd()
+    logger = get_logger(__name__)
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
     if problem_number and problem_name:
         logger.info(f"problem_number and problem_name are both specified, using problem_name")
@@ -140,7 +144,8 @@ def solve_problem(dataset_name,
 
     solver = CodeContestsCompetitor()
     os.chdir(base_path)
-    solution = solver.solve_problem(problem)
+    solution = solver.solve_problem_in_dataset(problem)
+    logger.info(f"testing solution on private tests with prediction:\n{solution}")
 
     logger.info(f"evaluating solution on public tests...")
     test_results, test_passed_public, test_failed_public, test_timeout_public = evaluate_solution_on_subset('public_tests',

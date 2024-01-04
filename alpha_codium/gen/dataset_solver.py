@@ -8,7 +8,6 @@ from alpha_codium.gen.coding_competitor import CodeContestsCompetitor
 from alpha_codium.gen.utils import evaluate_solution_on_subset
 from alpha_codium.log import setup_logger, get_logger
 from alpha_codium.settings.config_loader import get_settings
-logger = get_logger(__name__)
 
 
 def solve_dataset(dataset_name='valid_and_test_processed',
@@ -35,6 +34,8 @@ def solve_dataset(dataset_name='valid_and_test_processed',
     for problem_number in range(0, num_problems):
 
         # skip if already ran
+        logger = setup_logger()
+
         prev = database[split_name].get(str(problem_number), {}).get('iteration_0', {})
         if not ((prev == {}) or (prev is None)):
             print(f"problem_number {problem_number} already ran")
@@ -47,7 +48,6 @@ def solve_dataset(dataset_name='valid_and_test_processed',
 
         shutil.rmtree(log_path, ignore_errors=True)
         os.chdir(base_path)
-        setup_logger()
         logger.info(f"problem_number: {problem_number}")
         problem_name = data_provider.dataset[split_name][int(problem_number)]['name']
         logger.info(f"problem_name: {problem_name}")
@@ -62,7 +62,7 @@ def solve_dataset(dataset_name='valid_and_test_processed',
             it_str = f"iteration_{iteration}"
             problem_database[problem_number][it_str] = {}
 
-            solution = solver.solve_problem(problem, iteration)
+            solution = solver.solve_problem_in_dataset(problem, iteration, logger)
             if not solution:
                 logger.info(f"Failed to solve problem {problem_number} in iteration {iteration}")
                 continue

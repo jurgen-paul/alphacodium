@@ -29,4 +29,5 @@ async def run_validate_ai_tests(self, problem):
             logging.error(f"'validate ai tests' stage, counter_retry {counter_retry}, Error: {e}")
             counter_retry += 1
             if counter_retry > 2:
-                raise e
+                # raise e
+                return problem

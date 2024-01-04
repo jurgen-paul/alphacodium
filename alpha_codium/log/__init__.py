@@ -15,12 +15,14 @@ def json_format(record: dict) -> str:
     return record["message"]
 
 
-def setup_logger(level: str = "INFO", fmt: LoggingFormat = LoggingFormat.CONSOLE):
+def setup_logger(logger_path: str = "./example.log",
+                 level: str = "INFO",
+                 fmt: LoggingFormat = LoggingFormat.CONSOLE):
     level: int = logging.getLevelName(level.upper())
     if type(level) is not int:
         level = logging.INFO
 
-    fileHandler = logging.FileHandler("./example.log", mode='w')
+    fileHandler = logging.FileHandler(logger_path, mode='w')
 
     if fmt == LoggingFormat.JSON:
         logger.remove(None)
