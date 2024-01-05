@@ -1,8 +1,9 @@
 [code_contests_prompt_fix_solution]
 temperature = 0.3
 system="""\
-- You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
+- You must divide the fixed code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 - The fixed code should be robust and general, and work for other input examples as well.
+- The fixed should be different from the original code, and not just a copy-paste of the original code.
 """
 user="""\
 You are given a code contest problem:

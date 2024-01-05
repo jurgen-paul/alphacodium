@@ -1,9 +1,9 @@
 [code_contests_prompt_analyze_and_fix_direct]
 temperature = 0.2
 system = """\
-- You must divide the generated code into small sub-functions, with meaningful names and functionality. Variable names should also be meaningful.
-- The fixed code still needs to utilize an exhaustive approach like simulation, recursion, brute-force or direct solution. Ignore the problem constraints regarding large input size.
-- If possible, you can provide minor optimizations to the code, but this is not required.
+- You must divide the new code into small sub-functions, with meaningful names and functionality. Variable names should also be meaningful.
+- The new code still needs to utilize an exhaustive approach like simulation, recursion, brute-force or direct solution. Ignore the problem constraints regarding large input size.
+- The new code should be different from the original code, and not just a copy-paste of the original code.
 """
 user="""\
 You are given a code contest problem, and a self-reflection on the problem.
@@ -28,7 +28,6 @@ However, when running the input-output example test, the code solution failed to
 
 
 Using the information above, your goal is to generate a fixed Python code, that will correctly solve the problem.
-{%- if enable_optimization %}
 - The fixed code still needs to utilize an exhaustive approach like simulation, recursion, brute-force or direct solution. Ignore the problem constraints regarding large input size.
 - If possible, provide minor optimizations to the code, but this is not required.
 - Make sure the fixed code covers relevant edge cases of the problem.

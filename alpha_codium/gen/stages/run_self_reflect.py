@@ -2,8 +2,8 @@ import functools
 import logging
 import yaml
 
+from alpha_codium.gen.stages.indirect.run_fix_self_reflect import run_validate_self_reflect
 from alpha_codium.settings.config_loader import get_settings
-from alpha_codium.gen.stages.run_fix_self_reflect import run_validate_self_reflect
 from alpha_codium.gen.utils import postprocess_response
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger

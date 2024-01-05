@@ -1,6 +1,7 @@
 import copy
 import logging
-from alpha_codium.gen.stages.run_analyze_and_fix_test_failure import run_analyze_and_fix_test_failure
+
+from alpha_codium.gen.stages.indirect.run_analyze_and_fix_test_failure import run_analyze_and_fix_test_failure
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.log import get_logger
 from alpha_codium.settings.config_loader import get_settings

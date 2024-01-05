@@ -37,7 +37,7 @@ max_attempts=5
 [public_tests]
 max_allowed_calls=6
 max_fixes_per_test=3
-use_test_explanations=true
+use_test_explanations=false
 
 [ai_tests]
 max_allowed_calls=6

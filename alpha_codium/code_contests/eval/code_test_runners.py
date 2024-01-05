@@ -239,7 +239,7 @@ class CodeContestsGeneralPythonTestsRunner(PythonTestsRunner):
             self,
             path_to_python_bin: str = get_settings().get("code_contests_tester.path_to_python_bin"),
             path_to_python_lib: List[str] = get_settings().get("code_contests_tester.path_to_python_lib"),
-            num_threads: int = 4,
+            num_threads: int = 1,
             stop_on_first_failure: bool = get_settings().get("code_contests_tester.stop_on_first_failure"),
             timeout: int = get_settings().get("code_contests_tester.timeout")
     ):

@@ -23,6 +23,8 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
             response_analyze_failure_yaml = yaml.safe_load(response_analyze_failure)
             problem['response_analyze_failure'] = response_analyze_failure
             code_recent_solution = response_analyze_failure_yaml['fixed_code'].rstrip("'` \n")
+
+            # some cleaning
             if code_recent_solution .startswith("```python"):
                 code_recent_solution= code_recent_solution[10:]
             elif code_recent_solution.startswith("python"):
@@ -39,9 +41,15 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
                     return problem
             problem['code_recent_solution'] = code_recent_solution
 
-            # diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
-            #                             problem['code_recent_solution'].splitlines(keepends=True))
-            # patch = ''.join(diff)
+            # diff patch
+            diff = difflib.unified_diff(problem['code_prev_solution'].splitlines(keepends=True),
+                                        problem['code_recent_solution'].splitlines(keepends=True))
+            patch = ''.join(diff)
+            if get_settings().solve.reduce_verbose:
+                logger.debug(f"diff:\n{patch}")
+            else:
+                logger.info(f"diff:\n{patch}")
+
             return problem
         except Exception as e:
             logging.error(f"'analyze_and_fix_test_failure' stage, counter_retry {counter_retry}, Error: {e}")

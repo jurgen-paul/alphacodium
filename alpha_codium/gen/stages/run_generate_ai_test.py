@@ -1,9 +1,9 @@
 import functools
 import logging
 
+from alpha_codium.gen.stages.indirect.run_validate_ai_test import run_validate_ai_tests
 from alpha_codium.gen.utils import load_yaml
 from alpha_codium.settings.config_loader import get_settings
-from alpha_codium.gen.stages.run_validate_ai_test import run_validate_ai_tests
 from alpha_codium.llm.ai_invoker import send_inference
 from alpha_codium.log import get_logger
 

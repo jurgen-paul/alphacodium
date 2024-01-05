@@ -2,9 +2,9 @@ import copy
 import logging
 
 from alpha_codium.gen.stages.indirect.run_analyze_and_fix_test_failure import run_analyze_and_fix_test_failure
+from alpha_codium.gen.stages.indirect.run_analyze_tests_failure import run_analyze_test_failure
+from alpha_codium.gen.stages.indirect.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.settings.config_loader import get_settings
-from alpha_codium.gen.stages.run_analyze_tests_failure import run_analyze_test_failure
-from alpha_codium.gen.stages.run_fix_code_from_tests_failure import run_fix_code_from_tests_failure
 from alpha_codium.gen.stages.run_tests import run_tests
 from alpha_codium.log import get_logger
 
@@ -81,7 +81,7 @@ async def run_evaluate_public_tests(self, problem):
                         # tests run. save the last solution
                         problem['code_prev_solution'] = copy.deepcopy(problem['code_recent_solution'])
 
-                    if get_settings().get("solve.use_direct_solutions", False):
+                    if not get_settings().get("solve.use_direct_solutions", False):
                         # run 'analyze_test_failure' stage
                         problem = await run_analyze_test_failure(self, problem, error_str)
 
