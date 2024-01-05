@@ -110,6 +110,7 @@ class AiHandler:
                         ],
                         api_base=get_settings().get("config.model"),
                         temperature=temperature,
+                        repetition_penalty=1.05,
                         force_timeout=get_settings().config.ai_timeout,
                         stop=['<|EOT|>'],
                     )

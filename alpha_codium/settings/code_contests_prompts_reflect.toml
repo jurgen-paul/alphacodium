@@ -17,7 +17,7 @@ problem description:
 Given the code contest problem, you have two tasks:
 1) Reflect on the problem, and describe it in your own words, in bullet points. Pay attention to small details, nuances, notes and examples in the problem description.
 2) Explain how each provided example input leads to the corresponding output (in total {{ actual_number_of_tests }} examples are provided).
-Read carefully the problem description, and focus on the notes. Make sure the test explanations are consistent with them, and between themselves.
+Read carefully the problem description. Make sure the test explanations are consistent with them, and between themselves.
 The explanation must coherently and logically lead from the input to the output. Be as specific as possible.
 
 The output must be a YAML object equivalent to type $ProblemReflection, according to the following Pydantic definitions:

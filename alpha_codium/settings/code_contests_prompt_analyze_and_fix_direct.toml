@@ -15,11 +15,6 @@ problem description:
 ================
 
 
-self-reflection on the problem:
-================
-{{ self_description|trim }}
-================
-
 A code solution was generated for the problem:
 =============
 {{ code_recent_solution|trim }}
