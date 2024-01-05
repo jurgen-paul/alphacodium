@@ -18,6 +18,7 @@ async def run_evaluate_public_tests(self, problem):
             logger.info("--iterate on public tests stage--")
 
             # configurations
+            problem['use_self_reflection_public'] = get_settings().get('public_tests.use_self_reflection', False)
             max_allowed_calls = get_settings().get("public_tests.max_allowed_calls", 6)
             max_fixes_per_test = get_settings().get("public_tests.max_fixes_per_test", 3)
             if len(problem['public_tests']['input']) == 1:
@@ -81,15 +82,16 @@ async def run_evaluate_public_tests(self, problem):
                         # tests run. save the last solution
                         problem['code_prev_solution'] = copy.deepcopy(problem['code_recent_solution'])
 
-                    if not get_settings().get("solve.use_direct_solutions", False):
+                    if not get_settings().get("public_tests.single_stage_fix", False):
+                        # run 'analyze_and_fix_test_failure' stage
+                        problem = await run_analyze_and_fix_test_failure(self, problem, error_str)
+                    else:
                         # run 'analyze_test_failure' stage
                         problem = await run_analyze_test_failure(self, problem, error_str)
 
                         # run 'fix_code_from_tests_failure' stage
                         problem = await run_fix_code_from_tests_failure(self, problem, error_str)
-                    else:
-                        # run 'analyze_and_fix_test_failure' stage
-                        problem = await run_analyze_and_fix_test_failure(self, problem, error_str)
+
                     actual_number_of_llm_calls += 2
 
                     # evaluate previous tests that passed. if they fail, revert to last solution

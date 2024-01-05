@@ -41,6 +41,8 @@ async def run_self_reflect(self, problem):
             problem['response_reflect'] = response_reflect
             try:
                 problem['self_reflection'] = '- ' + '\n- '.join(response_reflect_yaml['self_reflection'])
+                if problem['self_reflection'].startswith('- - '):
+                    problem['self_reflection'] = problem['self_reflection'][2:]
             except:
                 problem['self_reflection'] = response_reflect_yaml['self_reflection']
             problem['tests_explanations'] = response_reflect_yaml['tests_explanations']

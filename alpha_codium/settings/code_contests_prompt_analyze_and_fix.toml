@@ -6,13 +6,31 @@ system = """\
 - The fixed should be different from the original code, and not just a copy-paste of the original code.
 """
 user="""\
+{%- if use_self_reflection_public %}
+You are given a code contest problem, and a self-reflection on the problem:
+
+problem description:
+=============
+{{ description|trim }}
+=============
+
+
+self-reflection on the problem:
+======
+{{ self_reflection|trim }}
+======
+
+{%- else %}
+
 You are given a code contest problem:
 =============
 {{ description_short|trim }}
 =============
 
+{%- endif %}
 
-A code solution was generated for the problem:
+
+A Python code solution was generated for the problem:
 =============
 {{ code_recent_solution|trim }}
 =============

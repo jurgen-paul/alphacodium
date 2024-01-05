@@ -15,7 +15,7 @@ num_iterations=3 # X iterations to try to solve the problem
 [solve]
 reduce_verbose = false
 use_baseline = false
-use_direct_solutions=true
+use_direct_solutions=false
 
 [self_reflection]
 validate_self_reflection=false
@@ -38,6 +38,8 @@ max_attempts=5
 max_allowed_calls=6
 max_fixes_per_test=3
 use_test_explanations=false
+single_stage_fix=true
+use_self_reflection=false
 
 [ai_tests]
 max_allowed_calls=6
