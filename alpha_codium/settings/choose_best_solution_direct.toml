@@ -1,7 +1,7 @@
 [code_contests_prompts_choose_best_solution_direct]
 temperature = 0.3
 system = """\
-To solve the problem, utilize an exhaustive high-computational approach like simulation, recursion, brute-force or other direct approch. Ignore the problem constraints regarding large input size.
+To solve the problem, utilize an exhaustive high-computational approach like simulation, recursion, brute-force or other direct approach. Ignore the problem constraints regarding large input size.
 """
 User="""\
 You are given a code contest problem, self-reflection on the problem, and a solution concept.
@@ -20,7 +20,7 @@ self-reflection on the problem:
 
 solution concept:
 ==========
-'To solve the problem, utilize an exhaustive high-computational approach like simulation, recursion, brute-force or other direct approch. Ignore the problem constraints regarding large input size.'
+'To solve the problem, utilize an exhaustive high-computational approach like simulation, recursion, brute-force or other direct approach. Ignore the problem constraints regarding large input size.'
 ==========
 
 

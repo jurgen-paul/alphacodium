@@ -30,7 +30,7 @@ class PythonTestsRunner(abc.ABC):
         if runner_type == 'local':
             return LocalPythonTestsRunner(*args, **kwargs)
         elif runner_type == 'code_contests':
-            return CodeContestsOfficialPythonTestsRunner(*args, **kwargs)
+            return CodeContestsGeneralPythonTestsRunner(*args, **kwargs)
         else:
             raise ValueError(f"Unknown method type: {runner_type}")
 
@@ -234,12 +234,12 @@ class LocalPythonTestsRunner(PythonTestsRunner):
         return ProcessPoolExecutor, {}  # {'initializer': reliability_guard}
 
 
-class CodeContestsOfficialPythonTestsRunner(PythonTestsRunner):
+class CodeContestsGeneralPythonTestsRunner(PythonTestsRunner):
     def __init__(
             self,
             path_to_python_bin: str = get_settings().get("code_contests_tester.path_to_python_bin"),
             path_to_python_lib: List[str] = get_settings().get("code_contests_tester.path_to_python_lib"),
-            num_threads: int = get_settings().get("code_contests_tester.num_threads"),
+            num_threads: int = 4,
             stop_on_first_failure: bool = get_settings().get("code_contests_tester.stop_on_first_failure"),
             timeout: int = get_settings().get("code_contests_tester.timeout")
     ):

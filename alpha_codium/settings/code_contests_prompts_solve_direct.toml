@@ -1,4 +1,4 @@
-[cdirect]
+[code_contests_prompts_solve_direct]
 temperature = 0.3
 system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.

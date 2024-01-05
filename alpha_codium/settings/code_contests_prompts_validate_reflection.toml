@@ -1,5 +1,6 @@
-[code_contests_prompts_fix_reflection]
+[code_contests_prompts_validate_reflection]
 temperature = 0.2
+frequency_penalty = 0.1
 system = """\
 """
 
@@ -30,7 +31,7 @@ The output must be a YAML object equivalent to type $InputOutputExplanation, acc
 Class InputOutput(BaseModel):
     input: str
     output: str
-    explanation: str = Field(description="Short explanation of how the input leads to the output.")
+    explanation: str = Field(description="Short explanation of how the input leads to the output. Be specific as possible.")
 
 
 class $InputOutputExplanation(BaseModel):

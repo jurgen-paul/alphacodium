@@ -15,7 +15,7 @@ num_iterations=3 # X iterations to try to solve the problem
 [solve]
 reduce_verbose = false
 use_baseline = false
-use_direct_solutions=false
+use_direct_solutions=true
 
 [self_reflection]
 validate_self_reflection=false
@@ -54,7 +54,6 @@ max_trace_lines=50
 trace_depth=4
 
 [code_contests_tester]
-num_threads = 4
 stop_on_first_failure = false
 timeout = 3
 path_to_python_bin = "/usr/bin/python3.9"

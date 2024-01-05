@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 async def run_validate_self_reflect(self, problem):
     try:
         logger.info("--validate reflection stage--")
-        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_fix_reflection")
+        f = functools.partial(self._run, problem=problem, prompt="code_contests_prompts_validate_reflection")
 
         # inference
         response_validate_reflect, _ = await send_inference(f)

@@ -33,14 +33,22 @@ class CodeContestsCompetitor:
         environment.globals["enumerate"] = enumerate
         sys_prompt = environment.from_string(self.prompt[prompt].system).render(problem_json)
         usr_prompt = environment.from_string(self.prompt[prompt].user).render(problem_json)
-        temperature = self.prompt[prompt].temperature
-        return sys_prompt, usr_prompt, temperature
+        if hasattr(self.prompt[prompt], 'temperature'):
+            temperature = self.prompt[prompt].temperature
+        else:
+            temperature = 0.2
+        if hasattr(self.prompt[prompt], 'frequency_penalty'):
+            frequency_penalty = self.prompt[prompt].frequency_penalty
+        else:
+            frequency_penalty = 0
+        return sys_prompt, usr_prompt, temperature, frequency_penalty
 
     async def _run(self, model, problem, prompt:str = "code_contests_prompt_reflect"):
-        system_prompt, user_prompt, temperature = self.render(problem, prompt)
+        system_prompt, user_prompt, temperature, frequency_penalty = self.render(problem, prompt)
 
         response, finish_reason = await self.ai_handler.chat_completion(
-            model=model, system=system_prompt, user=user_prompt, temperature=temperature
+            model=model, system=system_prompt, user=user_prompt,
+            temperature=temperature, frequency_penalty=frequency_penalty,
         )
         return response, finish_reason
 

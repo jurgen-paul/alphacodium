@@ -67,27 +67,12 @@ class AiHandler:
         jitter=(1, 3),
     )
     async def chat_completion(
-            self, model: str, system: str, user: str, temperature: float = 0.2
+            self, model: str,
+            system: str,
+            user: str,
+            temperature: float = 0.2,
+            frequency_penalty: float = 0.0,
     ):
-        """
-        Performs a chat completion using the OpenAI ChatCompletion API.
-        Retries in case of API errors or timeouts.
-
-        Args:
-            model (str): The model to use for chat completion.
-            temperature (float): The temperature parameter for chat completion.
-            system (str): The system message for chat completion.
-            user (str): The user message for chat completion.
-
-        Returns:
-            tuple: A tuple containing the response and finish reason from the API.
-
-        Raises:
-            TryAgain: If the API response is empty or there are no choices in the response.
-            APIError: If there is an error during OpenAI inference.
-            Timeout: If there is a timeout during OpenAI inference.
-            TryAgain: If there is an attribute error during OpenAI inference.
-        """
         try:
             deployment_id = self.deployment_id
             if get_settings().config.verbosity_level >= 2:
@@ -110,8 +95,9 @@ class AiHandler:
                         ],
                         api_base=get_settings().get("config.model"),
                         temperature=temperature,
-                        repetition_penalty=1.05,
+                        repetition_penalty=frequency_penalty+1, # the scale of TGI is different from OpenAI
                         force_timeout=get_settings().config.ai_timeout,
+                        max_tokens=2000,
                         stop=['<|EOT|>'],
                     )
                     response["choices"][0]["message"]["content"] = response["choices"][0]["message"]["content"].rstrip()
@@ -126,6 +112,7 @@ class AiHandler:
                             {"role": "user", "content": user},
                         ],
                         temperature=temperature,
+                        frequency_penalty=frequency_penalty,
                         force_timeout=get_settings().config.ai_timeout,
                     )
         except (APIError) as e:
