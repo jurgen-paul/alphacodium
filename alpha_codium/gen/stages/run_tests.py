@@ -80,20 +80,26 @@ def run_tests(self, problem, counter, test_inputs, test_outputs):
 
 def calc_distance_between_results(non_empty_output, tests_timeout, test_outputs, results):
     try:
-        d_tot = -1
+        d_tot = float('inf')
         if non_empty_output and not tests_timeout:
             d_tot = 0
             for i in range(len(test_outputs)):
+                # logger.info(f"test_outputs[i]:\n{test_outputs[i]}")
+                # logger.info(f"results.test_results[i].stdout:\n{results.test_results[i].stdout}")
                 expected = test_outputs[i].rstrip().split('\n')
                 actual = results.test_results[i].stdout.rstrip().split('\n')
                 try:
                     t1 = np.array(list(map(float, actual)))
                     t2 = np.array(list(map(float, expected)))
+                    if t1.size == 0:
+                        return float('inf')
                     d_tot += np.sum(np.abs(t1 - t2))
                 except:
                     t1 = np.array(actual)
                     t2 = np.array(expected)
+                    if t1.size == 0:
+                        return float('inf')
                     d_tot += np.sum(t1 != t2)
     except:
-        d_tot = -1
+        d_tot = float('inf')
     return d_tot

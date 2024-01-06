@@ -7,7 +7,7 @@ from alpha_codium.settings.config_loader import get_settings
 logger = get_logger(__name__)
 
 
-async def run_initial_solve(self, problem, enable_record=True):
+async def run_initial_solve(self, problem):
     counter_retry = 0
     while True:
         try:

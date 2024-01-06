@@ -19,7 +19,7 @@ async def run_evaluate_public_tests(self, problem):
 
             # configurations
             problem['use_self_reflection_public'] = get_settings().get('public_tests.use_self_reflection', False)
-            max_allowed_calls = get_settings().get("public_tests.max_allowed_calls", 6)
+            max_allowed_fixes = get_settings().get("public_tests.max_allowed_calls", 6)
             max_fixes_per_test = get_settings().get("public_tests.max_fixes_per_test", 3)
             if len(problem['public_tests']['input']) == 1:
                 max_fixes_per_test += 1
@@ -29,7 +29,7 @@ async def run_evaluate_public_tests(self, problem):
             test_outputs_all = problem['public_tests']['output']
             test_explanations_all = problem['tests_explanations']
             all_passed_public = True
-            actual_number_of_llm_calls = 0
+            number_of_llm_fixes = 0
             for test_inputs, test_outputs, test_explanation in zip(test_inputs_all, test_outputs_all,
                                                                     test_explanations_all):
                 if not isinstance(test_inputs, list):
@@ -58,7 +58,7 @@ async def run_evaluate_public_tests(self, problem):
                         best_d = d_tot
 
                     # cap the number of calls to the ai
-                    if not passed_specific_test and actual_number_of_llm_calls >= max_allowed_calls:
+                    if not passed_specific_test and number_of_llm_fixes >= max_allowed_fixes:
                         logger.debug(f"Failed to pass public test. reached max number of calls")
                         break
 
@@ -91,8 +91,7 @@ async def run_evaluate_public_tests(self, problem):
 
                         # run 'fix_code_from_tests_failure' stage
                         problem = await run_fix_code_from_tests_failure(self, problem, error_str)
-
-                    actual_number_of_llm_calls += 2
+                    number_of_llm_fixes += 1
 
                     # evaluate previous tests that passed. if they fail, revert to last solution
                     if problem['passed_tests']['inputs']:

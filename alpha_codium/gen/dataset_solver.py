@@ -16,10 +16,11 @@ def solve_dataset(dataset_name='valid_and_test_processed',
 
     # load dataset
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
+    setting = get_settings()
     num_problems = len(data_provider.dataset[split_name])
     base_path = os.getcwd()
     log_path = f'{base_path}/example.log'
-    get_settings().solve.reduce_verbose = True
+    setting.solve.reduce_verbose = True
 
     ## load previous solution-database if exists
     try:
@@ -36,7 +37,8 @@ def solve_dataset(dataset_name='valid_and_test_processed',
         # skip if already ran
         logger = setup_logger()
 
-        prev = database[split_name].get(str(problem_number), {}).get('iteration_0', {})
+        num_iterations =  setting.get("dataset.num_iterations", 1)
+        prev = database[split_name].get(str(problem_number), {}).get(f'iteration_{num_iterations-1}', {})
         if not ((prev == {}) or (prev is None)):
             print(f"problem_number {problem_number} already ran")
             continue
@@ -57,12 +59,21 @@ def solve_dataset(dataset_name='valid_and_test_processed',
         # solve problem
         problem_database = {problem_number: {}}
         solver = CodeContestsCompetitor()
-        setting = get_settings()
         for iteration in range(setting.get("dataset.num_iterations", 1)):
             it_str = f"iteration_{iteration}"
             problem_database[problem_number][it_str] = {}
 
+            prev_iter = database[split_name].get(str(problem_number), {}).get(it_str, {})
+            if not ((prev_iter == {}) or (prev_iter is None)):
+                print(f"prev_iter {iteration} already ran")
+                problem_database[problem_number][it_str] = prev_iter
+                if is_solved(prev_iter):
+                    logger.info(f"codium solved problem {problem_number} in iteration {iteration}")
+                    break
+                continue
+
             solution = solver.solve_problem_in_dataset(problem, iteration, logger)
+            logger.info(f"solution code:\n{solution}")
             if not solution:
                 logger.info(f"Failed to solve problem {problem_number} in iteration {iteration}")
                 continue
@@ -100,9 +111,7 @@ def solve_dataset(dataset_name='valid_and_test_processed',
                 os.makedirs(f'./{split_name}_logs/', exist_ok=True)
                 shutil.copyfile(log_path, f'./{split_name}_logs/test_{problem_number}_{it_str}.log')
 
-            if (test_failed_private == 0 and test_failed_generate == 0 and
-                    test_timeout_private == 0 and test_timeout_generate == 0 and
-                    (test_passed_private + test_passed_generate) > 0):
+            if is_solved(problem_database[problem_number][it_str]):
                 logger.info(f"codium solved problem {problem_number} in iteration {iteration}")
                 break
             else:
@@ -111,3 +120,12 @@ def solve_dataset(dataset_name='valid_and_test_processed',
         os.chdir(base_path)
         with open(database_solution_path, 'w') as f:
             json.dump(database, f)
+
+
+def is_solved(s):
+    if s['test_failed_private']==0 and s['test_failed_generate']==0 and \
+            s['test_timeout_private']==0 and s['test_timeout_generate']==0 and \
+            (s['test_passed_private']+s['test_passed_generate'])>0:
+        return True
+    else:
+        return False

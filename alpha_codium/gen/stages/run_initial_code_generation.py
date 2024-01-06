@@ -44,7 +44,7 @@ async def run_initial_code_generation(self, problem):
                     break
 
                 s_best_solution_original = problem['s_best_solution']
-                if counter > 1 and 's_best_solution' in problem['s_best_solution']:
+                if counter > 1 and 's_possible_solutions' in problem:
                     # give two attempts to the highest ranked solution
                     problem['s_best_solution'] = problem['s_possible_solutions'][
                         counter % len(problem['s_possible_solutions'])]
@@ -57,6 +57,8 @@ async def run_initial_code_generation(self, problem):
                 if passed_tests:
                     logger.info(f"Passed tests after {counter} attempts")
                     break
+                else:
+                    logger.info(f"Failed to pass tests after {counter} attempts, d: {d_tot}, best_d so far: {best_d}")
 
                 # save the best solution so far
                 if -1 < d_tot < best_d:

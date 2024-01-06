@@ -29,13 +29,13 @@ Your goal is to generate a valid Python code that correctly solves the code cont
 
 Guidelines:
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Variables names should also be meaningful.
-- Double-check the solution code. The generated solution must generalize to any valid input, and not just the provided examples.
+- Double-check the generated code. It should generalize to any valid input, and not just the provided examples.
 - Make sure to include all the necessary module imports, properly initialize the variables, and address the problem constraints.
 - The code needs to be self-contained, and executable as-is.
 
 
 
-The code output must follow this structure:
+The generated code must follow this structure:
 ```
 def f1(...):
     ...
