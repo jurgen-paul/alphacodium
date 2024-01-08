@@ -74,4 +74,4 @@ def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_nam
 
 
 if __name__ == "__main__":
-    evaluate_dataset_solution(solution_path_database='valid_gpt_35.json')
+    evaluate_dataset_solution(solution_path_database='valid_deepseek.json')
