@@ -4,6 +4,7 @@ import os
 from jinja2 import Environment, StrictUndefined
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
+from alpha_codium.gen.stages.run_baseline import run_baseline
 from alpha_codium.gen.stages.run_choose_best_solution import run_choose_best_solution
 from alpha_codium.gen.stages.run_evaluate_all_ai_tests import run_evaluate_all_ai_tests
 from alpha_codium.gen.stages.run_evaluate_public_tests import run_evaluate_public_tests
@@ -60,29 +61,32 @@ class CodeContestsCompetitor:
         logger.info(f"Running code contests competitor, model {get_settings().config['model']}")
 
         try:
-            # configurations
-            problem = set_configurations(problem, iteration)
+            if get_settings().get("solve.use_baseline", False):
+                problem['code_recent_solution'] = await run_baseline(self, problem)
+            else:
+                # configurations
+                problem = set_configurations(problem, iteration)
 
-            # self-reflect
-            problem = await run_self_reflect(self, problem)
+                # self-reflect
+                problem = await run_self_reflect(self, problem)
 
-            # generate solutions
-            problem = await run_generate_possible_solutions(self, problem)
+                # generate solutions
+                problem = await run_generate_possible_solutions(self, problem)
 
-            # choose best solution
-            problem = await run_choose_best_solution(self, problem)
+                # choose best solution
+                problem = await run_choose_best_solution(self, problem)
 
-            # generate ai tests
-            problem = await run_generate_ai_tests(self, problem)
+                # generate ai tests
+                problem = await run_generate_ai_tests(self, problem)
 
-            # initial code generation
-            problem = await run_initial_code_generation(self, problem)
+                # initial code generation
+                problem = await run_initial_code_generation(self, problem)
 
-            # evaluate on public tests
-            problem = await run_evaluate_public_tests(self, problem)
+                # evaluate on public tests
+                problem = await run_evaluate_public_tests(self, problem)
 
-            # evaluate on ai tests
-            problem = await run_evaluate_all_ai_tests(self, problem)
+                # evaluate on ai tests
+                problem = await run_evaluate_all_ai_tests(self, problem)
 
             return problem['code_recent_solution']
         except Exception as e:
