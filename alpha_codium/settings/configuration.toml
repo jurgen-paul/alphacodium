@@ -11,6 +11,7 @@ private_dataset_cache_dir="~/.cache/huggingface/datasets/alpha_codium"
 [dataset]
 evaluate_prev_solutions=false
 num_iterations=5 # X iterations to try to solve the problem
+use_iteration_scheme=true
 
 [solve]
 reduce_verbose = false

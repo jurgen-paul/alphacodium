@@ -63,6 +63,15 @@ def solve_dataset(dataset_name='valid_and_test_processed',
             it_str = f"iteration_{iteration}"
             problem_database[problem_number][it_str] = {}
 
+            if setting.get("dataset.use_iteration_scheme", False):
+                if iteration<2:
+                    setting.solve.use_direct_solutions = True
+                    logger.info(f"using direct solutions for iteration {iteration}")
+                else:
+                    setting.solve.use_direct_solutions = False
+                    logger.info(f"using full solutions for iteration {iteration}")
+
+
             prev_iter = database[split_name].get(str(problem_number), {}).get(it_str, {})
             if not ((prev_iter == {}) or (prev_iter is None)):
                 print(f"prev_iter {iteration} already ran")
