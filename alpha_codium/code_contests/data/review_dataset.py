@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 
 
-def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_name='valid',solution_path_database='valid_database_solution.json'):
+def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_name='test',solution_path_database='valid_database_solution.json'):
     split_name = split_name
     dataset_name = dataset_name
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)
@@ -74,4 +74,4 @@ def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_nam
 
 
 if __name__ == "__main__":
-    evaluate_dataset_solution(solution_path_database='valid_deepseek.json')
+    evaluate_dataset_solution(solution_path_database='test_deepseek_direct.json')
