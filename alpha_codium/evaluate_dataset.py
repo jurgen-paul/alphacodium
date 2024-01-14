@@ -8,9 +8,9 @@ from alpha_codium.log import get_logger
 logger = get_logger(__name__)
 
 
-
-
-def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_name='test',solution_path_database='valid_database_solution.json'):
+def evaluate_dataset_solution(dataset_name='valid_and_test_processed',
+                              split_name='test',
+                              solution_path_database='valid_database_solution.json'):
     split_name = split_name
     dataset_name = dataset_name
     data_provider = CodeContestDataProvider(dataset_location=dataset_name)

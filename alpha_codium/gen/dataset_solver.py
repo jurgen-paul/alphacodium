@@ -19,7 +19,6 @@ def solve_dataset(dataset_name='valid_and_test_processed',
     setting = get_settings()
     num_problems = len(data_provider.dataset[split_name])
     base_path = os.getcwd()
-    log_path = f'{base_path}/example.log'
     setting.solve.reduce_verbose = True
 
     ## load previous solution-database if exists
@@ -48,7 +47,6 @@ def solve_dataset(dataset_name='valid_and_test_processed',
             logger.info(f"problem {problem_number} is not valid")
             continue
 
-        shutil.rmtree(log_path, ignore_errors=True)
         os.chdir(base_path)
         logger.info(f"problem_number: {problem_number}")
         problem_name = data_provider.dataset[split_name][int(problem_number)]['name']
@@ -63,15 +61,7 @@ def solve_dataset(dataset_name='valid_and_test_processed',
             it_str = f"iteration_{iteration}"
             problem_database[problem_number][it_str] = {}
 
-            if setting.get("dataset.use_iteration_scheme", False):
-                if iteration<2:
-                    setting.solve.use_direct_solutions = True
-                    logger.info(f"using direct solutions for iteration {iteration}")
-                else:
-                    setting.solve.use_direct_solutions = False
-                    logger.info(f"using full solutions for iteration {iteration}")
-
-
+            # skip if iteration already ran
             prev_iter = database[split_name].get(str(problem_number), {}).get(it_str, {})
             if not ((prev_iter == {}) or (prev_iter is None)):
                 print(f"prev_iter {iteration} already ran")
@@ -81,7 +71,9 @@ def solve_dataset(dataset_name='valid_and_test_processed',
                     break
                 continue
 
+            # solve problem
             solution = solver.solve_problem_in_dataset(problem, iteration, logger)
+
             logger.info(f"solution code:\n{solution}")
             if not solution:
                 logger.info(f"Failed to solve problem {problem_number} in iteration {iteration}")
@@ -114,12 +106,6 @@ def solve_dataset(dataset_name='valid_and_test_processed',
             problem_database[problem_number][it_str]['test_failed_public'] = test_failed_public
             problem_database[problem_number][it_str]['test_timeout_public'] = test_timeout_public
             os.chdir(base_path)
-            with open(log_path, 'r') as f:
-                log = f.read()
-                problem_database[problem_number][it_str]['log'] = log
-                os.makedirs(f'./{split_name}_logs/', exist_ok=True)
-                shutil.copyfile(log_path, f'./{split_name}_logs/test_{problem_number}_{it_str}.log')
-
             if is_solved(problem_database[problem_number][it_str]):
                 logger.info(f"codium solved problem {problem_number} in iteration {iteration}")
                 break
@@ -132,9 +118,9 @@ def solve_dataset(dataset_name='valid_and_test_processed',
 
 
 def is_solved(s):
-    if s['test_failed_private']==0 and s['test_failed_generate']==0 and \
-            s['test_timeout_private']==0 and s['test_timeout_generate']==0 and \
-            (s['test_passed_private']+s['test_passed_generate'])>0:
+    if s['test_failed_private'] == 0 and s['test_failed_generate'] == 0 and \
+            s['test_timeout_private'] == 0 and s['test_timeout_generate'] == 0 and \
+            (s['test_passed_private'] + s['test_passed_generate']) > 0:
         return True
     else:
         return False

@@ -16,8 +16,6 @@ from alpha_codium.settings.config_loader import get_settings
 logger = get_logger(__name__)
 
 
-
-
 def preapare_and_clean_dataset(dataset_name='valid_and_test'):
 
     # process base dataset

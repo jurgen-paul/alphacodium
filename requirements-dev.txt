@@ -1,4 +1,0 @@
-precommit-hook
-autoflake
-ruff
-pytest
