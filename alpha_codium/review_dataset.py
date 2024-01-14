@@ -1,9 +1,9 @@
-
+import argparse
 import json
 from collections import OrderedDict
 
 from alpha_codium.code_contests.data.provider import CodeContestDataProvider
-from alpha_codium.log import get_logger, setup_logger
+from alpha_codium.log import get_logger
 
 logger = get_logger(__name__)
 
@@ -32,7 +32,7 @@ def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_nam
             key_int = int(key_str)
             problem = ds[key_int]
             if problem.get('is_valid_problem', True) is False:
-                logger.info(f"problem {key_int} is not valid")
+                print(f"problem {key_int} is not valid")
                 continue
             solution = database_solutions[split_name][sol]
             passed_current = -1
@@ -72,6 +72,13 @@ def evaluate_dataset_solution(dataset_name='valid_and_test_processed', split_nam
     print(f"pass rate: {total_passed/(total_passed+total_failed)}")
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--dataset_name", type=str, default="valid_and_test_processed")
+parser.add_argument("--split_name", type=str, default="valid")
+parser.add_argument("--database_solution_path", type=str, default="./gpt_3_solution_database_valid.json")
 
 if __name__ == "__main__":
-    evaluate_dataset_solution(solution_path_database='test_deepseek_direct.json')
+    args = parser.parse_args()
+    evaluate_dataset_solution(dataset_name=args.dataset_name,
+                              split_name=args.split_name,
+                              solution_path_database=args.database_solution_path)
