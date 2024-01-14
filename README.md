@@ -44,19 +44,21 @@ key = "..."
 ## How to run
 
 ### Configuration
-The file `alpha_codium/settings/configuration.toml` contains the configuration for the project.
+The file: `alpha_codium/settings/configuration.toml` contains the configuration for the project.
 
 ### Solving a specific problem
-to solve a specific problem with AlphaCodium, from the root folder run:
+To solve a specific problem with AlphaCodium, from the root folder run:
 ```
 python -m alpha_codium.gen.solve_problem\
 --dataset_name /path/to/dataset\
 --split_name test\
 --problem_number = 0
 ```
-- Note that the validation set contain 117 problems, and the test set contain 165 problems, so the `problem_number` should be accordingly.
+- Note that the validation set contain 117 problems, and the test set contain 165 problems, so the `problem_number` parameter should be accordingly (zero-based)
 - The `split_name` can be either `valid` or `test`.
-- The `solve`, `self_reflection`,`possible_solutions`,`generate_ai_tests`,`initial_code_generation`,`public_tests` and `ai_tests` sections in the configuration file contain the configuration for the different stages of the flow.
+- The followings sections in the configuration file: 
+`solve`, `self_reflection`,`possible_solutions`,`generate_ai_tests`,`initial_code_generation`,`public_tests`, `ai_tests`  
+enable to adjust possible configurations for the different stages of the flow.
 
 Example problem (test set, problem number 12):
 <p align="center">
