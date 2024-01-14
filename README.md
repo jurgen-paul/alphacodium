@@ -54,11 +54,11 @@ python -m alpha_codium.gen.solve_problem\
 --split_name test\
 --problem_number = 0
 ```
-- Note that the validation set contain 107 problems, and the test set contain 165 problems, so the `problem_number` should be accordingly.
+- Note that the validation set contain 117 problems, and the test set contain 165 problems, so the `problem_number` should be accordingly.
 - The `split_name` can be either `valid` or `test`.
 - The `solve`, `self_reflection`,`possible_solutions`,`generate_ai_tests`,`initial_code_generation`,`public_tests` and `ai_tests` sections in the configuration file contain the configuration for the different stages of the flow.
 
-Example problem (validation set, problem number 12):
+Example problem (test set, problem number 12):
 <p align="center">
  <table class="tg">
   <tr>
