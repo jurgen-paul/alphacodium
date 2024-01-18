@@ -1,109 +1,211 @@
-# Code Generation with AlphaCodium: From Prompt Engineering to Flow Engineering
+# alphaCodium
 
-[Paper](https://arxiv.org/abs/2009.14119) |
-[Dataset](https://huggingface.co/datasets/talrid/CodeContests_valid_and_test_AlphaCodium/blob/main/codecontests_valid_and_test_processed_alpha_codium.zip)
+Generating high quality code solutions to challenging coding problems from the code_contests dataset
+
+## Data
+
+The data in the project is based on the [code_contests](https://github.com/google-deepmind/code_contests) dataset.
+Luckily, there is a huggingface dataset [huggingface](https://huggingface.co/datasets/deepmind/code_contests) which reflects the same data.
+
+The `code_contests.data` package contains convenience tools for loading, filtering, transforming and saving the data in a standard hugginface `Dataset` API.
+
+## Gen
+
+Generating solutions is done using a lighweight framework (leveraging assets and design patterns from the `pr_agent` project).
+
+The generation should result in a dataset of problem_id -> solution candidates, which will then be evaluated against test cases.
+
+The main prompts are in `code_contests_prompts_baseline.toml`
+
+## Eval
+
+Once we've generated solution candidates, we would like to evaluate them against test cases, and score the resuls.
+
+The `eval` package exposes a `Metric` object that accepts code solutions as well as input-output pairs, and calculates the `pass@k` metric.
+
+The evaluation itself requires running the code in an interpreter, in a sandboxed environment, and achieving high throughput for execution.
+
+Deepmind provided in the `code_contests` repo, a C++ based framework for managing candidate execution against inputs and outputs.
+This tool was wrapped in a [python package](https://pypi.org/project/code-contests-tester/0.1.3/) to make it more usable within a development environment.
+
+There are also local test execution scripts to accelerate development.
+
+See more further down.
 
 
-> Tal Ridnik, Dedy Kredo, Itamar Friedman <br/> CodiumAI
+## CLI
 
-**Abstract**
+The project includes a cli tool for running common development tasks.
+It's not clear yet if this API will be useful going forward, but it will likely help new team members onboard to the project.
 
-Code generation problems differ from common natural language problems - they require matching the exact syntax of the target language, identifying happy paths and edge cases, paying attention to numerous small details in the problem spec, and addressing other code-specific issues and requirements. Hence, many of the optimizations and tricks that have been successful in natural language generation may not be effective for code tasks.
+```gencode ```
 
-In this work, we propose a new approach to code generation by LLMs, which we call AlphaCodium - a test-based, multi-stage, code-oriented iterative flow, that improves the performances of LLMs on code problems.
+The tool has three sub-commands:
 
-We tested AlphaCodium on a challenging code generation dataset called CodeContests, which includes competitive programming problems from platforms such as Codeforces. The proposed flow consistently and significantly improves results.
-On the validation set, for example, GPT-4 accuracy (pass@5) increased from 19% with a single well-designed direct prompt to 44% with the AlphaCodium flow. 
-
-Many of the principles and best practices we acquired in this work, we believe, are broadly applicable to general code generation tasks.
-
-<p align="center">
- <table class="tg">
-  <tr>
-    <td class="tg-c3ow"><img src="./pics/proposed_flow.png" align="center" width="600""></td>
-<tr>
-    <td class="tg-c3ow"><img src="./pics/iterations.png" align="center" width="600" ></td>
-
-  </tr>
-</table>
-</p>
-
-
-## Installation
-
-(1) setup a virtual environment and run: `pip install -e .`
-
-(2) Duplicate the file `alpha_codium/settings/.secrets_template.toml`, rename it as `.secrets.toml`, and fill your openai api key:
 ```
-[openai]
-key = "..."
-```
+Options:
+  --help  Show this message and exit.
 
-(3) Download the processed CodeContest validation and test dataset from [hugging face](https://huggingface.co/datasets/talrid/CodeContests_valid_and_test_AlphaCodium/blob/main/codecontests_valid_and_test_processed_alpha_codium.zip), extract the zip file, and placed the extracted folder in the root of the project.
+Commands:
+  data  Commands for generating datasets
+  eval  Commands for evaluating results
+  gen   Commands for generating code predictions
 
-## How to run
-
-### Configuration
-The file: `alpha_codium/settings/configuration.toml` contains the configuration for the project.
-
-### Solving a specific problem
-To solve a specific problem with AlphaCodium, from the root folder run:
-```
-python -m alpha_codium.gen.solve_problem\
---dataset_name /path/to/dataset\
---split_name test\
---problem_number = 0
-```
-- Note that the validation set contain 117 problems, and the test set contain 165 problems, so the `problem_number` parameter should be accordingly (zero-based)
-- The `split_name` can be either `valid` or `test`.
-- The followings sections in the configuration file: 
-`solve`, `self_reflection`,`possible_solutions`,`generate_ai_tests`,`initial_code_generation`,`public_tests`, `ai_tests`  
-enable to adjust possible configurations for the different stages of the flow.
-
-Example problem (test set, problem number 12):
-<p align="center">
- <table class="tg">
-  <tr>
-    <td class="tg-c3ow"><img src="./pics/example_problem.png" align="center" width="600""></td>
-    </tr>
-</table>
-</p>
-
-### Solving the entire dataset
-to solve the entire dataset with AlphaCodium, from the root folder run:
-```
-python -m alpha_codium.gen.solve_dataset\
---dataset_name /path/to/dataset\
---split_name test
---database_solution_path /path/to/output/dir/dataset_output.json
 ```
 
-- The `split_name` can be either `valid` or `test`.
-- `database_solution_path` is the path to the directory where the solutions will be saved.
-- The `dataset` section in the configuration file contains the configuration for the running and evaluation a dataset.
+### data etl
+Base command: `gencode data etl --source deepmind/code_contests --output_dataset_name 101_test`
 
-### Running the evaluation
+This command downloads the hugging face dataset and applies common transformations (filtering only Python3 solutions, sampling data, and translating references).
+It then stores the derived dataset called `101_test` (locally)
 
-Once you generate a solution for the entire dataset (valid or test), you can evaluate it by running:
+
+### gen
+
+This is the part that generates predictions.
+
+`ask` - is just a simple prompt for testing
+
+`solve_problem` - you can specify dataset name, split and even problem name. The code will generate a solution to the problem and run the tests against it
+
+for example, try:
+```gencode gen solve_problem --dataset_name deepmind/code_contests --split_name valid --problem_name "1560_F1. Nearest Beautiful Number (easy version)" --evaluation_test_type private_tests```
+
+
+`solve_set` - specify a dataset, split, sample etc. and the code will generate solutions for all the problems in the dataset and store them in the target dataset
+
+### eval
+
+`eval_cc_solutions` - evaluate a solution from the actual code contests datasets
+
+Example command: `gencode eval eval_gen_solutions --solution_dataset my_solutions --ground_truth_dataset code_contests_sample --ground_truth_split valid --evaluation_test_type private_tests`
+
+This command takes a dataset name (can be a dataset stored locally) and evaluates the solutions against specified test types that accompany the problems.
+The result is a `pass@k` metric
+
+`eval_gen_solutions` - takes a dataset name of solutions and a dataset name of ground truth and calculates pass@k
+
+
+## installation
+
+general - `pip install -e .`
+
+development - `pip install -r requirements-dev.txt`
+
+
+## code execution
+
+There are two ways to execute code for evaluation - `local` and `code_contests`.
+You can set it via the configuration.toml under `tester_type`
+
+**These are mostly equivalent but will not give 1-1 results**
+
+### `local`
+Can run on any machine which has Python.
+You can also control whether the runs are sandboxed (best effort) or not by setting `sandbox=true` in the configuration. 
+
+### `code_contests`
+This is a Python binding for code_contests` C++ library and sandbox for code execution.
+
+It's execution results will be more reliable in comparison to the `local` option (some discrepancies already found between the two)
+
+**Note**:
+
+Due to the `code_contests` dependency on C++ which is not multi-platform, there are a few quirks:
+
+1. Support only Python 3.9
+2. Run only on a linux
+
+
+#### Running on Amazon Linux 2023 AMI
+
+1. Start an Amazon Linux 2023 machine (add your ssh keys, choose m5.xlarge or larger)
+2. SSH into the machine
+3. Run following commands (one by one)
+
 ```
-python -m alpha_codium.gen.evaluate_dataset\
---dataset_name /path/to/dataset\
---split_name test\
---database_solution_path /path/to/output/dir/dataset_output.json
+   sudo yum install openssl-devel bzip2-devel libffi-devel
+   curl -O https://bootstrap.pypa.io/get-pip.py
+   python3 get-pip.py --user
+   git clone git@github.com:Codium-ai/alphaCodium.git
+   cd alphaCodium/
+   python3 -m pip install virtualenv
+   virtualenv venv
+   source venv/bin//activate
+   python --version
+   pip install -e .
+   huggingface-cli login
+   # possibly change the paths to the python interpreter 
+   gencode eval pass_at_k --dataset_name test_101 --split_name train --evaluation_test_type private_tests --sample_rate 0.01
 ```
 
-## Acknowledgments
-Our process CodeContests dataset is based on the original [CodeContests](https://huggingface.co/datasets/deepmind/code_contests) dataset.
-We removed the train set (which is not relevant for our work), and did some post-processing and cleaning to the validation and test sets.
+#### Running in docker
+
+**Note**: 
+
+Unfortunately the docker still needs to run on a Linux machine!
+
+The reason is that Mac (especially with Arm processor) is unable to emulate the underlying OS accurately enough to support the Google sandbox.
+
+* From the root of the code, run:
+
+```
+docker run -it --security-opt seccomp=unconfined --privileged --cap-add=SYS_ADMIN --platform linux/amd64 \
+-v ${PWD}:/app -v ${HOME}/.cache/huggingface:/root/.cache/huggingface \
+597530458568.dkr.ecr.us-east-1.amazonaws.com/alphacode/code_contests:latest \
+/bin/bash
+
+```
+
+* Inside the docker, run:
+```
+cd /app
+
+pip install -e .
+
+```
+
+* Now you can run the tests inside the docker
+
+## Common tasks
+
+### Generating solutions to a dataset
+
+The process includes :
+
+* Selecting the problems you want to let the competitor solve and storing them in a dataset
+
+* Running a generation loop on the dataset (async) where the competitor will return 0-n solutions to each item
+
+* Preparing the results for evaluation - transforming the solutions to a dataset where the schema is:
+
+  * Predictions
+    - task_name
+    - candidates
+  * References
+    * Test inputs
+    * Test outputs
+  
+After this dataset is ready, you can store it in disk using `.save_to_disk(path)`
+
+See `gencode gen solve_set`
 
 
-## Citation
-```
- @misc{benbaruch2020asymmetric, 
-        title={Asymmetric Loss For Multi-Label Classification}, 
-        author={Emanuel Ben-Baruch and Tal Ridnik and Nadav Zamir and Asaf Noy and Itamar Friedman and Matan Protter and Lihi Zelnik-Manor}, 
-        year={2020}, 
-        eprint={2009.14119},
-        archivePrefix={arXiv}, 
-        primaryClass={cs.CV} }
-```
+
+### Evaluating solutions at scale
+
+Given a dataset of solutions in the schema described above, evaluate it.
+
+This is done using the `gen_loop.py` module, e.g.:
+
+```pass_at_k, inputs, evaluation_results = calculate_metrics(evaluation_set)```
+
+the result includes
+
+1. `pass@k` for multiple provided k values, as well as evaluation results.
+
+2. The tests per task
+
+3. The run results per candidate  (multi test results)
+
+See `gencode eval eval_gen_solutions`

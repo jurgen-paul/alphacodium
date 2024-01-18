@@ -19,8 +19,9 @@ from alpha_codium.log import get_logger
 from alpha_codium.settings.config_loader import get_settings
 
 
+
 class CodeContestsCompetitor:
-    def __init__(self):
+    def __init__(self, test_flavor='local'):
         self.prompt = {}
         for set in get_settings():
             if 'code_contests_prompt' in set.lower():
