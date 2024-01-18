@@ -1,3 +1,4 @@
+import ast
 import difflib
 import functools
 import logging
@@ -21,6 +22,20 @@ async def run_fix_code_from_tests_failure(self, problem,error_str):
             response_fixed_code = response_fixed_code.rstrip("'` \n") # remove trailing spaces and newlines from yaml response
             if response_fixed_code.startswith("```python"):
                 response_fixed_code = response_fixed_code[10:]
+            elif response_fixed_code.startswith("python"):
+                response_fixed_code = response_fixed_code[6:]
+            elif '```python' in response_fixed_code:  # somehwhere in the middle there is a code block
+                logger.info("try taking only the code part from the response")
+                response_fixed_code2 = response_fixed_code.split('```python')[1].strip()
+                if '```' in response_fixed_code2:
+                    response_fixed_code2 = response_fixed_code2.split('```')[0].strip()
+                    try:
+                        ast.parse(response_fixed_code2)
+                        response_fixed_code = response_fixed_code2
+                        logger.info(f'response_fixed_code2')
+                    except Exception as e:
+                        logger.error(f"Error while parsing the response")
+                        pass
             problem['code_recent_solution'] = response_fixed_code
 
             # diff patch

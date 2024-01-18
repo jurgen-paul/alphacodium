@@ -8,7 +8,8 @@ from litellm import acompletion
 from litellm import RateLimitError
 from litellm.exceptions import APIError
 # from openai.error import APIError, RateLimitError, Timeout, TryAgain
-from retry import retry
+# from retry import retry
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 from alpha_codium.settings.config_loader import get_settings
 from alpha_codium.log import get_logger
@@ -30,10 +31,22 @@ class AiHandler:
         Raises a ValueError if the OpenAI key is missing.
         """
         self.limiter = AsyncLimiter(get_settings().config.max_requests_per_minute)
+        if get_settings().get("ANTHROPIC.KEY", None):
+            litellm.anthropic_key = get_settings().anthropic.key
+            litellm.drop_params = True
+        if get_settings().get("aws.AWS_ACCESS_KEY_ID"):
+            assert get_settings().aws.AWS_SECRET_ACCESS_KEY and get_settings().aws.AWS_REGION_NAME, "AWS credentials are incomplete"
+            os.environ["AWS_ACCESS_KEY_ID"] = get_settings().aws.AWS_ACCESS_KEY_ID
+            os.environ["AWS_SECRET_ACCESS_KEY"] = get_settings().aws.AWS_SECRET_ACCESS_KEY
+            os.environ["AWS_REGION_NAME"] = get_settings().aws.AWS_REGION_NAME
+            litellm.drop_params = True
+
         try:
             openai.api_key = get_settings().openai.key
             litellm.openai_key = get_settings().openai.key
-            self.azure = False
+            litellm.aws_bedrock_client = None
+            litellm.api_base = None
+            litellm.repetition_penalty = None
             if "deepseek" in get_settings().get("config.model"):
                 litellm.register_prompt_template(
                     model="huggingface/deepseek-ai/deepseek-coder-33b-instruct",
@@ -50,7 +63,8 @@ class AiHandler:
 
                 )
         except AttributeError as e:
-            raise ValueError("OpenAI key is required") from e
+            # raise ValueError("OpenAI key is required") from e
+            pass
 
     @property
     def deployment_id(self):
@@ -60,11 +74,8 @@ class AiHandler:
         return get_settings().get("OPENAI.DEPLOYMENT_ID", None)
 
     @retry(
-        exceptions=(AttributeError, RateLimitError),
-        tries=OPENAI_RETRIES,
-        delay=2,
-        backoff=2,
-        jitter=(1, 3),
+        # No retry on RateLimitError
+        stop=stop_after_attempt(OPENAI_RETRIES)
     )
     async def chat_completion(
             self, model: str,
@@ -104,28 +115,33 @@ class AiHandler:
                     if response["choices"][0]["message"]["content"].endswith("<|EOT|>"):
                         response["choices"][0]["message"]["content"] = response["choices"][0]["message"]["content"][:-7]
                 else:
-                    response = await acompletion(
-                        model=model,
-                        deployment_id=deployment_id,
-                        messages=[
-                            {"role": "system", "content": system},
-                            {"role": "user", "content": user},
-                        ],
-                        temperature=temperature,
-                        frequency_penalty=frequency_penalty,
-                        force_timeout=get_settings().config.ai_timeout,
+                    if model.startswith('o1-'):
+                        user_message= f"### System:\n{system}\n\n### User:\n{user}"
+                        response = await acompletion(
+                            model=model,
+                            deployment_id=deployment_id,
+                            messages=[
+                                {"role": "user", "content": user},
+                            ],
+                            force_timeout=get_settings().config.ai_timeout,
+                        )
+                    else:
+                        response = await acompletion(
+                            model=model,
+                            deployment_id=deployment_id,
+                            messages=[
+                                {"role": "system", "content": system},
+                                {"role": "user", "content": user},
+                            ],
+                            temperature=temperature,
+                            frequency_penalty=frequency_penalty,
+                            force_timeout=get_settings().config.ai_timeout,
                     )
-        except (APIError) as e:
-            logging.error("Error during OpenAI inference")
-            raise
-        except RateLimitError as e:
-            logging.error("Rate limit error during OpenAI inference")
-            raise
         except Exception as e:
             logging.error("Unknown error during OpenAI inference: ", e)
-            raise APIError from e
+            raise e
         if response is None or len(response["choices"]) == 0:
-            raise APIError
+            raise openai.APIError
         resp = response["choices"][0]["message"]["content"]
         finish_reason = response["choices"][0]["finish_reason"]
         logger.debug(f"response:\n{resp}")

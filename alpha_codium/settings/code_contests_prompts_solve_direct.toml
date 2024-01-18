@@ -3,6 +3,7 @@ temperature = 0.3
 system= """\
 - You must divide the generated code into small sub-functions, with meaningful names and functionality. Each function should be no longer than 10 lines of code.
 - The code should ignore the problem constraints for large inputs.
+- Generate *only* the code that solves the problem, and nothing else. No comments, explanations, or other text should be included in the output.
 """
 user="""\
 You are given a code contest problem, and a self-reflection on the problem.
@@ -34,7 +35,7 @@ Guidelines:
 
 
 
-The code output must follow this structure:
+The generate output must follow this structure:
 ```
 def f1(...):
     ...
@@ -48,6 +49,7 @@ def f2(...):
 if __name__ == "__main__":
     ...
 ```
+
 The code should read the input using the 'input()' method. Make sure to properly parse the input, according to the problem description.
 The output should be printed without additional words using the 'print()' method.
 

@@ -93,9 +93,9 @@ class CodeContestsCompetitor:
             logging.error(f"Error: {e}")
             return ""
 
-    def solve_problem_in_dataset(self, example, iteration=0, logger_ext=None):
+    async def solve_problem_in_dataset(self, example, iteration=0, logger_ext=None):
         problem = {k: example.get(k) for k in ["name", "description", 'public_tests']}
-        prediction = asyncio.run(self.run(problem=problem, iteration=iteration, logger_ext=logger_ext))
+        prediction = await self.run(problem=problem, iteration=iteration, logger_ext=logger_ext)
         return prediction
 
 

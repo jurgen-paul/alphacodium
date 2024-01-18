@@ -10,7 +10,7 @@ from alpha_codium.log import setup_logger, get_logger
 from alpha_codium.settings.config_loader import get_settings
 
 
-def solve_dataset(dataset_name='valid_and_test_processed',
+async def solve_dataset(dataset_name='valid_and_test_processed',
                   split_name='valid',
                   database_solution_path='solution_database.json'):
 
@@ -64,7 +64,7 @@ def solve_dataset(dataset_name='valid_and_test_processed',
             problem_database[problem_number][it_str] = {}
 
             if setting.get("dataset.use_iteration_scheme", False):
-                if iteration<2:
+                if 0<iteration<3:
                     setting.solve.use_direct_solutions = True
                     logger.info(f"using direct solutions for iteration {iteration}")
                 else:
@@ -81,7 +81,7 @@ def solve_dataset(dataset_name='valid_and_test_processed',
                     break
                 continue
 
-            solution = solver.solve_problem_in_dataset(problem, iteration, logger)
+            solution = await solver.solve_problem_in_dataset(problem, iteration, logger)
             logger.info(f"solution code:\n{solution}")
             if not solution:
                 logger.info(f"Failed to solve problem {problem_number} in iteration {iteration}")

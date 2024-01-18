@@ -25,7 +25,11 @@ async def run_self_reflect(self, problem):
 
             # inference
             response_reflect, _ = await send_inference(f)
-            response_reflect = response_reflect.rstrip("` \n")
+            response_reflect = response_reflect.rstrip("` \n").strip()
+            if response_reflect.startswith("```yaml"):
+                response_reflect = response_reflect[8:]
+            if response_reflect.endswith("```"):
+                response_reflect = response_reflect[:-3]
             try:
                 response_reflect_yaml = yaml.safe_load(response_reflect)
             except yaml.YAMLError:

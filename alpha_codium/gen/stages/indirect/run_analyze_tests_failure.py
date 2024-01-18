@@ -24,7 +24,10 @@ async def run_analyze_test_failure(self, problem,error_str):
                 response_analyze_failure = response_analyze_failure[8:]
             problem['response_analyze_failure'] = response_analyze_failure
             response_analyze_failure_yaml = yaml.safe_load(response_analyze_failure)
-            problem['what_went_wrong'] = response_analyze_failure_yaml['what_went_wrong']
+            if 'what_went_wrong' in response_analyze_failure_yaml:
+                problem['what_went_wrong'] = response_analyze_failure_yaml['what_went_wrong']
+            else:
+                problem['what_went_wrong'] = ''
             problem['fixed_flow'] = response_analyze_failure_yaml['fixed_flow']
             return problem
         except Exception as e:

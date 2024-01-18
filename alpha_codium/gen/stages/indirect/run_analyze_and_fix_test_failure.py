@@ -22,13 +22,36 @@ async def run_analyze_and_fix_test_failure(self, problem, error_str):
             response_analyze_failure = response_analyze_failure.rstrip("'` \n") # remove trailing spaces and newlines from yaml response
             response_analyze_failure_yaml = yaml.safe_load(response_analyze_failure)
             problem['response_analyze_failure'] = response_analyze_failure
-            code_recent_solution = response_analyze_failure_yaml['fixed_code'].rstrip("'` \n")
+            code_recent_solution = response_analyze_failure_yaml['fixed_code'].rstrip("'` \n").strip()
 
             # some cleaning
-            if code_recent_solution .startswith("```python"):
-                code_recent_solution= code_recent_solution[10:]
-            elif code_recent_solution.startswith("python"):
-                code_recent_solution = code_recent_solution[6:]
+            if code_recent_solution.startswith("```python"):
+                code_recent_solution2 = code_recent_solution[10:]
+                try:
+                    ast.parse(code_recent_solution2)
+                    code_recent_solution = code_recent_solution2
+                except:
+                    pass
+            if code_recent_solution.startswith("python"):
+                code_recent_solution2 = code_recent_solution[6:]
+                try:
+                    ast.parse(code_recent_solution2)
+                    code_recent_solution = code_recent_solution2
+                except:
+                    pass
+            if '```python' in code_recent_solution:
+                logger.info("try taking only the code part from the response")
+                response_solve2 = code_recent_solution.split('```python')[1].strip()
+                if '```' in response_solve2:
+                    response_solve2 = response_solve2.split('```')[0].strip()
+                    try:
+                        ast.parse(response_solve2)
+                        code_recent_solution = response_solve2
+                        logger.info(f"response_solve2: {response_solve2}")
+                    except Exception as e:
+                        logger.error(f"Error while parsing the response: {e}")
+                        pass
+
             try:
                 ast.parse(code_recent_solution)
             except:

@@ -1,7 +1,12 @@
+
 [config]
 #model="gpt-4"
 #model = "gpt-3.5-turbo-16k"
-model = "https://deepseek.azure.codium.ai/"
+#model = "https://pr-agent-self-model-inf.githubapps.codium.ai/"
+#model="anthropic/claude-3-opus-20240229"
+#model="o1-mini-2024-09-12"
+model="o1-preview-2024-09-12"
+#model="bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0"
 max_requests_per_minute=60
 fallback_models =[]
 verbosity_level=0 # 0,1,2
@@ -15,7 +20,7 @@ use_iteration_scheme=true
 
 [solve]
 reduce_verbose = false
-use_baseline = false
+use_baseline = true
 use_direct_solutions=false
 
 [self_reflection]
