@@ -50,6 +50,11 @@ Many of the principles and best practices we acquired in this work, we believe, 
 
 ## Installation
 
+### Pre-requisites
+
+1. Python3
+2. Rust compiler
+
 (1) setup a virtual environment：
 ```bash
 python3 -m venv venv
