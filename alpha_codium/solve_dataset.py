@@ -9,9 +9,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--dataset_name", type=str, default="valid_and_test_processed")
 parser.add_argument("--split_name", type=str, default="valid")
 parser.add_argument("--database_solution_path", type=str, default="")
+parser.add_argument('--log-level', type=str, default='INFO',
+                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+
 if __name__ == "__main__":
     args = parser.parse_args()
-    setup_logger()
+    setup_logger(level=args.log_level)
 
     # set default database_solution_path
     args.database_solution_path = args.database_solution_path
