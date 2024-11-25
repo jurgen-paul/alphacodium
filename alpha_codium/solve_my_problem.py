@@ -3,12 +3,13 @@ import json
 
 from alpha_codium.gen.coding_competitor import solve_problem, solve_my_problem
 from alpha_codium.log import setup_logger
+from alpha_codium.constants import LOG_LEVEL_CHOICES
 from alpha_codium.settings.config_loader import get_settings
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--my_problem_json_file", type=str, default="my_problem_example.json")
 parser.add_argument('--log-level', type=str, default='INFO',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+                    choices=LOG_LEVEL_CHOICES)
 
 
 if __name__ == "__main__":

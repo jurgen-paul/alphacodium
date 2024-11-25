@@ -2,6 +2,7 @@ import argparse
 
 from alpha_codium.gen.dataset_solver import solve_dataset
 from alpha_codium.log import get_logger, setup_logger
+from alpha_codium.constants import LOG_LEVEL_CHOICES
 
 logger = get_logger(__name__)
 
@@ -10,7 +11,7 @@ parser.add_argument("--dataset_name", type=str, default="valid_and_test_processe
 parser.add_argument("--split_name", type=str, default="valid")
 parser.add_argument("--database_solution_path", type=str, default="")
 parser.add_argument('--log-level', type=str, default='INFO',
-                    choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'])
+                    choices=LOG_LEVEL_CHOICES)
 
 if __name__ == "__main__":
     args = parser.parse_args()
