@@ -28,11 +28,12 @@ async def run_validate_self_reflect(self, problem):
             response_validate_reflect_yaml = yaml.safe_load(response_validate_reflect)
 
         # check number of tests
-        actual_number_of_tests = len(problem['public_tests']['input'])
-        calculated_number_of_tests = len(response_validate_reflect_yaml['fixed_tests_explanations'])
+        actual_number_of_tests = len(problem.get('public_tests', {}).get('input', []))
+        calculated_number_of_tests = len(response_validate_reflect_yaml.get('fixed_tests_explanations', []))
         if actual_number_of_tests != calculated_number_of_tests:
-            raise (f"Error: number of tests in validate self-reflection ({calculated_number_of_tests}) "
-                   f"does not match the actual number of tests ({actual_number_of_tests})")
+            raise ValueError(
+                f"Error: number of tests in validate self-reflection ({calculated_number_of_tests}) "
+                f"does not match the actual number of tests ({actual_number_of_tests})")
 
         problem['response_validate_self_reflect'] = response_validate_reflect
         problem['tests_explanations'] = response_validate_reflect_yaml['fixed_tests_explanations']
